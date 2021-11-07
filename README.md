@@ -1,10 +1,10 @@
 # mini
 
 ## general
-´´´bash
+```bash
 defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
 killall Finder
-´´´
+```
 
 ## git
 ```
