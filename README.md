@@ -1,5 +1,10 @@
 # mini
 
+## python
+```bash
+python -m pip install requests    #install requests
+```
+
 ## ssh
 ```bash
 chmod 600 /path/to/openssh-private/   #set permissions for key file
