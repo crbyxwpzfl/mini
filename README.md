@@ -1,5 +1,11 @@
 # mini
 
+## ssh
+```bash
+chmod 600 /path/to/openssh-private/   #set permissions for key file
+ssh user@ip -i "path/to/openssh-private"
+```
+
 ## general
 ```bash
 defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
