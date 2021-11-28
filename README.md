@@ -15,6 +15,7 @@ ssh user@ip -i "path/to/openssh-private"
 ```bash
 defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
 killall Finder
+chflags hidden /path/to/folder #hide a folder
 ```
 
 ## git
