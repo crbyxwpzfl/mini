@@ -16,6 +16,9 @@ ssh user@ip -i "path/to/openssh-private"
 defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
 killall Finder
 chflags hidden /path/to/folder #hide a folder
+/Users/mini/Library/Android/sdk/emulator/emulator -list-avds #list vms
+/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -no-window #run vm headless
+/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full #keine ahnung mehr
 ```
 
 ## git
@@ -31,4 +34,4 @@ sudo n stable
 sudo npm install -g npm #update npm
 npm update #update local pacages
 npm update -g #update gobal packages
-```
+``` 
