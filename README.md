@@ -1,5 +1,11 @@
 # mini
 
+## handbrake
+```
+cd "dir/with/mkvs"
+for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ; done   #reencode all mkvs in dir
+```
+
 ## python
 ```bash
 python -m pip install requests    #install requests
