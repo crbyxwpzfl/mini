@@ -1,5 +1,22 @@
 # mini
 
+##ytdl
+```
+cd /Volumes/transfer/see
+out="/Volumes/transfer/see/%(title)s.%(ext)s"
+url="https://youtube.com/playlist?list=PLaHzPX64jQ189iqTEvaWmvK0l1-Dt3ssP" #see
+
+/Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
+```
+
+```
+cd /Volumes/transfer/listen
+out="/Volumes/transfer/listen/%(title)s.%(ext)s"
+url="https://youtube.com/playlist?list=PLaHzPX64jQ19wU2ckGEefoUlYCNvnjkv7" #listen
+
+/Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl -x --audio-format mp3 --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
+```
+
 ## handbrake
 ```
 cd "dir/with/mkvs"
