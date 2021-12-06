@@ -1,6 +1,6 @@
 # mini
 
-##[ytdl](https://github.com/ytdl-org/youtube-dl)
+## [ytdl](https://github.com/ytdl-org/youtube-dl)
 ```
 cd /Volumes/transfer/see
 out="/Volumes/transfer/see/%(title)s.%(ext)s"
