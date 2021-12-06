@@ -17,7 +17,7 @@ url="https://youtube.com/playlist?list=PLaHzPX64jQ19wU2ckGEefoUlYCNvnjkv7" #list
 /Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl -x --audio-format mp3 --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
 ```
 
-## handbrake
+## [handbrake](https://github.com/HandBrake/HandBrake/releases)
 ```
 cd "dir/with/mkvs"
 for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ; done   #reencode all mkvs in dir
