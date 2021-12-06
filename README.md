@@ -1,6 +1,6 @@
 # mini
 
-##ytdl
+##[ytdl](https://github.com/ytdl-org/youtube-dl)
 ```
 cd /Volumes/transfer/see
 out="/Volumes/transfer/see/%(title)s.%(ext)s"
@@ -26,6 +26,7 @@ for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ;
 ## python
 ```bash
 python -m pip install requests    #install requests
+sudo -H pip install --upgrade youtube-dl  #install ytdl
 ```
 
 ## ssh
