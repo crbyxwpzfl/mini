@@ -1,7 +1,8 @@
 ```
-. #to vs code in browser
-alt #to toggle menue bar
-crtl shit g #to source controll
+. #vs code in browser
+alt #toggle menue bar
+crtl shit g #source controll
+crtl shift e #explorer
 ```
 
 # mini
