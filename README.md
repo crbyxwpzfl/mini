@@ -1,3 +1,9 @@
+```
+. #to vs code in browser
+alt #to toggle menue bar
+crtl shit g #to source controll
+```
+
 # mini
 
 ## [ytdl](https://github.com/ytdl-org/youtube-dl)
