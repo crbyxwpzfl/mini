@@ -12,8 +12,11 @@ class MyLogger(object):
         pass
 
     def warning(self, msg):
-        print (msg)
+        pass
 
+    def download(self, msg):
+        print(msg)
+        
     def error(self, msg):
         print (msg)
 
