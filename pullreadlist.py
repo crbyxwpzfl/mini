@@ -1,8 +1,8 @@
+from __future__ import unicode_literals
 import sys
 
 sys.path.append("/usr/local/bin/youtube-dl")
 
-from __future__ import unicode_literals
 import youtube_dl
 
 
