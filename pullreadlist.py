@@ -24,7 +24,8 @@ def my_hook(d):
 
 ydl_opts = {
     'restrict-filenames': True,
-    'outtmpl': '%(title)s.%(ext)s',
+    'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
+
     'logger': MyLogger(),
     'progress_hooks': [my_hook],
 }
