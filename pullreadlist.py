@@ -28,7 +28,7 @@ def my_hook(d):
     if d['status'] == 'finished':
         print(d['filename'])
         filename = d['filename'][20:]
-        output = subprocess.Popen(['osascript', os.path.join(dir, 'sendMessage.applescrip'), 'hardcodedinscript', filename], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['osascript', sendMessage.applescrip', 'hardcodedinscript', filename], stdout=subprocess.PIPE)
 
 #set ytdl options
 ydl_opts = {
