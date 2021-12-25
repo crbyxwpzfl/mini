@@ -3,10 +3,10 @@ import sys
 import re
 import subprocess
 import os
-from os.path import expanduser
+
 
 #set dir
-dir = expanduser("~")+"/Downloads"
+dir = "/Volumes/transfer/see"
 
 #import ytdl via path
 sys.path.append("/usr/local/bin/youtube-dl")
