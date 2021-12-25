@@ -11,13 +11,13 @@ def my_hook(d):
     print(d['status'])
     
     if d['status'] == 'finished':
-        print(d['filename'])
+        print(d['filename'],d['total_bytes'])
         print ('')
         print ('---------------------------------------------------------------------------------------------------------------------')
         print ('')
     
     if d['status'] == 'downlading':
-        print(d['filename'])
+        print(d['tmpfilename'],d['downloaded_bytes'])
         print ('')
         print ('---------------------------------------------------------------------------------------------------------------------')
         print ('')
