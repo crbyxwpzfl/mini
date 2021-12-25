@@ -7,18 +7,10 @@ import subprocess
 sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
-class MyLogger(object):
-    def debug(self, msg):
-        pass
-
-    def warning(self, msg):
-        pass
-
-    def download(self, msg):
-        print(msg)
-
-    def error(self, msg):
-        print (msg)
+def my_hook(d):
+    print(d['status'])
+    if d['status'] == 'finished':
+        print(d['filename'])
 
 #set ytdl options
 ydl_opts = {
@@ -27,7 +19,7 @@ ydl_opts = {
     'ignoreerrors': True,
     'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
-    'logger': MyLogger(),
+    'progress_hooks': [my_hook],
 }
 
 #convert bookmark plist to xml
