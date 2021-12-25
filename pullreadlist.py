@@ -7,6 +7,7 @@ sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
 ydl_opts = {
+    ' simulate': True,
     'restrict-filenames': True,
     'ignoreerrors:' True,
     'download_archive': '/Users/mini/Desktop/archive.txt',
