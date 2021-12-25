@@ -17,7 +17,7 @@ ydl_opts = {
 }
 
 #convert bookmark plist to xml
-output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', '~/Desktop/SafariBookmarks.xml', '~/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', '/Users/mini/Desktop/SafariBookmarks.xml', '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
 print (output.stdout.read())
 
 #read xml into var file
