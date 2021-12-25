@@ -7,6 +7,7 @@ import subprocess
 sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
+#logger to quiet output
 class MyLogger(object):
     def debug(self, msg):
         pass
@@ -41,22 +42,13 @@ print (output.stdout.read())
 #read xml into var file
 file = open("/Users/mini/Desktop/SafariBookmarks.xml", "r")
 
+#dirty but works to find readinglist urls
 for line in file:
-    
-    #dirty but works to find readinglist urls
     if re.search("^					<string>http", line):
         
-        #prettie output
-        print ('')
-        print ('---------------------------------------------------------------------------------------------------------------------')
-        print ('')
-        print (line[13:-10])
-        print ('')
-
-        #download url
+        #downlad url content
+        #print (line[13:-10])
         url = line[13:-10]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        
-        print ('')
 
