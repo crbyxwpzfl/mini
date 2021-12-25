@@ -27,7 +27,7 @@ class MyLogger(object):
 def my_hook(d):
     if d['status'] == 'finished':
         #print(d['filename'])
-        filename = d['filename'][20:]
+        filename = d['filename']
         output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', filename], stdout=subprocess.PIPE)
 
 #set ytdl options
