@@ -33,7 +33,7 @@ for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ;
 ## python
 ```bash
 python -m pip install requests    #install requests
-sudo -H pip install --upgrade youtube-dl  #install ytdl
+python -m pip install --upgrade youtube-dl  #install ytdl
 ```
 
 ## ssh
@@ -50,11 +50,13 @@ chflags hidden /path/to/folder #hide a folder
 /Users/mini/Library/Android/sdk/emulator/emulator -list-avds #list vms
 /Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -no-window #run vm headless
 /Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full #keine ahnung mehr
+rm -rf #drag drop icloud drive folders to delete them
 ```
 
 ## git
 ```
 git #then follow promt
+git -c core.sshCommand="ssh -i /path/to/sshprivate" pull #to pull changes
 ```
 
 ## node
