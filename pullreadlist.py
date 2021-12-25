@@ -25,6 +25,7 @@ class MyLogger(object):
 #send a message with filename to confirm downlad
 def my_hook(d):
     if d['status'] == 'finished':
+        print(d['filename'])
         filename = d['filename'][20:]
         output = subprocess.Popen(['osascript', os.path.join(dir, 'sendMessage.applescrip'), 'hardcodedinscript', filename], stdout=subprocess.PIPE)
 
@@ -36,7 +37,7 @@ ydl_opts = {
     'download_archive': os.path.join(dir, 'archive.txt'),
     'outtmpl': os.path.join(dir, '%(title)s.%(ext)s'),
     'progress_hooks': [my_hook],
-    #'logger': MyLogger(),
+    'logger': MyLogger(),
 }
 
 #convert bookmark plist to xml
