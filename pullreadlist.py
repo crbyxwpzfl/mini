@@ -6,7 +6,7 @@ import os
 from os.path import expanduser
 
 #set dir
-dir = expanduser("~")+"/Library/Mobile Documents/com~apple~CloudDocs/"
+dir = expanduser("~")+"/Downloads"
 
 #import ytdl via path
 sys.path.append("/usr/local/bin/youtube-dl")
