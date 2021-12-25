@@ -23,7 +23,7 @@ def my_hook(d):
 
 
 ydl_opts = {
-    'restrict-filenames':
+    'restrict-filenames':,
     'logger': MyLogger(),
     'progress_hooks': [my_hook],
 }
