@@ -21,7 +21,9 @@ file = open("/Users/mini/Desktop/SafariBookmarks.xml", "r")
 
 for line in file:
     if re.search("^					<string>http", line):
-        print (line[13:-10])
+        print ('')
+        print (line[13:-10]'------------------------------------------------------------------------------')
+        print ('')
         url = line[13:-10]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
