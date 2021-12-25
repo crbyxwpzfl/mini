@@ -7,6 +7,7 @@ import subprocess
 sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
+#send a message with filename to confirm downlad
 def my_hook(d):
     if d['status'] == 'finished':
         filename = d['filename'][20:]
