@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys
 import re
 import subprocess
+import os
 
 #set dir
 dir = "/Users/mini/Library/Mobile\ Documents/com\~apple\~CloudDocs/"
