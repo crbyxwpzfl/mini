@@ -8,26 +8,8 @@ sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
 def my_hook(d):
-    print(d['status'])
-    
     if d['status'] == 'finished':
-        print(d['filename'],d['total_bytes'])
-        print ('')
-        print ('---------------------------------------------------------------------------------------------------------------------')
-        print ('')
-    
-    if d['status'] == 'downlading':
-        print(d['tmpfilename'],d['downloaded_bytes'])
-        print ('')
-        print ('---------------------------------------------------------------------------------------------------------------------')
-        print ('')
-    
-    if d['status'] == 'error':
-        print(d['status'])
-        print ('')
-        print ('---------------------------------------------------------------------------------------------------------------------')
-        print ('')
-
+        print(d['filename'])
 
 #set ytdl options
 ydl_opts = {
@@ -37,7 +19,6 @@ ydl_opts = {
     'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
     'progress_hooks': [my_hook],
-    'quiet': True,
 }
 
 #convert bookmark plist to xml
