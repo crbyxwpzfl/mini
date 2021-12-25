@@ -9,7 +9,7 @@ import youtube_dl
 
 def my_hook(d):
     if d['status'] == 'finished':
-        filename = d['filename'][11:]
+        filename = d['filename'][20:]
         output = subprocess.Popen(['osascript', '/Users/mini/Desktop/sendMessage.applescript', 'hardcodedinscript', filename], stdout=subprocess.PIPE)
 
 #set ytdl options
@@ -17,7 +17,7 @@ ydl_opts = {
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    #'download_archive': '/Users/mini/Desktop/archive.txt',
+    'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
     'progress_hooks': [my_hook],
 }
