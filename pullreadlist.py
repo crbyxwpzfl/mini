@@ -12,14 +12,14 @@ class MyLogger(object):
         pass
 
     def warning(self, msg):
-        pass
+        print (msg)
 
     def error(self, msg):
-        print(msg)
+        print (msg)
 
 #set ytdl options
 ydl_opts = {
-    'simulate': False,
+    'simulate': True,
     'restrict-filenames': False,
     'ignoreerrors': True,
     'download_archive': '/Users/mini/Desktop/archive.txt',
