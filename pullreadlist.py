@@ -26,9 +26,9 @@ class MyLogger(object):
 #send a message with filename to confirm downlad
 def my_hook(d):
     if d['status'] == 'finished':
-        print(d['filename'])
+        #print(d['filename'])
         filename = d['filename'][20:]
-        output = subprocess.Popen(['osascript', sendMessage.applescrip', 'hardcodedinscript', filename], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', filename], stdout=subprocess.PIPE)
 
 #set ytdl options
 ydl_opts = {
