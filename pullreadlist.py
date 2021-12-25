@@ -45,7 +45,7 @@ output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir,
 #print (output.stdout.read())
 
 #read xml into var file
-file = open("/Users/mini/Desktop/SafariBookmarks.xml", "r")
+file = open(os.path.join(dir, 'SafariBookmarks.xml'), "r")
 
 #dirty but works to find readinglist urls
 for line in file:
