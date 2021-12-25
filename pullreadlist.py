@@ -8,7 +8,7 @@ sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
 class MyLogger(object):
-    print (msg)
+    print (object)
 
 #set ytdl options
 ydl_opts = {
