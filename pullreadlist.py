@@ -9,7 +9,7 @@ import youtube_dl
 ydl_opts = {
     ' simulate': True,
     'restrict-filenames': True,
-    'ignoreerrors:' True,
+    'ignoreerrors': True,
     'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
 }
