@@ -20,6 +20,7 @@ ydl_opts = {
     'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
     'progress_hooks': [my_hook],
+    'quiet': True,
 }
 
 #convert bookmark plist to xml
