@@ -29,3 +29,4 @@ for line in file:
         url = line[13:-10]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
+        print ('')
