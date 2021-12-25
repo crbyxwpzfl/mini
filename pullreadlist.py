@@ -3,6 +3,9 @@ import sys
 import re
 import subprocess
 
+#set dir
+dir = "/Users/mini/Library/Mobile\ Documents/com\~apple\~CloudDocs/"
+
 #import ytdl via path
 sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
@@ -22,21 +25,21 @@ class MyLogger(object):
 def my_hook(d):
     if d['status'] == 'finished':
         filename = d['filename'][20:]
-        output = subprocess.Popen(['osascript', '/Users/mini/Desktop/sendMessage.applescript', 'hardcodedinscript', filename], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['osascript', os.path.join(dir, 'sendMessage.applescrip'), 'hardcodedinscript', filename], stdout=subprocess.PIPE)
 
 #set ytdl options
 ydl_opts = {
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': '/Users/mini/Desktop/archive.txt',
-    'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
+    'download_archive': os.path.join(dir, 'archive.txt'),
+    'outtmpl': os.path.join(dir, '%(title)s.%(ext)s'),
     'progress_hooks': [my_hook],
     'logger': MyLogger(),
 }
 
 #convert bookmark plist to xml
-output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', '/Users/mini/Desktop/SafariBookmarks.xml', '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
 #print (output.stdout.read())
 
 #read xml into var file
@@ -51,4 +54,3 @@ for line in file:
         url = line[13:-10]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-
