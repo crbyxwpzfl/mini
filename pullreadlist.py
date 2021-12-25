@@ -9,7 +9,6 @@ import os
 dir = "/Volumes/transfer/see"
 
 #import ytdl via path
-sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
 #logger to quiet output
