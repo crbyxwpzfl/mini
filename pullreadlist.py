@@ -16,13 +16,13 @@ class MyLogger(object):
 
     def download(self, msg):
         print(msg)
-        
+
     def error(self, msg):
         print (msg)
 
 #set ytdl options
 ydl_opts = {
-    'simulate': True,
+    'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
     'download_archive': '/Users/mini/Desktop/archive.txt',
