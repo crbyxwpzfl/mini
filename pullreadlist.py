@@ -8,6 +8,7 @@ import youtube_dl
 
 ydl_opts = {
     'restrict-filenames': True,
+    'download_archive': '/Users/mini/Desktop/archive.txt'
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
 }
 with youtube_dl.YoutubeDL(ydl_opts) as ydl:
