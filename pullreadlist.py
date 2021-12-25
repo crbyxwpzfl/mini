@@ -17,7 +17,7 @@ ydl_opts = {
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': '/Users/mini/Desktop/archive.txt',
+    #'download_archive': '/Users/mini/Desktop/archive.txt',
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
     'progress_hooks': [my_hook],
 }
