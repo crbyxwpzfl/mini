@@ -9,9 +9,13 @@ crtl shift e #explorer
 
 ## [ytdl](https://github.com/ytdl-org/youtube-dl)
 ```
+python3 /Users/mini/mini/pullreadlist.py #dl readinglist
+```
+
+```
 cd /Volumes/transfer/see
 out="/Volumes/transfer/see/%(title)s.%(ext)s"
-url="https://youtube.com/playlist?list=PLaHzPX64jQ189iqTEvaWmvK0l1-Dt3ssP" #see
+url="https://youtube.com/playlist?list=PLaHzPX64jQ189iqTEvaWmvK0l1-Dt3ssP" #dl see
 
 /Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
 ```
@@ -19,7 +23,7 @@ url="https://youtube.com/playlist?list=PLaHzPX64jQ189iqTEvaWmvK0l1-Dt3ssP" #see
 ```
 cd /Volumes/transfer/listen
 out="/Volumes/transfer/listen/%(title)s.%(ext)s"
-url="https://youtube.com/playlist?list=PLaHzPX64jQ19wU2ckGEefoUlYCNvnjkv7" #listen
+url="https://youtube.com/playlist?list=PLaHzPX64jQ19wU2ckGEefoUlYCNvnjkv7" #dl listen
 
 /Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl -x --audio-format mp3 --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
 ```
