@@ -3,9 +3,10 @@ import sys
 import re
 import subprocess
 import os
+from os.path import expanduser
 
 #set dir
-dir = "/Users/mini/Library/Mobile\ Documents/com\~apple\~CloudDocs/"
+dir = expanduser("~")+"/Library/Mobile Documents/com~apple~CloudDocs/"
 
 #import ytdl via path
 sys.path.append("/usr/local/bin/youtube-dl")
