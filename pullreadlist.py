@@ -7,6 +7,9 @@ import subprocess
 sys.path.append("/usr/local/bin/youtube-dl")
 import youtube_dl
 
+class MyLogger(object):
+    print (msg)
+
 #set ytdl options
 ydl_opts = {
     'simulate': False,
@@ -16,10 +19,6 @@ ydl_opts = {
     'outtmpl': '/Users/mini/Desktop/%(title)s.%(ext)s',
     'logger': MyLogger(),
 }
-
-class MyLogger(object):
-    print (msg)
-
 
 #convert bookmark plist to xml
 output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', '/Users/mini/Desktop/SafariBookmarks.xml', '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
