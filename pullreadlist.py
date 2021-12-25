@@ -36,7 +36,7 @@ ydl_opts = {
     'download_archive': os.path.join(dir, 'archive.txt'),
     'outtmpl': os.path.join(dir, '%(title)s.%(ext)s'),
     'progress_hooks': [my_hook],
-    'logger': MyLogger(),
+    #'logger': MyLogger(),
 }
 
 #convert bookmark plist to xml
