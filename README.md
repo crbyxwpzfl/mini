@@ -1,4 +1,8 @@
 ```
+strg k #github spotlight
+```
+
+```
 . #vs code in browser
 alt #toggle menue bar
 crtl shit g #source controll
