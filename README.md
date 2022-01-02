@@ -44,6 +44,8 @@ for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ;
 ~/.homebridge/config.json #put config.json here
 http://localhost:8581   #homebridge web ui url
 ```
+[cmd4 plugin](https://github.com/ztalbot2000/homebridge-cmd4)<br>
+[ffmpeg plgin](https://github.com/Sunoo/homebridge-camera-ffmpeg)<br>
 
 ## python
 ```py
