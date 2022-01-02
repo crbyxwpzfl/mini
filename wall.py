@@ -3,7 +3,8 @@ import requests
 #import privates variable
 import sys
 import os
-sys.path.append(os.environ.get('privates'))
+#sys.path.append(os.environ.get('privates'))
+sys.path.append('/Users/mini/private/')
 import privates
 
 Volpath = os.path.join(privates.hbpipath, 'Volume.txt')
@@ -22,22 +23,22 @@ def req():
         response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
 
     except requests.exceptions.ConnectionError:    
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', '10.3.141.224'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()): 
-            #output = subprocess.Popen(['sudo', '/etc/raspap/hostapd/servicestart.sh', '--seconds', '3'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             print("  ----  no connection  ----  ")
-            response = requests.get('http://localhost:8080/motion?pi')
+            response = requests.get('http://localhost:8080/motion?mini')
         else:
             print("  ----  no connection but ping good  ----  ")
         
         sys.exit()
     
     except requests.exceptions.Timeout:
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', '10.3.141.224'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()):
-            #output = subprocess.Popen(['sudo', '/etc/raspap/hostapd/servicestart.sh', '--seconds', '3'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            print("  ----  timeout now  ----  ")
-            response = requests.get('http://localhost:8080/motion?pi')
+            #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            print("  ----  timeout  ----  ")
+            response = requests.get('http://localhost:8080/motion?mini')
         else:
             print("  ----  timeout but ping good  ----  ")
         
