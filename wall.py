@@ -1,8 +1,11 @@
 import requests
-import sys
 
-Volpath = '/Users/mini/private/Volume.txt'
-ip = "192.168.2.144"
+#import privates variable
+import sys
+import os
+#sys.path.append(os.environ.get('privates'))
+sys.path.append('/Users/mini/private/')
+import privates
 
 characteristic = sys.argv[3].strip("''")
 
@@ -15,10 +18,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def req():
     global status
     try:
-        response = requests.get(f'https://{ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
+        response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
 
     except requests.exceptions.ConnectionError:    
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{ip}'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()): 
             #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             print("  ----  no connection  ----  ")
@@ -29,7 +32,7 @@ def req():
         sys.exit()
     
     except requests.exceptions.Timeout:
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{ip}'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()):
             #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             print("  ----  timeout  ----  ")
@@ -46,7 +49,7 @@ def req():
 
 if sys.argv[1] == "Get":
     if characteristic == "Brightness":
-        f = open(Volpath, 'r')
+        f = open(os.path.join(privates.minipath, 'Volume.txt'), 'r')
         volume = int(f.read())
         f.close()
         print(volume)
@@ -64,9 +67,9 @@ if sys.argv[1] == "Set":
     #set volume nur wenn tv an
     if characteristic == "Brightness" and int(status) == 1:     
         data = f"{{ muted: false, current: {int(value)} }}"
-        response = requests.post(f'https://{ip}:1926/6/audio/volume', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+        response = requests.post(f'https://{privates.ip}:1926/6/audio/volume', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
         
-        f = open(Volpath, 'w')
+        f = open(os.path.join(privates.minipath, 'Volume.txt'), 'w')
         f.write(value)
         f.close()
         sys.exit()
@@ -75,13 +78,13 @@ if sys.argv[1] == "Set":
         #nur wenn gerade aus dann mach an
         if int(value) == 1 and int(status) == 0:
             data = '{key: Standby}'
-            response = requests.post(f'https://{ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+            response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
             sys.exit()
     
         #nur wenn gerade an dann mach aus
         if int(value) == 0 and int(status) == 1:
             data = '{key: Standby}'
-            response = requests.post(f'https://{ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+            response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
             sys.exit()
 
     sys.exit()

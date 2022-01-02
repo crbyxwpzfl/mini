@@ -1,26 +1,23 @@
 import requests
 import math
+
+#import privates variable
 import sys
 import os
-
-#set variables
-Huepath = '/Users/mini/private/Hue.txt'
-Brightnesspath = '/Users/mini/private/Brightness.txt'
-Saturationpath = '/Users/mini/private/Saturation.txt'
-Onpath = '/Users/mini/private/On.txt'
-ip = "192.168.2.144"
+#sys.path.append(os.environ.get('privates'))
+sys.path.append('/Users/mini/private/')
+import privates
 
 characteristic = sys.argv[3].strip("''")
-charapath = os.path.join('/Users/mini/private/', f'{characteristic}.txt')
 
 def go():
-    f = open(Huepath, 'r')
+    f = open(os.path.join(privates.minipath, 'Hue.txt'), 'r')
     h = float(((int(f.read())-7)%360)/360) #((x-farb angleichung)%360 rest ist neuer hue wert)/360 ausgabe von 0-1
     f.close()
-    f = open(Saturationpath, 'r')
+    f = open(os.path.join(privates.minipath, 'Saturation.txt'), 'r')
     s = float(math.pow((int(f.read())/100),0.5)) #(x/100)^0.5 um tv saturation settings aus zu gleichen
     f.close()
-    f = open(Brightnesspath, 'r')
+    f = open(os.path.join(privates.minipath, 'Brightness.txt'), 'r')
     v = float(f.read())/100
     f.close()
     
@@ -37,7 +34,7 @@ def go():
     body = f"{{r: {int(r)}, g: {int(g)}, b: {int(b)}}}"
 
     try:
-        response = requests.post(f'http://{ip}:1925/6/ambilight/cached', timeout=2, data=body)
+        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
     except requests.exceptions.ConnectionError:
         print("  ----  error connecting setting ambi ----  ")
         sys.exit()
@@ -46,7 +43,7 @@ def go():
         sys.exit()
 
 if sys.argv[1] == "Get":
-        f = open(charapath, 'r')
+        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'r')
         print(int(f.read()), end='')
         f.close()
         sys.exit()
@@ -58,7 +55,7 @@ if sys.argv[1] == "Set":
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     status = 0 #standard tv ist aus
     try:
-        response = requests.get(f'https://{ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
+        response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
     except requests.exceptions.ConnectionError:
         print("  ----  error connecting getting pow  ----  ")
         sys.exit()
@@ -72,7 +69,7 @@ if sys.argv[1] == "Set":
     value = sys.argv[4].strip("''")
     
     if characteristic != "On" and int(status) == 0: #nur wenn tv aus ist
-        f = open(charapath, 'w')
+        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
         f.write(value)
         f.close()
         
@@ -85,7 +82,7 @@ if sys.argv[1] == "Set":
         if int(value) == 1:
             go()
             
-            f = open(charapath, 'w')
+            f = open(charos.path.join(privates.minipath, f'{characteristic}.txt')apath, 'w')
             f.write(value)
             f.close()
             sys.exit()
@@ -94,7 +91,7 @@ if sys.argv[1] == "Set":
             body = "{r: 0, g: 0, b: 0}"
 
             try:
-                response = requests.post(f'http://{ip}:1925/6/ambilight/cached', timeout=2, data=body)
+                response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
             except requests.exceptions.ConnectionError:
                 print("  ----  error connecting turning ambi off ----  ")
                 sys.exit()
@@ -103,7 +100,7 @@ if sys.argv[1] == "Set":
                 sys.exit()
 
                 
-            f = open(charapath, 'w')
+            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
             f.write(value)
             f.close()
             sys.exit()
