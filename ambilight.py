@@ -4,7 +4,8 @@ import math
 #import privates variable
 import sys
 import os
-sys.path.append(os.environ.get('privates'))
+#sys.path.append(os.environ.get('privates'))
+sys.path.append('/Users/mini/private/')
 import privates
 
 Huepath = os.path.join(privates.hbpipath, 'Hue.txt')
