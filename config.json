@@ -78,7 +78,7 @@
                     "polling": [
                         {
                             "characteristic": "occupancyDetected",
-                            "interval": 15,
+                            "interval": 5,
                             "timeout": 1000
                         }
                     ],
