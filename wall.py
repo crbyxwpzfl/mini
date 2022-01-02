@@ -21,7 +21,7 @@ def req():
         response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
 
     except requests.exceptions.ConnectionError:    
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-W', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()): 
             #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             print("  ----  no connection  ----  ")
@@ -32,7 +32,7 @@ def req():
         sys.exit()
     
     except requests.exceptions.Timeout:
-        output = subprocess.Popen(['ping', '-c', '1', '-w', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['ping', '-c', '1', '-W', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
         if "100% packet loss" in str(output.stdout.read()):
             #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             print("  ----  timeout  ----  ")
