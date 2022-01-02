@@ -1,21 +1,17 @@
 import requests
 import math
-
-#import privates variable
 import sys
 import os
-#sys.path.append(os.environ.get('privates'))
-sys.path.append('/Users/mini/private/')
-import privates
 
-Huepath = os.path.join(privates.hbpipath, 'Hue.txt')
-Brightnesspath = os.path.join(privates.hbpipath, 'Brightness.txt')
-Saturationpath = os.path.join(privates.hbpipath, 'Saturation.txt')
-Onpath = os.path.join(privates.hbpipath, 'On.txt')
+#set variables
+Huepath = '/Users/mini/private/Hue.txt'
+Brightnesspath = '/Users/mini/private/Brightness.txt'
+Saturationpath = '/Users/mini/private/Saturation.txt'
+Onpath = '/Users/mini/private/On.txt'
+ip = "192.168.2.144"
 
 characteristic = sys.argv[3].strip("''")
-charapath = os.path.join(privates.hbpipath, f'{characteristic}.txt')
-
+charapath = os.path.join('/Users/mini/private/', f'{characteristic}.txt')
 
 def go():
     f = open(Huepath, 'r')
@@ -41,7 +37,7 @@ def go():
     body = f"{{r: {int(r)}, g: {int(g)}, b: {int(b)}}}"
 
     try:
-        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
+        response = requests.post(f'http://{ip}:1925/6/ambilight/cached', timeout=2, data=body)
     except requests.exceptions.ConnectionError:
         print("  ----  error connecting setting ambi ----  ")
         sys.exit()
@@ -62,7 +58,7 @@ if sys.argv[1] == "Set":
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     status = 0 #standard tv ist aus
     try:
-        response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
+        response = requests.get(f'https://{ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
     except requests.exceptions.ConnectionError:
         print("  ----  error connecting getting pow  ----  ")
         sys.exit()
@@ -98,7 +94,7 @@ if sys.argv[1] == "Set":
             body = "{r: 0, g: 0, b: 0}"
 
             try:
-                response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
+                response = requests.post(f'http://{ip}:1925/6/ambilight/cached', timeout=2, data=body)
             except requests.exceptions.ConnectionError:
                 print("  ----  error connecting turning ambi off ----  ")
                 sys.exit()
