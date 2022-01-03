@@ -5,6 +5,10 @@ import subprocess
 import os
 import requests
 
+#sys.path.append(os.environ.get('privates'))
+# import privates for phone number and path to open ssh key 
+sys.path.append('/Users/mini/private/')
+import privates
 
 #set download dir
 dir = "/Volumes/transfer/"
@@ -113,10 +117,6 @@ files = os.listdir(os.path.join(dir, 'github-repos'))
 for f in files:
     os.replace(os.path.join(dir, 'github-repos', f), os.path.join(dir, 'github-repos', f"tmp-{f}"))
 
-
-#sys.path.append(os.environ.get('privates'))
-sys.path.append('/Users/mini/private/')
-import privates
 output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'private')], stdout=subprocess.PIPE)
 output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/mini.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'mini')], stdout=subprocess.PIPE)
 output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/ff.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'ff')], stdout=subprocess.PIPE)
