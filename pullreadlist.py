@@ -112,4 +112,18 @@ files = os.listdir(os.path.join(dir, 'github-repos'))
 for f in files:
     os.replace(os.path.join(dir, 'github-repos', f), os.path.join(dir, 'github-repos', f"tmp-{f}"))
 
-output = subprocess.Popen(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'private')], stdout=subprocess.PIPE)
+
+#sys.path.append(os.environ.get('privates'))
+sys.path.append('/Users/mini/private/')
+import privates
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'private')], stdout=subprocess.PIPE)
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/mini.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'mini')], stdout=subprocess.PIPE)
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/ff.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'ff')], stdout=subprocess.PIPE)
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/spinala.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'spinala')], stdout=subprocess.PIPE)
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/rogflow.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'rogflow')], stdout=subprocess.PIPE)
+output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'crbyxwpzfl')], stdout=subprocess.PIPE)
+
+#delete tmp dirs
+import shutil
+for p in Path(os.path.join(dir, 'github-repos')).glob("tmp*"):
+    shutil.rmtree(p)
