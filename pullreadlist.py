@@ -3,6 +3,7 @@ import sys
 import re
 import subprocess
 import os
+import requests
 
 
 #set download dir
@@ -76,7 +77,6 @@ for f in files:
     os.replace(os.path.join(dir, 'github-gists', f), os.path.join(dir, 'github-gists', f"tmp-{f}"))
 
 #get all gists
-import requests
 response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')
 
 for i in response.json():
@@ -98,6 +98,7 @@ import shutil
 for p in Path(os.path.join(dir, 'github-gists')).glob("tmp*"):
     shutil.rmtree(p)
 
+output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', "cloned gists"], stdout=subprocess.PIPE)
 
 
 
@@ -127,3 +128,5 @@ output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/crbyxwpzfl.g
 import shutil
 for p in Path(os.path.join(dir, 'github-repos')).glob("tmp*"):
     shutil.rmtree(p)
+
+output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', "cloned repos"], stdout=subprocess.PIPE)
