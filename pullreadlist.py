@@ -5,10 +5,13 @@ import subprocess
 import os
 
 
-#set dir
-dir = "/Volumes/transfer/see"
+#set download dir
+dir = "/Volumes/transfer/"
 
-#import ytdl via path
+
+
+
+# PULL READ LIST
 import youtube_dl
 
 #logger to quiet output
@@ -34,18 +37,18 @@ ydl_opts = {
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': os.path.join(dir, 'archive.txt'),
-    'outtmpl': os.path.join(dir, '%(title)s.%(ext)s'),
+    'download_archive': os.path.join(dir, 'see', 'archive.txt'),
+    'outtmpl': os.path.join(dir, 'see', '%(title)s.%(ext)s'),
     'progress_hooks': [my_hook],
     'logger': MyLogger(),
 }
 
 #convert bookmark plist to xml
-output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'see', 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
 #print (output.stdout.read())
 
-#read xml into var file
-file = open(os.path.join(dir, 'SafariBookmarks.xml'), "r")
+#read xml into variable file
+file = open(os.path.join(dir, 'see', 'SafariBookmarks.xml'), "r")
 
 #dirty but works to find readinglist urls
 for line in file:
@@ -56,3 +59,57 @@ for line in file:
         url = line[13:-10]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
+
+
+
+
+
+# GITHUB GISTS BACKUP
+
+#make dir if not exsits
+from pathlib import Path
+Path(os.path.join(dir, 'github-gists')).mkdir(parents=True, exist_ok=True)
+
+#append tmp to all files names 
+files = os.listdir(os.path.join(dir, 'github-gists'))
+for f in files:
+    os.replace(os.path.join(dir, 'github-gists', f), os.path.join(dir, 'github-gists', f"tmp-{f}"))
+
+#get all gists
+import requests
+response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')
+
+for i in response.json():
+    #gets names of all files inside gist
+    if i['description']
+        foldername = i['description']
+    else
+        foldername = ""
+        for x in i['files']:
+            foldername += i['files'][x]['filename'].replace(".", "-") + " "
+        #print(foldername)
+
+    #pull this url
+    #print(i['git_pull_url'])
+    output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'github-gists', foldername)], stdout=subprocess.PIPE)
+
+#delete tmp dirs
+import shutil
+for p in Path(os.path.join(dir, 'github-gists')).glob("tmp*"):
+    shutil.rmtree(p)
+
+
+
+
+# GITHUB REPOS BACKUP
+
+#make dir if not exsits
+from pathlib import Path
+Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
+
+#append tmp to all files names 
+files = os.listdir(os.path.join(dir, 'github-repos'))
+for f in files:
+    os.replace(os.path.join(dir, 'github-repos', f), os.path.join(dir, 'github-repos', f"tmp-{f}"))
+
+output = subprocess.Popen(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'private')], stdout=subprocess.PIPE)
