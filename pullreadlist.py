@@ -31,7 +31,7 @@ def my_hook(d):
     if d['status'] == 'finished':
         #print(d['filename'])
         filename = d['filename'][22:]
-        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', filename], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, filename], stdout=subprocess.PIPE)
 
 #set ytdl options
 ydl_opts = {
@@ -98,7 +98,7 @@ import shutil
 for p in Path(os.path.join(dir, 'github-gists')).glob("tmp*"):
     shutil.rmtree(p)
 
-output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', "cloned gists"], stdout=subprocess.PIPE)
+output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)
 
 
 
@@ -129,4 +129,4 @@ import shutil
 for p in Path(os.path.join(dir, 'github-repos')).glob("tmp*"):
     shutil.rmtree(p)
 
-output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', 'hard-code-in-script', "cloned repos"], stdout=subprocess.PIPE)
+output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privats.phone, "cloned repos"], stdout=subprocess.PIPE)
