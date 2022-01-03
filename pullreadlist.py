@@ -129,4 +129,4 @@ import shutil
 for p in Path(os.path.join(dir, 'github-repos')).glob("tmp*"):
     shutil.rmtree(p)
 
-output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privats.phone, "cloned repos"], stdout=subprocess.PIPE)
+output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned repos"], stdout=subprocess.PIPE)
