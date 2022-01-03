@@ -85,9 +85,9 @@ response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')
 
 for i in response.json():
     #gets names of all files inside gist
-    if i['description']
+    if i['description']:
         foldername = i['description']
-    else
+    else:
         foldername = ""
         for x in i['files']:
             foldername += i['files'][x]['filename'].replace(".", "-") + " "
