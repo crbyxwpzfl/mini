@@ -117,34 +117,8 @@ def pullrepos():
 
 
 
-#MERGE CONFILCT 
+pullreadlist()
 
-
-
-# GITHUB REPOS BACKUP
-def clonerepos():
-    #make dir if not exsits
-    from pathlib import Path
-    Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
-
-    #append tmp to all files names 
-    reps = ""
-    files = os.listdir(os.path.join(dir, 'github-repos'))
-    for f in files:
-        os.replace(os.path.join(dir, 'github-repos', f), os.path.join(dir, 'github-repos', f"tmp-{f}"))
-        output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', f)], stdout=subprocess.PIPE)
-        import shutil
-        shutil.rmtree(os.path.join(dir, 'github-repos', f"tmp-{f}"))
-        reps += f + " "
-
-        #TEST
-
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"cloned {reps}"], stdout=subprocess.PIPE)
-
-#pullreadlist()
-
-#clonegists()
-
-#clonerepos()
+clonegists()
 
 pullrepos()
