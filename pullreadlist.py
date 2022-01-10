@@ -133,6 +133,8 @@ def clonerepos():
         shutil.rmtree(os.path.join(dir, 'github-repos', f"tmp-{f}"))
         reps += f + " "
 
+        
+
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"cloned {reps}"], stdout=subprocess.PIPE)
 
 #pullreadlist()
