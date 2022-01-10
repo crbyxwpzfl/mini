@@ -108,7 +108,9 @@ def pullrepos():
     files = os.listdir(os.path.join(dir, 'github-repos'))
     for f in files:
         output = subprocess.run(['git', '-C', os.path.join(dir, 'github-repos', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull', '--quiet'], stdout=subprocess.PIPE) 
-        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {f}"], stdout=subprocess.PIPE)
+        repos += f + " "
+
+    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {repos}"], stdout=subprocess.PIPE)
 
 
 
