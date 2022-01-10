@@ -130,8 +130,23 @@ def clonerepos():
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned repos"], stdout=subprocess.PIPE)
 
 
-pullreadlist()
+#pull repos new
+def pullrepos():
+    #make dir if not exsits
+    from pathlib import Path
+    Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
 
-clonegists()
+    #append tmp to all files names 
+    files = os.listdir(os.path.join(dir, 'github-repos'))
+    for f in files:
+       output = subprocess.run(['cd', os.path.join(dir, 'github-repos', f), '&&', 'git', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull','--quiet'], stdout=subprocess.PIPE) 
 
-clonerepos()
+    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "pulled reposetories"], stdout=subprocess.PIPE)
+
+#pullreadlist()
+
+#clonegists()
+
+#clonerepos()
+
+pullrepos()
