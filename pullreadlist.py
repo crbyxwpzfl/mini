@@ -106,6 +106,7 @@ def pullrepos():
     Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
     #append tmp to all files names 
     files = os.listdir(os.path.join(dir, 'github-repos'))
+    repos = ""
     for f in files:
         output = subprocess.run(['git', '-C', os.path.join(dir, 'github-repos', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull', '--quiet'], stdout=subprocess.PIPE) 
         repos += f + " "
