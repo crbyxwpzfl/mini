@@ -16,7 +16,7 @@ dir = "/Volumes/transfer/"
 
 
 
-# PULL READ LIST
+# pull readlist 
 def pullreadlist():
     import youtube_dl
 
@@ -63,10 +63,7 @@ def pullreadlist():
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
-
-
-
-# GITHUB GISTS BACKUP
+# clone gists
 def clonegists():
     #make dir if not exsits
     from pathlib import Path
@@ -102,35 +99,7 @@ def clonegists():
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)
 
 
-
-
-# GITHUB REPOS BACKUP
-def clonerepos():
-    #make dir if not exsits
-    from pathlib import Path
-    Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
-
-    #append tmp to all files names 
-    files = os.listdir(os.path.join(dir, 'github-repos'))
-    for f in files:
-        os.replace(os.path.join(dir, 'github-repos', f), os.path.join(dir, 'github-repos', f"tmp-{f}"))
-
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/private.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'private'), '--quiet'], stdout=subprocess.PIPE)
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/mini.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'mini'), '--quiet'], stdout=subprocess.PIPE)
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/ff.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'ff'), '--quiet'], stdout=subprocess.PIPE)
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/spinala.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'spinala'), '--quiet'], stdout=subprocess.PIPE)
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/rogflow.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'rogflow'), '--quiet'], stdout=subprocess.PIPE)
-    output = subprocess.run(['git', 'clone', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git','-c', 'user.name="crbyxwpzfl"', '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", os.path.join(dir, 'github-repos', 'crbyxwpzfl'), '--quiet'], stdout=subprocess.PIPE)
-
-    #delete tmp dirs
-    import shutil
-    for p in Path(os.path.join(dir, 'github-repos')).glob("tmp*"):
-        shutil.rmtree(p)
-
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned repos"], stdout=subprocess.PIPE)
-
-
-#pull repos new
+#pull repos
 def pullrepos():
     #make dir if not exsits
     from pathlib import Path
@@ -142,10 +111,11 @@ def pullrepos():
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "pulled reposetories"], stdout=subprocess.PIPE)
 
+
+
+
 #pullreadlist()
 
 #clonegists()
-
-#clonerepos()
 
 pullrepos()
