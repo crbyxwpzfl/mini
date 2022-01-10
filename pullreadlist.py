@@ -58,7 +58,7 @@ def pullreadlist():
     for line in file:
         if re.search("^					<string>http", line):
             #downlad url content
-            #print (line[13:-10])
+            print (line[13:-10])
             url = line[13:-10]
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
