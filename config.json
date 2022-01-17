@@ -20,26 +20,6 @@
             "accessories": [
                 {
                     "type": "Lightbulb",
-                    "displayName": "wall",
-                    "on": "FALSE",
-                    "brightness": 10,
-                    "polling": [
-                        {
-                            "characteristic": "on",
-                            "interval": 60,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "brightness",
-                            "interval": 43200,
-                            "timeout": 8000
-                        }
-                    ],
-                    "stateChangeResponseTime": 1,
-                    "state_cmd": "python3 /Users/mini/spinala/wall.py "
-                },
-                {
-                    "type": "Lightbulb",
                     "displayName": "ambilight",
                     "on": "FALSE",
                     "stateChangeResponseTime": 3,
@@ -68,31 +48,39 @@
                             "timeout": 8000
                         }
                     ],
-                    "state_cmd": "python3 /Users/mini/spinala/ambilight.py"
-                },
-                {
-                    "type": "OccupancySensor",
-                    "displayName": "aptv",
-                    "occupancyDetected": "OCCUPANCY_NOT_DETECTED",
-                    "stateChangeResponseTime": 1,
-                    "polling": [
+                    "state_cmd": "python3 /Users/mini/mini/ambilight.py",
+                    "linkedTypes": [
                         {
-                            "characteristic": "occupancyDetected",
-                            "interval": 5,
-                            "timeout": 1000
+                            "type": "Lightbulb",
+                            "displayName": "volume",
+                            "on": "FALSE",
+                            "brightness": 10,
+                            "polling": [
+                                {
+                                    "characteristic": "on",
+                                    "interval": 60,
+                                    "timeout": 8000
+                                },
+                                {
+                                    "characteristic": "brightness",
+                                    "interval": 43200,
+                                    "timeout": 8000
+                                }
+                            ],
+                            "stateChangeResponseTime": 1,
+                            "state_cmd": "python3 /Users/mini/mini/wall.py "
                         }
-                    ],
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/sensor.py'"
+                    ]
                 },
                 {
-                    "type": "Lightbulb",
+                    "type": "Fan",
                     "displayName": "tisch",
                     "on": 0,
-                    "brightness": 0,
+                    "rotationSpeed": 0,
                     "stateChangeResponseTime": 1,
                     "polling": [
                         {
-                            "characteristic": "brightness",
+                            "characteristic": "rotationSpeed",
                             "interval": 43200,
                             "timeout": 20000
                         },
@@ -102,40 +90,21 @@
                             "timeout": 20000
                         }
                     ],
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'"
-                },
-                {
-                    "type": "Thermostat",
-                    "displayName": "pi",
-                    "currentHeatingCoolingState": "OFF",
-                    "targetHeatingCoolingState": "OFF",
-                    "currentTemperature": 2,
-                    "targetTemperature": 2,
-                    "temperatureDisplayUnits": "CELSIUS",
-                    "coolingThresholdTemperature": 20,
-                    "heatingThresholdTemperature": 20,
-                    "stateChangeResponseTime": 3,
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/thermo.py'",
-                    "polling": [
+                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'",
+                    "linkedTypes": [
                         {
-                            "characteristic": "currentTemperature",
-                            "interval": 60,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "targetTemperature",
-                            "interval": 43200,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "currentHeatingCoolingState",
-                            "interval": 60,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "targetHeatingCoolingState",
-                            "interval": 60,
-                            "timeout": 8000
+                            "type": "OccupancySensor",
+                            "displayName": "aptv",
+                            "occupancyDetected": "OCCUPANCY_NOT_DETECTED",
+                            "stateChangeResponseTime": 1,
+                            "polling": [
+                                {
+                                    "characteristic": "occupancyDetected",
+                                    "interval": 5,
+                                    "timeout": 1000
+                                }
+                            ],
+                            "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/sensor.py'"
                         }
                     ]
                 }
