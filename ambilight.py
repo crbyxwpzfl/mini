@@ -82,7 +82,7 @@ if sys.argv[1] == "Set":
         if int(value) == 1:
             go()
             
-            f = open(charos.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
+            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
             f.write(value)
             f.close()
             sys.exit()
