@@ -23,9 +23,9 @@ def pullreadlist():
     #logger to quiet output
     class MyLogger(object):
         def debug(self, msg):
-            pass
+            print(msg)
         def warning(self, msg):
-            pass
+            print(msg)
         def error(self, msg):
             print(msg)
 
