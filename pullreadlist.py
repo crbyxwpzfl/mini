@@ -42,7 +42,7 @@ def pullreadlist():
         'restrict-filenames': False,
         'ignoreerrors': True,
         'download_archive': os.path.join(dir, 'see', 'archive.txt'),
-        'outtmpl': os.path.join(dir, 'see', '%(id)s-%(title)50s.%(ext)s'),
+        'outtmpl': os.path.join(dir, 'see', '%(id)s-%(title).50s.%(ext)s'),
         'progress_hooks': [my_hook],
         'logger': MyLogger(),
     }
