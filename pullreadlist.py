@@ -101,6 +101,8 @@ def pullrepos():
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
 
 def convert():
+    Path(os.path.join(dir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
+    
     for f in Path(os.path.join(dir, 'readlist')).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
         outfile = str(f)[:-4]+".mp4"
         process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
