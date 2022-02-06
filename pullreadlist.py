@@ -15,8 +15,6 @@ import youtube_dl
 sys.path.append('/Users/mini/private/')
 import privates
 
-
-global downedrepos    #for pull repos
 global dir 
 dir = "/Volumes/transfer/"    #dir with /dir/gists /dir/reposetories and 
     
@@ -90,7 +88,7 @@ def clonegists():
 
 def pullrepos():
     Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
-
+    downedrepos = " "
     files = os.listdir(os.path.join(dir, 'reposetories'))    #list all files
     for f in files:
         output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
