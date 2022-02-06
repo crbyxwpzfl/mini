@@ -114,11 +114,11 @@ def convert():
             print(line)
 
 for a in sys.argv:
-    if a in ['c', '-c', 'convert', '-convert']:
+    if a in ['conv', '-conv', 'convert', '-convert']:
         convert()
     if a in ['prl', '-prl', 'pullreadlist', '-pullreadlist']:
         pullreadlist()
-
-clonegists()
-
-pullrepos()
+    if a in ['clg', '-clg', 'clonegist', '-clonegist']:
+        clonegists()
+    if a in ['plr', '-plr', 'pullrepos', '-pullrepos']:
+        pullrepos()
