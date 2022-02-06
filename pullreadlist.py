@@ -81,21 +81,21 @@ def clonegists():
             #print(foldername)
 
         #print(i['git_pull_url'])
-        output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'gists', foldername), '--quiet'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'gists', foldername)], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
 
     for p in Path(os.path.join(dir, 'gists')).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)
+    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
 
 def pullrepos():
     Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
 
     files = os.listdir(os.path.join(dir, 'reposetories'))    #list all files
     for f in files:
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all', '--quiet'], stdout=subprocess.PIPE)
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'reset', '--hard', '--quiet'], stdout=subprocess.PIPE) 
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull', '--quiet'], stdout=subprocess.PIPE) 
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'reset', '--hard'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
         downedrepos += f + " "
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
@@ -115,7 +115,11 @@ def convert():
         for line in process.stdout:
             print(line)
 
-pullreadlist()
+for a in sys.argv:
+    if a in ['c', '-c', 'convert', '-convert']:
+        convert()
+    if a in ['prl', '-prl', 'pullreadlist', '-pullreadlist']:
+        pullreadlist()
 
 clonegists()
 
