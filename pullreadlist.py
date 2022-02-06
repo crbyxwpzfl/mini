@@ -120,5 +120,5 @@ for a in sys.argv:
         pullreadlist()
     if a in ['clg', '-clg', 'clonegist', '-clonegist']:
         clonegists()
-    if a in ['plr', '-plr', 'pullrepos', '-pullrepos']:
+    if a in ['pr', '-pr', 'pullrepos', '-pullrepos']:
         pullrepos()
