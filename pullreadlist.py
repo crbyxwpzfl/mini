@@ -5,23 +5,24 @@ import subprocess
 import os
 import requests
 
+from pathlib import Path
+import shutil
+
+import youtube_dl
+
 #sys.path.append(os.environ.get('privates'))
-# import privates for phone number and path to open ssh key 
+# import privates for phone number and /path/to/open ssh key 
 sys.path.append('/Users/mini/private/')
 import privates
 
-#set download dir
+
+global downedrepos    #for pull repos
 global dir 
-dir = "/Volumes/transfer/"
+dir = "/Volumes/transfer/"    #dir with /dir/gists /dir/reposetories and 
+    
 
-
-
-# pull readlist 
 def pullreadlist():
-    import youtube_dl
-
-    #logger to quiet output
-    class MyLogger(object):
+    class MyLogger(object):    #logger pass to quiet output
         def debug(self, msg):
             print(msg)
         def warning(self, msg):
@@ -29,30 +30,28 @@ def pullreadlist():
         def error(self, msg):
             print(msg)
 
-    #send a message with filename to confirm downlad
-    def my_hook(d):
+    def my_hook(d):    #send a message with filename to confirm downlad
         if d['status'] == 'finished':
             #print(d['filename'])
             filename = d['filename'][22:]
             output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, filename], stdout=subprocess.PIPE)
 
-    #set ytdl options
-    ydl_opts = {
+    ydl_opts = {    #set ytdl options
         'simulate': False,
         'restrict-filenames': False,
         'ignoreerrors': True,
-        'download_archive': os.path.join(dir, 'see', 'archive.txt'),
-        'outtmpl': os.path.join(dir, 'see', '%(id)s-%(title).50s.%(ext)s'),
+        'download_archive': os.path.join(dir, 'readlist', 'archive.txt'),
+        'outtmpl': os.path.join(dir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
         'progress_hooks': [my_hook],
         'logger': MyLogger(),
     }
 
     #convert bookmark plist to xml
-    output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'see', 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+    output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'readlist', 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
     #print (output.stdout.read())
 
     #read xml into variable file
-    file = open(os.path.join(dir, 'see', 'SafariBookmarks.xml'), "r")
+    file = open(os.path.join(dir, 'readlist', 'SafariBookmarks.xml'), "r")
 
     #dirty but works to find readinglist urls
     for line in file:
@@ -63,23 +62,17 @@ def pullreadlist():
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
-# clone gists
 def clonegists():
-    #make dir if not exsits
-    from pathlib import Path
-    Path(os.path.join(dir, 'github-gists')).mkdir(parents=True, exist_ok=True)
-
-    #append tmp to all files names 
-    files = os.listdir(os.path.join(dir, 'github-gists'))
+    Path(os.path.join(dir, 'gists')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
+ 
+    files = os.listdir(os.path.join(dir, 'gists'))    #prepend tmp to all files names
     for f in files:
-        os.replace(os.path.join(dir, 'github-gists', f), os.path.join(dir, 'github-gists', f"tmp-{f}"))
+        os.replace(os.path.join(dir, 'gists', f), os.path.join(dir, 'gists', f"tmp-{f}"))
 
-    #get all gists
-    response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')
+    response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
 
     for i in response.json():
-        #gets names of all files inside gist
-        if i['description']:
+        if i['description']:    #use description as name or else chain file names
             foldername = i['description']
         else:
             foldername = ""
@@ -87,35 +80,38 @@ def clonegists():
                 foldername += i['files'][x]['filename'].replace(".", "-") + " "
             #print(foldername)
 
-        #pull this url
         #print(i['git_pull_url'])
-        output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'github-gists', foldername), '--quiet'], stdout=subprocess.PIPE)
+        output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'gists', foldername), '--quiet'], stdout=subprocess.PIPE)
 
-    #delete tmp dirs
-    import shutil
-    for p in Path(os.path.join(dir, 'github-gists')).glob("tmp*"):
+    for p in Path(os.path.join(dir, 'gists')).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)
 
-
-#pull repos
 def pullrepos():
-    #make dir if not exsits
-    from pathlib import Path
-    Path(os.path.join(dir, 'github-repos')).mkdir(parents=True, exist_ok=True)
-    #append tmp to all files names 
-    files = os.listdir(os.path.join(dir, 'github-repos'))
-    repos = ""
+    Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
+
+    files = os.listdir(os.path.join(dir, 'reposetories'))    #list all files
     for f in files:
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'github-repos', f), 'fetch', '--all', '--quiet'], stdout=subprocess.PIPE)
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'github-repos', f), 'reset', '--hard', '--quiet'], stdout=subprocess.PIPE) 
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'github-repos', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull', '--quiet'], stdout=subprocess.PIPE) 
-        repos += f + " "
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all', '--quiet'], stdout=subprocess.PIPE)
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'reset', '--hard', '--quiet'], stdout=subprocess.PIPE) 
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull', '--quiet'], stdout=subprocess.PIPE) 
+        downedrepos += f + " "
 
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {repos}"], stdout=subprocess.PIPE)
+    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
 
+def convert():
+    for f in Path(os.path.join(dir, 'readlist')).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
+        outfile = str(f)[:-4]+".mp4"
+        process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        for line in process.stdout:
+            print(line)
 
+    for f in Path(os.path.join(dir, 'readlist')).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
+        outfile = str(f)[:-4]+".mp3"
+        process = subprocess.Popen(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        for line in process.stdout:
+            print(line)
 
 pullreadlist()
 
