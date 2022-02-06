@@ -15,17 +15,17 @@
         {
             "platform": "Cmd4",
             "name": "Cmd4",
-            "restartRecover": false,
             "debug": false,
             "accessories": [
                 {
                     "type": "Lightbulb",
                     "displayName": "ambilight",
-                    "on": "FALSE",
-                    "stateChangeResponseTime": 3,
+                    "on": 0,
+                    "stateChangeResponseTime": 1,
                     "brightness": 100,
                     "hue": 200,
                     "saturation": 100,
+                    "state_cmd": "python3 /Users/mini/mini/ambilight.py",
                     "polling": [
                         {
                             "characteristic": "on",
@@ -48,17 +48,18 @@
                             "timeout": 8000
                         }
                     ],
-                    "state_cmd": "python3 /Users/mini/mini/ambilight.py",
                     "linkedTypes": [
                         {
                             "type": "Lightbulb",
                             "displayName": "volume",
-                            "on": "FALSE",
-                            "brightness": 10,
+                            "on": 0,
+                            "brightness": 0,
+                            "stateChangeResponseTime": 1,
+                            "state_cmd": "python3 /Users/mini/mini/wall.py",
                             "polling": [
                                 {
                                     "characteristic": "on",
-                                    "interval": 60,
+                                    "interval": 10,
                                     "timeout": 8000
                                 },
                                 {
@@ -66,9 +67,7 @@
                                     "interval": 43200,
                                     "timeout": 8000
                                 }
-                            ],
-                            "stateChangeResponseTime": 1,
-                            "state_cmd": "python3 /Users/mini/mini/wall.py "
+                            ]
                         }
                     ]
                 },
@@ -100,7 +99,7 @@
                             "polling": [
                                 {
                                     "characteristic": "occupancyDetected",
-                                    "interval": 5,
+                                    "interval": 60,
                                     "timeout": 1000
                                 }
                             ],
@@ -125,8 +124,8 @@
                     "motionTimeout": 2,
                     "unbridge": false,
                     "videoConfig": {
-                        "source": "-f avfoundation -i 0",
-                        "stillImageSource": "-f avfoundation -i 0",
+                        "source": "-f avfoundation -i 1",
+                        "stillImageSource": "-f avfoundation -i 1",
                         "maxStreams": 2,
                         "encoderOptions": "-preset ultrafast",
                         "audio": false,
