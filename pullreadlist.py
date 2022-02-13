@@ -125,6 +125,7 @@ for a in sys.argv:
 
 print ("")
 print ("currently in")
+print (f"    {pathlib.Path().resolve()}")
 print ("avalible flags")
 print ("    -pullreadlist     pulls readlist to /Volumes/transfer/readlist/")
 print (f"    -convert          converts {pathlib.Path().resolve()}/*.mkv to mp4 and {pathlib.Path().resolve()}/mp3* to mp3")
