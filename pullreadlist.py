@@ -123,6 +123,7 @@ for a in sys.argv:
     if a in ['pr', '-pr', 'pullrepos', '-pullrepos']:
         pullrepos()
 
+print ("")
 print ("currently in")
 print ("    ",pathlib.Path().resolve())
 print ("avalible flags")
