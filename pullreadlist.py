@@ -5,7 +5,7 @@ import subprocess
 import os
 import requests
 
-from pathlib import Path
+import pathlib
 import shutil
 
 import youtube_dl
@@ -101,13 +101,13 @@ def pullrepos():
 def convert():
     Path(os.path.join(dir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
     
-    for f in Path(os.path.join(dir, 'readlist')).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
+    for f in Path(pathlib.Path().resolve()).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
         outfile = str(f)[:-4]+".mp4"
         process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
             print(line)
 
-    for f in Path(os.path.join(dir, 'readlist')).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
+    for f in Path(pathlib.Path().resolve()).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
         outfile = str(f)[:-4]+".mp3"
         process = subprocess.Popen(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
@@ -123,10 +123,11 @@ for a in sys.argv:
     if a in ['pr', '-pr', 'pullrepos', '-pullrepos']:
         pullrepos()
 
-print ("")
+print ("currently in")
+print ("    ",pathlib.Path().resolve())
 print ("avalible flags")
-print ("-pullreadlist")
-print ("-convert converts *.mkv to mp4 and mp3* to mp3")
-print ("-clonegists")
-print ("-pullrepos")
+print ("    -pullreadlist     pulls readlist to /Volumes/transfer/readlist/")
+print ("    -convert          converts", pathlib.Path().resolve()"*.mkv to mp4 and ", pathlib.Path().resolve()"mp3* to mp3")
+print ("    -clonegists       clones gists to /Volumes/transfer/gists/")
+print ("    -pullrepos        pulls reposetories to /Volumes/transfer/reposetories/ ")
 print ("")
