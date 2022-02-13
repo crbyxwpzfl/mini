@@ -125,10 +125,9 @@ for a in sys.argv:
 
 print ("")
 print ("currently in")
-print ("    ",pathlib.Path().resolve())
 print ("avalible flags")
 print ("    -pullreadlist     pulls readlist to /Volumes/transfer/readlist/")
-print ("    -convert          converts", pathlib.Path().resolve(),"*.mkv to mp4 and ", pathlib.Path().resolve(),"mp3* to mp3")
+print (f"    -convert          converts {pathlib.Path().resolve()}/*.mkv to mp4 and {pathlib.Path().resolve()}/mp3* to mp3")
 print ("    -clonegists       clones gists to /Volumes/transfer/gists/")
 print ("    -pullrepos        pulls reposetories to /Volumes/transfer/reposetories/ ")
 print ("")
