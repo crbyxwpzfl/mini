@@ -118,7 +118,15 @@ for a in sys.argv:
         convert()
     if a in ['prl', '-prl', 'pullreadlist', '-pullreadlist']:
         pullreadlist()
-    if a in ['clg', '-clg', 'clonegist', '-clonegist']:
+    if a in ['clg', '-clg', 'clonegists', '-clonegists']:
         clonegists()
     if a in ['pr', '-pr', 'pullrepos', '-pullrepos']:
         pullrepos()
+
+print ("")
+print ("avalible flags")
+print ("-pullreadlist")
+print ("-convert converts *.mkv to mp4 and mp3* to mp3")
+print ("-clonegists")
+print ("-pullrepos")
+print ("")
