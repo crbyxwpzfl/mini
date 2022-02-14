@@ -112,7 +112,7 @@ def pullrepos():
     if not files:   #if files is empty
         repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]
         for r in repos:
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
+            output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
             downedrepos += f + " "
 
 
