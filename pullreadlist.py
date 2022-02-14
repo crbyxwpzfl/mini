@@ -109,7 +109,7 @@ def pullrepos():
     
     if files:   #if files exist
         for f in files:
-            os.replace(os.path.join(dir, 'reposetories', f), os.path.join(dir, 'gists', f"tmp-{f}"))
+            os.replace(os.path.join(dir, 'reposetories', f), os.path.join(dir, 'reposetories', f"tmp-{f}"))
    
     repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]
     for r in repos:
