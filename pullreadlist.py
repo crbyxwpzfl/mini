@@ -106,16 +106,21 @@ def convert():
         process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
             print(line)
+        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
+
 
     for f in Path(pathlib.Path().resolve()).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
         outfile = str(f)[:-4]+".mp3"
         process = subprocess.Popen(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
             print(line)
+        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
+
 
 for a in sys.argv:
     if a in ['conv', '-conv', 'convert', '-convert']:
         convert()
+        response = requests.get('http://localhost:8080/motion?mini')
     if a in ['prl', '-prl', 'pullreadlist', '-pullreadlist']:
         pullreadlist()
     if a in ['clg', '-clg', 'clonegists', '-clonegists']:
