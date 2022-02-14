@@ -1,8 +1,11 @@
+#requires git ffmpeg handbrake cli
+
 from __future__ import unicode_literals
 import sys
 import re
 import subprocess
 import os
+from types import DynamicClassAttribute
 import requests
 from pathlib import Path
 import pathlib
@@ -154,10 +157,10 @@ for a in sys.argv:
 
 print ("")
 print ("currently in")
-print (f"    {pathlib.Path().resolve()}")
+print (f"    {dir}")
 print ("avalible flags")
-print ("    -pullreadlist     pulls readlist to /Volumes/transfer/readlist/")
-print (f"    -convert          converts {pathlib.Path().resolve()}/*.mkv to mp4 and {pathlib.Path().resolve()}/mp3* to mp3")
-print ("    -clonegists       clones gists to /Volumes/transfer/gists/")
-print ("    -pullrepos        pulls reposetories to /Volumes/transfer/reposetories/ ")
+print (f"    -pullreadlist     pulls readlist to {dir}")
+print (f"    -convert          converts {dir}/*.mkv to mp4 and {dir}/mp3* to mp3")
+print (f"    -clonegists       clones gists to {dir}")
+print (f"    -pullrepos        pulls reposetories to {dir}")
 print ("")
