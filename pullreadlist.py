@@ -12,14 +12,19 @@ import youtube_dl
 
 #sys.path.append(os.environ.get('privates'))
 # import privates for phone number and /path/to/open ssh key 
-sys.path.append('/Users/mini/private/')
+privdir = '/Users/mini/private/'
+sys.path.append(privdir)
 import privates
 
 global dir 
-dir = "/Volumes/transfer/"    #dir with /dir/gists /dir/reposetories and 
-    
+dir = pathlib.Path().resolve()    #dir with /dir/gists /dir/reposetories
+
+
+
 
 def pullreadlist():
+    Path(os.path.join(dir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
+
     class MyLogger(object):    #logger pass to quiet output
         def debug(self, msg):
             print(msg)
@@ -38,7 +43,7 @@ def pullreadlist():
         'simulate': False,
         'restrict-filenames': False,
         'ignoreerrors': True,
-        'download_archive': os.path.join(dir, 'readlist', 'archive.txt'),
+        'download_archive': os.path.join(privdir, 'archive.txt'),   #use archive in priv dir
         'outtmpl': os.path.join(dir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
         'progress_hooks': [my_hook],
         'logger': MyLogger(),
@@ -59,6 +64,10 @@ def pullreadlist():
             url = line[13:-10]
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
+
+
+
+
 
 def clonegists():
     Path(os.path.join(dir, 'gists')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
@@ -86,6 +95,9 @@ def clonegists():
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
 
+
+
+
 def pullrepos():
     Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
     downedrepos = " "
@@ -98,10 +110,11 @@ def pullrepos():
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
 
+
+
+
 def convert():
-    Path(os.path.join(dir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
-    
-    for f in Path(pathlib.Path().resolve()).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
+    for f in Path(dir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
         outfile = str(f)[:-4]+".mp4"
         process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
@@ -109,12 +122,15 @@ def convert():
         output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
 
 
-    for f in Path(pathlib.Path().resolve()).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
+    for f in Path(dir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
         outfile = str(f)[:-4]+".mp3"
         process = subprocess.Popen(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in process.stdout:
             print(line)
         output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
+
+
+
 
 
 for a in sys.argv:
