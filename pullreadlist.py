@@ -102,11 +102,19 @@ def pullrepos():
     Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
     downedrepos = " "
     files = os.listdir(os.path.join(dir, 'reposetories'))    #list all files
-    for f in files:
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'reset', '--hard'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
-        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
-        downedrepos += f + " "
+    if files:   #if files has values
+        for f in files:
+            output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'fetch', '--all'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
+            output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), 'reset', '--hard'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
+            output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories', f), '-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'pull'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
+            downedrepos += f + " "
+
+    if not files:   #if files is empty
+        repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]
+        for r in repos:
+        output = subprocess.run(['git', '-C', os.path.join(dir, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {privates.opensshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up 
+            downedrepos += f + " "
+
 
     output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
 
