@@ -25,7 +25,7 @@ dir = pathlib.Path().resolve()    #dir with /dir/gists /dir/reposetories
 def pullreadlist():
     Path(os.path.join(dir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
 
-    class MyLogger(object):    #logger pass to quiet output
+    class MyLogger(object):    #logger pass instead of print(msg) to quiet output
         def debug(self, msg):
             print(msg)
         def warning(self, msg):
@@ -43,14 +43,14 @@ def pullreadlist():
         'simulate': False,
         'restrict-filenames': False,
         'ignoreerrors': True,
-        'download_archive': os.path.join(privdir, 'archive.txt'),   #use archive in priv dir
+        'download_archive': os.path.join(privdir, 'readlist-archive.txt'),   #use archive in priv dir
         'outtmpl': os.path.join(dir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
         'progress_hooks': [my_hook],
         'logger': MyLogger(),
     }
 
     #convert bookmark plist to xml
-    output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(dir, 'readlist', 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+    output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(privdir, 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
     #print (output.stdout.read())
 
     #read xml into variable file
