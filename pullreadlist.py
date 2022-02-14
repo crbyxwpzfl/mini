@@ -101,7 +101,7 @@ def clonegists():
 
 
 
-def pullrepos():
+def pullrepos():    #slow but works fuck it
     Path(os.path.join(dir, 'reposetories')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
     downedrepos = " "
 
