@@ -1,7 +1,4 @@
-privdir = '/Users/mini/private/'
-sys.path.append(privdir)
-import privates
-
+from __future__ import unicode_literals
 from types import DynamicClassAttribute
 from pathlib import Path
 import sys
@@ -11,25 +8,6 @@ import os
 import requests
 import pathlib
 import shutil
-
-currentdir = os.getcwd()    #current dir dir to put /dir/gists /dir/reposetories
-phonenr = privates.phone    #for imessage update
-sshpriv = privates.opensshpriv  #for clone repos
-handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
-ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
-
-bookmarksxml = '/Users/mini/Downloads/SafariBookmarks.xml'     #where to export bookmarks to
-bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
-
-ydlopts = {    #set ytdl options
-    'simulate': False,
-    'restrict-filenames': False,
-    'ignoreerrors': True,
-    'download_archive': '/Users/mini/Downloads/readlist-archive.txt',   #where to store archive
-    'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
-    'progress_hooks': [hook],
-    'logger': Logger(),
-}
 
 class Logger(object):    #logger for ytdl pass instead of print(msg) to quiet output
     def debug(self, msg):
@@ -53,7 +31,7 @@ def primedir(at):
             os.replace(os.path.join(currentdir, at, f), os.path.join(currentdir, at, f"tmp-{f}"))
 
 def deltemp(at):
-    for p in Path(os.path.join(dicurrentdir, at)).glob("tmp*"):    #delete tmp dirs
+    for p in Path(os.path.join(currentdir, at)).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
 def hook(d):    #send a message with filename to confirm ytdl downlad 
@@ -62,9 +40,32 @@ def hook(d):    #send a message with filename to confirm ytdl downlad
         sub(['osascript', '-e', f'tell application "Messages" to send "{filename}" to participant "{phonenr}"'])
 
 
+privdir = '/Users/mini/private/'
+sys.path.append(privdir)
+import privates
+
+currentdir = os.getcwd()    #current dir dir to put /dir/gists /dir/reposetories
+phonenr = privates.phone    #for imessage update
+sshpriv = privates.opensshpriv  #for clone repos
+handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
+ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
+
+bookmarksxml = '/Users/mini/Downloads/SafariBookmarks.xml'     #where to export bookmarks to
+bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
+
+ydlopts = {    #set ytdl options
+    'simulate': False,
+    'restrict-filenames': False,
+    'ignoreerrors': True,
+    'download_archive': '/Users/mini/Downloads/readlist-archive.txt',   #where to store archive
+    'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
+    'progress_hooks': [hook],
+    'logger': Logger(),
+}
+
+
 for a in sys.argv:
     if a in ['pr', '-pr', 'pullreadlist', '-pullreadlist']:
-        from __future__ import unicode_literals
         import youtube_dl
 
         Path(os.path.join(currentdir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
