@@ -66,7 +66,7 @@ ydlopts = {    #set ytdl options
 
 
 for a in sys.argv:
-    if a in ['pr', '-pr', 'pullreadlist', '-pullreadlist']:
+    if a in ['sy', '-sy', 'sync', '-sync', 'pr', '-pr', 'pullreadlist', '-pullreadlist']:
         import youtube_dl
 
         Path(os.path.join(currentdir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
@@ -95,7 +95,7 @@ for a in sys.argv:
         response = requests.get('http://localhost:8080/motion?mini')
 
 
-    if a in ['cg', '-cg', 'clonegists', '-clonegists']:
+    if a in ['sy', '-sy', 'sync', '-sync', 'cg', '-cg', 'clonegists', '-clonegists']:
         primedir('gists')
 
         response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
@@ -115,7 +115,7 @@ for a in sys.argv:
 
 
 
-    if a in ['cr', '-cr', 'clonerepos', '-clonerepos']:   #slow but works fuck it
+    if a in ['sy', '-sy', 'sync', '-sync', 'cr', '-cr', 'clonerepos', '-clonerepos']:   #slow but works fuck it
         primedir('reposetories')
 
         downedrepos = " "
@@ -129,7 +129,7 @@ for a in sys.argv:
 
 
 
-    if a in ['sy', '-sy', 'sync', 'sync']:
+    if a in ['sy', '-sy', 'sync', '-sync']:
         if os.path.ismount('/Volumes/Desktop') and os.path.ismount('/Volumes/interim') and os.path.ismount('/Volumes/transfer'):
             copy_tree(os.path.join(currentdir, 'reposetories'), '/Volumes/transfer/reposetories/')
             copy_tree(os.path.join(currentdir, 'gists'), '/Volumes/transfer/gists/')
@@ -166,12 +166,11 @@ currently in    {currentdir}
 -cg -clonegists       clones gists to {currentdir}/gists
 -cr -clonerepos       pulls reposetories to {currentdir}/reposetories
 
--sy -sync             puts
-                      {currentdir}/gists
-                      {currentdir}/reposetories
-                      {ydlopts['download_archive']}
-                      {bookmarksxml}
+-sy -sync             same as -pr -cg -cr together plus puts
+                          {currentdir}/gists
+                          {currentdir}/reposetories
+                          {ydlopts['download_archive']}
+                          {bookmarksxml}
                       into transfer
                       syncs transfer and interim to rog flow
-
 ''')
