@@ -128,12 +128,21 @@ for a in sys.argv:
 
 
 
-print ("")
-print ("currently in")
-print (f"    {currentdir}")
-print ("avalible flags")
-print (f"    -pr -pullreadlist     pulls readlist to {currentdir}")
-print (f"    -co -convert          converts {currentdir}/*.mkv to mp4 and {currentdir}/mp3* to mp3")
-print (f"    -cg -clonegists       clones gists to {currentdir}/gists")
-print (f"    -cr -clonerepos       pulls reposetories to {currentdir}/reposetories")
-print ("")
+print(f'''
+
+currently in    {currentdir}
+
+-pr -pullreadlist     pulls readlist to {currentdir}
+-co -convert          converts {currentdir}/*.mkv to mp4 and {currentdir}/mp3* to mp3
+-cg -clonegists       clones gists to {currentdir}/gists
+-cr -clonerepos       pulls reposetories to {currentdir}/reposetories
+
+-sy -sync             pulls and puts
+                      {currentdir}/gists
+                      {currentdir}/reposetories
+                      {ydlopts['download_archive']}
+                      {bookmarksxml}
+                      into transfer
+                      syncs transfer and interim to rog flow
+
+''')
