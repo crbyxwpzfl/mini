@@ -19,10 +19,14 @@ privdir = '/Users/mini/private/'
 sys.path.append(privdir)
 import privates
 
-global dir 
-dir = pathlib.Path().resolve()    #dir with /dir/gists /dir/reposetories
+dir = pathlib.Path().resolve()    #dir to put /dir/gists /dir/reposetories here current dir
+phonenr = privates.phone
 
 
+def sub(cmd):
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    for line in process.stdout:
+        print(line)
 
 
 def pullreadlist():
@@ -40,7 +44,8 @@ def pullreadlist():
         if d['status'] == 'finished':
             #print(d['filename'])
             filename = d['filename'][22:]
-            output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, filename], stdout=subprocess.PIPE)
+            sub(['osascript', '-e', f'tell application "Messages" to send "{filename}" to participant "{phonenr}"'])
+
 
     ydl_opts = {    #set ytdl options
         'simulate': False,
@@ -53,7 +58,7 @@ def pullreadlist():
     }
 
     #convert bookmark plist to xml
-    output = subprocess.Popen(['plutil', '-convert', 'xml1', '-o', os.path.join(privdir, 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'], stdout=subprocess.PIPE)
+    sub(['plutil', '-convert', 'xml1', '-o', os.path.join(privdir, 'SafariBookmarks.xml'), '/Users/mini/Library/Safari/Bookmarks.plist'])
     #print (output.stdout.read())
 
     #read xml into variable file
@@ -91,13 +96,12 @@ def clonegists():
             #print(foldername)
 
         #print(i['git_pull_url'])
-        output = subprocess.Popen(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'gists', foldername)], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
+        sub(['git', 'clone', i['git_pull_url'], os.path.join(dir, 'gists', foldername)])    #add [, '--quiet'] to shut up
 
     for p in Path(os.path.join(dir, 'gists')).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, "cloned gists"], stdout=subprocess.PIPE)    #add [, '--quiet'] to shut up
-
+    sub(['osascript', '-e', f'tell application "Messages" to send "cloned gists" to participant "{phonenr}"'])  #add [, '--quiet'] to shut up
 
 
 
@@ -119,27 +123,20 @@ def pullrepos():    #slow but works fuck it
     for p in Path(os.path.join(dir, 'reposetories')).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
-    output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"pulled {downedrepos}"], stdout=subprocess.PIPE)
-
+    sub(['osascript', '-e', f'tell application "Messages" to send "pulled {downedrepos}" to participant "{phonenr}"'])
 
 
 
 def convert():
     for f in Path(dir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
         outfile = str(f)[:-4]+".mp4"
-        process = subprocess.Popen(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        for line in process.stdout:
-            print(line)
-        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
-
+        sub(['/Users/mini/Downloads/HandBrakeCLI', '-i', f"{f}", '-o', outfile])
+        sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
 
     for f in Path(dir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
         outfile = str(f)[:-4]+".mp3"
-        process = subprocess.Popen(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        for line in process.stdout:
-            print(line)
-        output = subprocess.Popen(['osascript', '/Users/mini/mini/sendMessage.applescript', privates.phone, f"converted {outfile}"], stdout=subprocess.PIPE)
-
+        sub(['/Users/mini/Downloads/ffmpeg', '-i', f, outfile])
+        sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
 
 
 
