@@ -135,8 +135,9 @@ for a in sys.argv:
             copy_tree(os.path.join(currentdir, 'gists'), '/Volumes/transfer/gists/')
             shutil.copy(bookmarksxml, '/Volumes/transfer/reposetories/ff/')
             shutil.copy(ydlopts['download_archive'], '/Volumes/transfer/reposetories/ff/')
+            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--exclude={\'.DS_Store\',\'Media.localized\',\'.Trashes\',\'.TemporaryItems\',\'.Spotlight-V100\',\'.fseventsd\',\'.DocumentRevisions-V100\',\'System Volume Information\',\'$RECYCLE.BIN\',\'.fseventsd\'}', '/Volumes/interim', '/Volumes/Desktop/'])
+            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--exclude={\'.DS_Store\',\'Media.localized\',\'.Trashes\',\'.TemporaryItems\',\'.Spotlight-V100\',\'.fseventsd\',\'.DocumentRevisions-V100\',\'System Volume Information\',\'$RECYCLE.BIN\',\'.fseventsd\'}', '/Volumes/transfer', '/Volumes/Desktop/'])
             
-
 print(f'''
 
 currently in    {currentdir}
