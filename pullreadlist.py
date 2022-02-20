@@ -19,7 +19,7 @@ class Logger(object):    #logger for ytdl pass instead of print(msg) to quiet ou
         print(msg)
 
 def sub(cmd):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in process.stdout:
         print(line)
 
@@ -135,9 +135,28 @@ for a in sys.argv:
             copy_tree(os.path.join(currentdir, 'gists'), '/Volumes/transfer/gists/')
             shutil.copy(bookmarksxml, '/Volumes/transfer/reposetories/ff/')
             shutil.copy(ydlopts['download_archive'], '/Volumes/transfer/reposetories/ff/')
-            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--exclude={\'.DS_Store\',\'Media.localized\',\'.Trashes\',\'.TemporaryItems\',\'.Spotlight-V100\',\'.fseventsd\',\'.DocumentRevisions-V100\',\'System Volume Information\',\'$RECYCLE.BIN\',\'.fseventsd\'}', '/Volumes/interim', '/Volumes/Desktop/'])
-            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--exclude={\'.DS_Store\',\'Media.localized\',\'.Trashes\',\'.TemporaryItems\',\'.Spotlight-V100\',\'.fseventsd\',\'.DocumentRevisions-V100\',\'System Volume Information\',\'$RECYCLE.BIN\',\'.fseventsd\'}', '/Volumes/transfer', '/Volumes/Desktop/'])
-            
+
+            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--progress', '--stats', 
+                  '--exclude', '.DS_Store', 
+                  '--exclude', 'Media.localized',
+                  '--exclude', '.Trashes',
+                  '--exclude', '.TemporaryItems',
+                  '--exclude', '.Spotlight-V100',
+                  '--exclude', '.fseventsd',
+                  '--exclude', '.DocumentRevisions-V100',
+                  '/Volumes/interim', '/Volumes/Desktop/']) 
+
+            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--progress', '--stats', 
+                  '--exclude', '.DS_Store', 
+                  '--exclude', '.fseventsd',
+                  '--exclude', '.Spotlight-V100',
+                  '--exclude', '.TemporaryItems',
+                  '--exclude', '.Trashes',
+                  '--exclude', '$RECYCLE.BIN',
+                  '--exclude', 'System Volume Information',
+                  '/Volumes/transfer', '/Volumes/Desktop/'])            
+
+
 print(f'''
 
 currently in    {currentdir}
