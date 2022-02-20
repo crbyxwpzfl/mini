@@ -154,23 +154,31 @@ for a in sys.argv:
                   '--exclude', '.Trashes',
                   '--exclude', '$RECYCLE.BIN',
                   '--exclude', 'System Volume Information',
-                  '/Volumes/transfer', '/Volumes/Desktop/'])            
+                  '/Volumes/transfer', '/Volumes/Desktop/'])
+
+            response = requests.get('http://localhost:8080/motion?mini')          
 
 
-print(f'''
+if a not in ['sy', '-sy', 'sync', '-sync', 
+             'cr', '-cr', 'clonerepos', '-clonerepos',
+             'cg', '-cg', 'clonegists', '-clonegists',
+             'co', '-co', 'convert', '-convert',
+             'pr', '-pr', 'pullreadlist', '-pullreadlist']:
+    
+    print(f'''
 
-currently in    {currentdir}
+    currently in    {currentdir}
 
--pr -pullreadlist     pulls readlist to {currentdir}
--co -convert          converts {currentdir}/*.mkv to mp4 and {currentdir}/mp3* to mp3
--cg -clonegists       clones gists to {currentdir}/gists
--cr -clonerepos       pulls reposetories to {currentdir}/reposetories
+    -pr -pullreadlist   pulls readlist to {currentdir}
+    -co -convert        converts {currentdir}/*.mkv to mp4 and {currentdir}/mp3* to mp3
+    -cg -clonegists     clones gists to {currentdir}/gists
+    -cr -clonerepos     pulls reposetories to {currentdir}/reposetories
 
--sy -sync             same as -pr -cg -cr together plus puts
-                          {currentdir}/gists
-                          {currentdir}/reposetories
-                          {ydlopts['download_archive']}
-                          {bookmarksxml}
-                      into transfer
-                      syncs transfer and interim to rog flow
-''')
+    -sy -sync           same as -pr -cg -cr together plus copys
+                            {currentdir}/gists
+                            {currentdir}/reposetories
+                            {ydlopts['download_archive']}
+                            {bookmarksxml}
+                        to transfer
+                        syncs transfer and interim to rog flow
+    ''')
