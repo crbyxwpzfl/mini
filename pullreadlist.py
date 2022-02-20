@@ -136,6 +136,8 @@ for a in sys.argv:
             # if os.path.isfile('/Users/mini/Desktop/reposetories'):
             #if os.path.isdir('/Users/mini/Desktop/reposetories/'):
 
+            sub('python3', os.path.realpath(__file__), '-pr')
+
 print(f'''
 
 currently in    {currentdir}
