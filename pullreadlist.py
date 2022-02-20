@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from types import DynamicClassAttribute
+from distutils.dir_util import copy_tree
 from pathlib import Path
 import sys
 import re
@@ -127,6 +128,13 @@ for a in sys.argv:
         sub(['osascript', '-e', f'tell application "Messages" to send "pulled {downedrepos}" to participant "{phonenr}"'])
 
 
+    if a in ['sy', '-sy', 'sync', 'sync']:
+        if os.path.ismount('/Volumes/Desktop') and os.path.ismount('/Volumes/interim') and os.path.ismount('/Volumes/transfer'):
+                        
+            #copy_tree('/Users/mini/Desktop/reposetories', '/Users/mini/Downloads ')
+            #shutil.copy('/Users/mini/Desktop/Untitled.py', '/Users/mini/Downloads/repos/')
+            # if os.path.isfile('/Users/mini/Desktop/reposetories'):
+            #if os.path.isdir('/Users/mini/Desktop/reposetories/'):
 
 print(f'''
 
