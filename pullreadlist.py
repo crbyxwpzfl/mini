@@ -18,14 +18,14 @@ sshpriv = privates.opensshpriv  #for clone repos
 handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
 ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
 
-bookmarksxml = os.path.join(privdir, 'SafariBookmarks.xml')
+bookmarksxml = '/Users/mini/Downloads/SafariBookmarks.xml'     #where to export bookmarks to
 bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
 
 ydlopts = {    #set ytdl options
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': os.path.join(privdir, 'readlist-archive.txt'),   #use archive in priv dir
+    'download_archive': '/Users/mini/Downloads/readlist-archive.txt',   #where to store archive
     'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
     'progress_hooks': [hook],
     'logger': Logger(),
