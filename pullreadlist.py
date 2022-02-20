@@ -128,15 +128,14 @@ for a in sys.argv:
         sub(['osascript', '-e', f'tell application "Messages" to send "pulled {downedrepos}" to participant "{phonenr}"'])
 
 
+
     if a in ['sy', '-sy', 'sync', 'sync']:
         if os.path.ismount('/Volumes/Desktop') and os.path.ismount('/Volumes/interim') and os.path.ismount('/Volumes/transfer'):
-                        
-            #copy_tree('/Users/mini/Desktop/reposetories', '/Users/mini/Downloads ')
-            #shutil.copy('/Users/mini/Desktop/Untitled.py', '/Users/mini/Downloads/repos/')
-            # if os.path.isfile('/Users/mini/Desktop/reposetories'):
-            #if os.path.isdir('/Users/mini/Desktop/reposetories/'):
-
-            sub('python3', os.path.realpath(__file__), '-pr')
+            copy_tree(os.path.join(currentdir, 'reposetories'), '/Volumes/transfer/reposetories/')
+            copy_tree(os.path.join(currentdir, 'gists'), '/Volumes/transfer/gists/')
+            shutil.copy(bookmarksxml, '/Volumes/transfer/reposetories/ff/')
+            shutil.copy(ydlopts['download_archive'], '/Volumes/transfer/reposetories/ff/')
+            
 
 print(f'''
 
@@ -147,7 +146,7 @@ currently in    {currentdir}
 -cg -clonegists       clones gists to {currentdir}/gists
 -cr -clonerepos       pulls reposetories to {currentdir}/reposetories
 
--sy -sync             pulls and puts
+-sy -sync             puts
                       {currentdir}/gists
                       {currentdir}/reposetories
                       {ydlopts['download_archive']}
