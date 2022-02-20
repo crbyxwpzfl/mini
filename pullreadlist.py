@@ -169,14 +169,18 @@ if a not in ['sy', '-sy', 'sync', '-sync',
 
     currently in    {currentdir}
 
-    -pr -pullreadlist   pulls readlist to {currentdir}
-    -co -convert        converts {currentdir}/*.mkv to mp4 and {currentdir}/mp3* to mp3
-    -cg -clonegists     clones gists to {currentdir}/gists
-    -cr -clonerepos     pulls reposetories to {currentdir}/reposetories
+    -pr -pullreadlist   pulls readlist to {currentdir}/readlist/
+    
+    -co -convert        {currentdir}/*.mkv to mp4
+                        {currentdir}/mp3*  to mp3
+    
+    -cg -clonegists     clones gists to {currentdir}/gists/
+    
+    -cr -clonerepos     pulls reposetories to {currentdir}/reposetories/
 
     -sy -sync           same as -pr -cg -cr together plus copys
-                            {currentdir}/gists
-                            {currentdir}/reposetories
+                            {currentdir}/gists/
+                            {currentdir}/reposetories/
                             {ydlopts['download_archive']}
                             {bookmarksxml}
                         to transfer
