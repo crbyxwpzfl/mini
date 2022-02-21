@@ -11,7 +11,7 @@ crtl shift e #explorer
 
 ### mini
 
-### [ffmpeg](https://github.com/GyanD/codexffmpeg)
+### [ffmpeg](https://www.ffmpeg.org/download.html)
 
 ### [ytdl](https://github.com/ytdl-org/youtube-dl)
 
