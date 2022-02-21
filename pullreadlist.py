@@ -50,6 +50,7 @@ phonenr = privates.phone    #for imessage update
 sshpriv = privates.opensshpriv  #for clone repos
 handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
 ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
+repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]   #repos to clone used in clonerepos def
 
 bookmarksxml = '/Users/mini/Downloads/SafariBookmarks.xml'     #where to export bookmarks to
 bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
@@ -119,7 +120,6 @@ for a in sys.argv:
         primedir('reposetories')
 
         downedrepos = " "
-        repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]
         for r in repos:
             sub(['git', '-C', os.path.join(currentdir, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {sshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'])     #add [, '--quiet'] to shut up 
             downedrepos += r + " "
@@ -167,8 +167,6 @@ if a not in ['sy', '-sy', 'sync', '-sync',
     
     print(f'''
 
-    currently in    {currentdir}
-    
     -pr -pullreadlist   pulls readlist to {currentdir}/readlist/
     
     -co -convert        {currentdir}/*.mkv to mp4
@@ -177,6 +175,7 @@ if a not in ['sy', '-sy', 'sync', '-sync',
     -cg -clonegists     clones gists to {currentdir}/gists/
     
     -cr -clonerepos     pulls reposetories to {currentdir}/reposetories/
+                            {repos}
 
     -sy -sync           same as -pr -cg -cr together plus copys
                             {currentdir}/gists/
