@@ -9,48 +9,31 @@ crtl shit g #source controll
 crtl shift e #explorer
 ```
 
-# mini
+### mini
 
-## [ytdl](https://github.com/ytdl-org/youtube-dl)
-```
-python3 /Users/mini/mini/pullreadlist.py #dl readinglist
-```
+### [ffmpeg](https://github.com/GyanD/codexffmpeg)
 
-```
-cd /Volumes/transfer/see
-out="/Volumes/transfer/see/%(title)s.%(ext)s"
-url="https://youtube.com/playlist?list=PLaHzPX64jQ189iqTEvaWmvK0l1-Dt3ssP" #dl see
+### [ytdl](https://github.com/ytdl-org/youtube-dl)
 
-/Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
-```
-
-```
-cd /Volumes/transfer/listen
-out="/Volumes/transfer/listen/%(title)s.%(ext)s"
-url="https://youtube.com/playlist?list=PLaHzPX64jQ19wU2ckGEefoUlYCNvnjkv7" #dl listen
-
-/Library/Frameworks/Python.framework/Versions/3.9/bin/youtube-dl -x --audio-format mp3 --restrict-filenames -o $out $url --no-continue --no-check-certificate --download-archive archive.txt
-```
-
-## [handbrake](https://github.com/HandBrake/HandBrake/releases)
+### [handbrake](https://github.com/HandBrake/HandBrake/releases)
 ```
 cd "dir/with/mkvs"
 for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ; done   #reencode all mkvs in dir
 ```
 
-## python
+### python
 ```bash
 python -m pip install requests    #install requests
 python -m pip install --upgrade youtube-dl  #install ytdl
 ```
 
-## ssh
+### ssh
 ```bash
 chmod 600 /path/to/openssh-private/   #set permissions for key file
 ssh user@ip -i "path/to/openssh-private"
 ```
 
-## general
+### general
 ```bash
 defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
 killall Finder
@@ -61,13 +44,13 @@ chflags hidden /path/to/folder #hide a folder
 rm -rf #drag drop icloud drive folders to delete them
 ```
 
-## git
+### git
 ```
 git #then follow promt
 git -c core.sshCommand="ssh -i /path/to/sshprivate" pull #to pull changes
 ```
 
-## node
+### node
 ```bash
 npm cache clean -f  #node update
 npm install -g n
