@@ -168,7 +168,7 @@ if a not in ['sy', '-sy', 'sync', '-sync',
     print(f'''
 
     currently in    {currentdir}
-
+    
     -pr -pullreadlist   pulls readlist to {currentdir}/readlist/
     
     -co -convert        {currentdir}/*.mkv to mp4
