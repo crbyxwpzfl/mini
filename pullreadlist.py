@@ -168,16 +168,11 @@ if a not in ['sy', '-sy', 'sync', '-sync',
     -co -convert        {currentdir}/*.mkv to mp4
                         {currentdir}/mp3*  to mp3
     
-    -cg -clonegists     clones gists to {currentdir}/gists/
+    -cg -clonegists     clones gists to {clonehere}/gists/
     
-    -cr -clonerepos     pulls reposetories to {currentdir}/reposetories/
+    -cr -clonerepos     pulls reposetories to {clonehere}/reposetories/
                             {repos}
 
-    -sy -sync           same as -pr -cg -cr together plus copys
-                            {currentdir}/gists/
-                            {currentdir}/reposetories/
-                            {ydlopts['download_archive']}
-                            {bookmarksxml}
-                        to transfer
+    -sy -sync           same as -pr -cg -cr together plus
                         syncs transfer and interim to rog flow
     ''')
