@@ -23,6 +23,11 @@ def sub(cmd):
     for line in process.stdout:
         print(line)
 
+        if "Encrypted DVD support unavailable" in str(line):    #fallback to ffmpeg when handbrake fails
+            print("ffmpeg fallback")
+            process.terminate()
+            sub([ffmpegdir, '-i', f, outfile])
+
 def primedir(at):
     Path(os.path.join(clonehere, at)).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
 
@@ -82,16 +87,23 @@ for a in sys.argv:
                 with youtube_dl.YoutubeDL(ydlopts) as ydl:
                     ydl.download([url])
 
-
     if a in ['co', '-co', 'convert', '-convert']:
         for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
-            for b in sys.argv:                         
-                if b in ['-ff', 'ff', '-ffmpeg', 'ffmpeg']:     #use ffmpeg 
-                    outfile = str(f)[:-4]+".mp4"
-                    sub([ffmpegdir, '-i', f, outfile])
-                else:   #else / usually use handbrake
-                    outfile = str(f)[:-4]+".mp4"
-                    sub([handbrakedir, '-i', f"{f}", '-o', outfile])
+            outfile = str(f)[:-4]+".mp4"
+            sub([handbrakedir, '-i', f"{f}", '-o', outfile])
+            sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
+
+        for f in Path(currentdir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
+            outfile = str(f)[:-4]+".mp3"
+            sub([ffmpegdir, '-i', f, outfile])
+            sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
+
+        response = requests.get('http://localhost:8080/motion?mini')
+    
+    if a in ['co', '-co', 'convert', '-convert']:
+        for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
+            outfile = str(f)[:-4]+".mp4"
+            sub([handbrakedir, '-i', f"{f}", '-o', outfile])
             sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
 
         for f in Path(currentdir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
