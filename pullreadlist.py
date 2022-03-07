@@ -85,12 +85,13 @@ for a in sys.argv:
 
     if a in ['co', '-co', 'convert', '-convert']:
         for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
-            if sys.argv[2] == "ffmpeg":
-                outfile = str(f)[:-4]+".mp4"
-                sub([ffmpegdir, '-i', f, outfile])
-            else:    
-                outfile = str(f)[:-4]+".mp4"
-                sub([handbrakedir, '-i', f"{f}", '-o', outfile])
+            for b in sys.argv:                         
+                if b in ['-ff', 'ff', '-ffmpeg', 'ffmpeg']:     #use ffmpeg 
+                    outfile = str(f)[:-4]+".mp4"
+                    sub([ffmpegdir, '-i', f, outfile])
+                else:   #else / usually use handbrake
+                    outfile = str(f)[:-4]+".mp4"
+                    sub([handbrakedir, '-i', f"{f}", '-o', outfile])
             sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
 
         for f in Path(currentdir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
