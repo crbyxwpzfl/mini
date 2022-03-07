@@ -19,14 +19,15 @@ class Logger(object):    #logger for ytdl pass instead of print(msg) to quiet ou
         print(msg)
 
 def sub(cmd):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    process = subprocess.Popen(cmd, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in process.stdout:
         print(line)
 
         if "Encrypted DVD support unavailable" in str(line):    #fallback to ffmpeg when handbrake fails
-            print("ffmpeg fallback")
+            print("falling back to ffmpeg")
             process.terminate()
-            sub([ffmpegdir, '-i', f, outfile])
+            sub([ffmpegdir, '-y', '-i', f, outfile])
+
 
 def primedir(at):
     Path(os.path.join(clonehere, at)).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
