@@ -24,15 +24,15 @@ def sub(cmd):
         print(line)
 
 def primedir(at):
-    Path(os.path.join(currentdir, at)).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
+    Path(os.path.join(clonehere, at)).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
 
-    files = os.listdir(os.path.join(currentdir, at))    #prepend tmp to all files names
+    files = os.listdir(os.path.join(clonehere, at))    #prepend tmp to all files names
     if files:   #if files exist
         for f in files:
-            os.replace(os.path.join(currentdir, at, f), os.path.join(currentdir, at, f"tmp-{f}"))
+            os.replace(os.path.join(clonehere, at, f), os.path.join(clonehere, at, f"tmp-{f}"))
 
 def deltemp(at):
-    for p in Path(os.path.join(currentdir, at)).glob("tmp*"):    #delete tmp dirs
+    for p in Path(os.path.join(clonehere, at)).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
 def hook(d):    #send a message with filename to confirm ytdl downlad 
@@ -45,21 +45,22 @@ privdir = '/Users/mini/private/'
 sys.path.append(privdir)
 import privates
 
-currentdir = os.getcwd()    #current dir dir to put /dir/gists /dir/reposetories
+currentdir = os.getcwd()    #current dir for converting stuff
+clonehere = '/Volumes/transfer/'  #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
 phonenr = privates.phone    #for imessage update
 sshpriv = privates.opensshpriv  #for clone repos
 handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
 ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
 repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]   #repos to clone used in clonerepos def
 
-bookmarksxml = '/Users/mini/Downloads/SafariBookmarks.xml'     #where to export bookmarks to
+bookmarksxml =  os.path.join(clonehere, 'reposetories', 'ff', 'SafariBookmarks.xml')    #where to export bookmarks to
 bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
 
 ydlopts = {    #set ytdl options
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': '/Users/mini/Downloads/readlist-archive.txt',   #where to store archive
+    'download_archive': os.path.join(clonehere, 'reposetories', 'ff', 'readlist-archive.txt'),   #where to store archive
     'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
     'progress_hooks': [hook],
     'logger': Logger(),
@@ -109,7 +110,7 @@ for a in sys.argv:
                 for x in i['files']:
                     foldername += i['files'][x]['filename'].replace(".", "-") + " "
 
-            sub(['git', 'clone', i['git_pull_url'], os.path.join(currentdir, 'gists', foldername)])    #add [, '--quiet'] to shut up
+            sub(['git', 'clone', i['git_pull_url'], os.path.join(clonehere, 'gists', foldername)])    #add [, '--quiet'] to shut up
     
         deltemp('gists')
         sub(['osascript', '-e', f'tell application "Messages" to send "cloned gists" to participant "{phonenr}"'])
@@ -121,7 +122,7 @@ for a in sys.argv:
 
         downedrepos = " "
         for r in repos:
-            sub(['git', '-C', os.path.join(currentdir, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {sshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'])     #add [, '--quiet'] to shut up 
+            sub(['git', '-C', os.path.join(clonehere, 'reposetories'),'-c', f"core.sshCommand=\"\"ssh -i {sshpriv}\"\"", 'clone', f'git@github.com:crbyxwpzfl/{r}.git'])     #add [, '--quiet'] to shut up 
             downedrepos += r + " "
   
         deltemp('reposetories')
@@ -131,11 +132,6 @@ for a in sys.argv:
 
     if a in ['sy', '-sy', 'sync', '-sync']:
         if os.path.ismount('/Volumes/Desktop') and os.path.ismount('/Volumes/interim') and os.path.ismount('/Volumes/transfer'):
-            copy_tree(os.path.join(currentdir, 'reposetories'), '/Volumes/transfer/reposetories/')
-            copy_tree(os.path.join(currentdir, 'gists'), '/Volumes/transfer/gists/')
-            shutil.copy(bookmarksxml, '/Volumes/transfer/reposetories/ff/')
-            shutil.copy(ydlopts['download_archive'], '/Volumes/transfer/reposetories/ff/')
-
             sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--progress', '--stats', 
                   '--exclude', '.DS_Store', 
                   '--exclude', 'Media.localized',
