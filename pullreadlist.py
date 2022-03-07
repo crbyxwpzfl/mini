@@ -85,7 +85,7 @@ for a in sys.argv:
 
     if a in ['co', '-co', 'convert', '-convert']:
         for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
-            if a in ['-ff', 'ff', '-ffmpeg', 'ffmpeg']:
+            if sys.argv[2] == "ffmpeg":
                 outfile = str(f)[:-4]+".mp4"
                 sub([ffmpegdir, '-i', f, outfile])
             else:    
