@@ -23,10 +23,10 @@ def sub(cmd):
     for line in process.stdout:
         print(line)
 
-        if "Encrypted DVD support unavailable" in str(line):    #fallback to ffmpeg when handbrake fails
-            print("falling back to ffmpeg")
-            process.terminate()
-            sub([ffmpegdir, '-y', '-i', f, outfile])
+        #if "fail message" in str(line):    #fallback to ffmpeg when handbrake fails
+        #    print("falling back to ffmpeg")
+        #    process.terminate()
+        #    sub([ffmpegdir, '-y', '-i', f, outfile])
 
 
 def primedir(at):
