@@ -28,11 +28,14 @@ out = str(output.stdout.read())
 if '"AppleClamshellState" = Yes' in out:
 	print("OCCUPANCY_NOT_DETECTED")
     #for now do nothing in the furure turn tv off
-    sys.exit
 
 #lid auf
 elif '"AppleClamshellState" = No' in out:
+    
 
+    #ad detection fot on state
+    #only sent standby when tv off
+    
     data = '{key: "Standby"}'
     
     response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
