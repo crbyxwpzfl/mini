@@ -100,19 +100,6 @@ for a in sys.argv:
             sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
 
         response = requests.get('http://localhost:8080/motion?mini')
-    
-    if a in ['co', '-co', 'convert', '-convert']:
-        for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
-            outfile = str(f)[:-4]+".mp4"
-            sub([handbrakedir, '-i', f"{f}", '-o', outfile])
-            sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
-
-        for f in Path(currentdir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
-            outfile = str(f)[:-4]+".mp3"
-            sub([ffmpegdir, '-i', f, outfile])
-            sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
-
-        response = requests.get('http://localhost:8080/motion?mini')
 
 
     if a in ['cg', '-cg', 'clonegists', '-clonegists']:
