@@ -47,12 +47,12 @@ def hook(d):    #send a message with filename to confirm ytdl downlad
         sub(['osascript', '-e', f'tell application "Messages" to send "{filename}" to participant "{phonenr}"'])
 
 
-privdir = '/Users/mini/private/'
+privdir = '/Users/mini/Downloads/private/'
 sys.path.append(privdir)
 import privates
 
 currentdir = os.getcwd()    #current dir for converting stuff
-clonehere = '/Volumes/transfer/'  #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
+clonehere = '/Users/mini/Downloads/transfer/'  #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
 phonenr = privates.phone    #for imessage update
 sshpriv = privates.opensshpriv  #for clone repos
 handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting 
@@ -74,7 +74,7 @@ ydlopts = {    #set ytdl options
 
 
 for a in sys.argv:
-    if a in ['sy', '-sy', 'sync', '-sync', 'pr', '-pr', 'pullreadlist', '-pullreadlist']:
+    if a in ['pr', '-pr', 'pullreadlist', '-pullreadlist']:
         import youtube_dl
 
         Path(os.path.join(currentdir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
@@ -115,7 +115,7 @@ for a in sys.argv:
         response = requests.get('http://localhost:8080/motion?mini')
 
 
-    if a in ['sy', '-sy', 'sync', '-sync', 'cg', '-cg', 'clonegists', '-clonegists']:
+    if a in ['cg', '-cg', 'clonegists', '-clonegists']:
         primedir('gists')
 
         response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
@@ -135,7 +135,7 @@ for a in sys.argv:
 
 
 
-    if a in ['sy', '-sy', 'sync', '-sync', 'cr', '-cr', 'clonerepos', '-clonerepos']:   #slow but works fuck it
+    if a in ['cr', '-cr', 'clonerepos', '-clonerepos']:   #slow but works fuck it
         primedir('reposetories')
 
         downedrepos = " "
@@ -147,34 +147,7 @@ for a in sys.argv:
         sub(['osascript', '-e', f'tell application "Messages" to send "pulled {downedrepos}" to participant "{phonenr}"'])
 
 
-
-    if a in ['sy', '-sy', 'sync', '-sync']:
-        if os.path.ismount('/Volumes/Desktop') and os.path.ismount('/Volumes/interim') and os.path.ismount('/Volumes/transfer'):
-            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--progress', '--stats', 
-                  '--exclude', '.DS_Store', 
-                  '--exclude', 'Media.localized',
-                  '--exclude', '.Trashes',
-                  '--exclude', '.TemporaryItems',
-                  '--exclude', '.Spotlight-V100',
-                  '--exclude', '.fseventsd',
-                  '--exclude', '.DocumentRevisions-V100',
-                  '/Volumes/interim', '/Volumes/Desktop/']) 
-
-            sub(['rsync', '-a', '--delete', '--human-readable', '--progress', '--stats', '--progress', '--stats', 
-                  '--exclude', '.DS_Store', 
-                  '--exclude', '.fseventsd',
-                  '--exclude', '.Spotlight-V100',
-                  '--exclude', '.TemporaryItems',
-                  '--exclude', '.Trashes',
-                  '--exclude', '$RECYCLE.BIN',
-                  '--exclude', 'System Volume Information',
-                  '/Volumes/transfer', '/Volumes/Desktop/'])
-
-            response = requests.get('http://localhost:8080/motion?mini')          
-
-
-if a not in ['sy', '-sy', 'sync', '-sync', 
-             'cr', '-cr', 'clonerepos', '-clonerepos',
+if a not in [ 'cr', '-cr', 'clonerepos', '-clonerepos',
              'cg', '-cg', 'clonegists', '-clonegists',
              'co', '-co', 'convert', '-convert',
              'pr', '-pr', 'pullreadlist', '-pullreadlist']:
@@ -190,7 +163,4 @@ if a not in ['sy', '-sy', 'sync', '-sync',
     
     -cr -clonerepos     pulls reposetories to {clonehere}reposetories/
                             {repos}
-
-    -sy -sync           same as -pr -cg -cr together plus
-                        syncs transfer and interim to rog flow
     ''')
