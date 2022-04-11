@@ -59,14 +59,14 @@ handbrakedir = '/Users/mini/Downloads/HandBrakeCLI' #for mp4 converting
 ffmpegdir = '/Users/mini/Downloads/ffmpeg'  #for mp3 converting
 repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]   #repos to clone used in clonerepos def
 
-bookmarksxml =  os.path.join(clonehere, 'peristents', 'SafariBookmarks.xml')    #where to export bookmarks to
+bookmarksxml =  os.path.join('Users', 'mini', 'Dowloads', 'SafariBookmarks.xml')    #where to export bookmarks to
 bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
 
 ydlopts = {    #set ytdl options
     'simulate': False,
     'restrict-filenames': False,
     'ignoreerrors': True,
-    'download_archive': os.path.join(clonehere, 'peristents', 'readlist-archive.txt'),   #where to store archive
+    'download_archive': os.path.join('Users', 'mini', 'Dowloads', 'peristents', 'readlist-archive.txt'),   #where to store archive
     'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
     'progress_hooks': [hook],
     'logger': Logger(),
