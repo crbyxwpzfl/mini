@@ -58,7 +58,7 @@ if '"AppleClamshellState" = Yes' in  str(subprocess.Popen(['ioreg', '-r', '-k', 
         
 if '"AppleClamshellState" = No' in  str(subprocess.Popen(['ioreg', '-r', '-k', 'AppleClamshellState'], stdout=subprocess.PIPE).stdout.read()): # if lid open 
     if onoffstate() == None: # if tv off turn tv on
-    post("input/key", {'key': 'Standby'})
+        post("input/key", {'key': 'Standby'})
         time.sleep(4)
     if int(hdmi("read")) == 1: # if sourcetxt hdmi1 switch to hdmi2 
         post("activities/launch", {'intent': {'extras': {'query': 'hdmi 2'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}})
