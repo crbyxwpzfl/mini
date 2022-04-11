@@ -1,59 +1,26 @@
-import requests
-import math
 
-#import privates variable
+
+
+
+# imports and  variable
+
 import sys
-import os
-#sys.path.append(os.environ.get('privates'))
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
+from requests.auth import HTTPDigestAuth
+import requests
+import math
+import sys
+import os        
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
 
-characteristic = sys.argv[3].strip("''")
 
-def go():
-    f = open(os.path.join(privates.minipath, 'Hue.txt'), 'r')
-    h = float(((int(f.read())-7)%360)/360) #((x-farb angleichung)%360 rest ist neuer hue wert)/360 ausgabe von 0-1
-    f.close()
-    f = open(os.path.join(privates.minipath, 'Saturation.txt'), 'r')
-    s = float(math.pow((int(f.read())/100),0.5)) #(x/100)^0.5 um tv saturation settings aus zu gleichen
-    f.close()
-    f = open(os.path.join(privates.minipath, 'Brightness.txt'), 'r')
-    v = float(f.read())/100
-    f.close()
-    
-    if s == 0.0: v*=255; r, g, b = v, v, v
-    i = int(h*6.) # XXX assume int() truncates!
-    f = (h*6.)-i; p,q,t = int(255*(v*(1.-s))), int(255*(v*(1.-s*f))), int(255*(v*(1.-s*(1.-f)))); v*=255; i%=6
-    if i == 0: r, g, b = v, t, p
-    if i == 1: r, g, b = q, v, p
-    if i == 2: r, g, b = p, v, t
-    if i == 3: r, g, b = p, q, v
-    if i == 4: r, g, b = t, p, v
-    if i == 5: r, g, b = v, p, q
 
-    body = f"{{r: {int(r)}, g: {int(g)}, b: {int(b)}}}"
 
-    try:
-        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
-    except requests.exceptions.ConnectionError:
-        print("  ----  error connecting setting ambi ----  ")
-        sys.exit()
-    except requests.exceptions.Timeout:
-        print("  ----  timeout error setting ambi  ----  ")
-        sys.exit()
+# support fuctions
 
-if sys.argv[1] == "Get":
-        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'r')
-        print(int(f.read()), end='')
-        f.close()
-        sys.exit()
-
-if sys.argv[1] == "Set":
-    #get tv an/aus status
-    from requests.auth import HTTPDigestAuth         
-    import urllib3
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    status = 0 #standard tv ist aus
+def onoffstate():
     try:
         response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
     except requests.exceptions.ConnectionError:
@@ -64,46 +31,64 @@ if sys.argv[1] == "Set":
         sys.exit()
     else:
         if "On" in str(response.content):
-            status = 1
-    
-    value = sys.argv[4].strip("''")
-    
-    if characteristic != "On" and int(status) == 0: #nur wenn tv aus ist
-        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
-        f.write(value)
-        f.close()
-        
-        go()
-        go() #ohne wdh wird abundzu falsche farbe angezeigt
-        
+            return 1
+
+def rw(data, txt):
+    with open(os.path.join(privates.minipath, txt), "r+") as f: # open file as read and wirte
+        if data != "read":  # if data read do not wirte
+            f.write(data)   # write data
+            f.truncate()    # delete rest of file
+        f.seek(0)           # go to beniging of file               
+        try:
+            return f.read() # return read hold back by try 
+        finally:
+            f.close()       # finally closes file then releases return  
+
+def post(body):
+    try:
+        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
+    except requests.exceptions.ConnectionError:
+        print("  ----  error connecting setting ambi ----  ")
+        sys.exit()
+    except requests.exceptions.Timeout:
+        print("  ----  timeout error setting ambi  ----  ")
         sys.exit()
 
-    if characteristic == "On" and int(status) == 0: #nur wenn tv aus ist
-        if int(value) == 1:
-            go()
-            
-            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
-            f.write(value)
-            f.close()
+def convert():
+    h = float(((int(rw("read", "Hue.txt"))-7)%360)/360) #((x-farb angleichung)%360 rest ist neuer hue wert)/360 ausgabe von 0-1
+    s = float(math.pow((int(rw("read", "Saturation.txt"))/100),0.5)) #(x/100)^0.5 um tv saturation settings aus zu gleichen
+    v = float(rw("read", "Brightness.txt"))/100
+    
+
+    if s == 0.0: v*=255; r, g, b = v, v, v
+    i = int(h*6.) # XXX assume int() truncates!
+    f = (h*6.)-i; p,q,t = int(255*(v*(1.-s))), int(255*(v*(1.-s*f))), int(255*(v*(1.-s*(1.-f)))); v*=255; i%=6
+    if i == 0: r, g, b = v, t, p
+    if i == 1: r, g, b = q, v, p
+    if i == 2: r, g, b = p, v, t
+    if i == 3: r, g, b = p, q, v
+    if i == 4: r, g, b = t, p, v
+    if i == 5: r, g, b = v, p, q
+
+    return f"{{r: {int(r)}, g: {int(g)}, b: {int(b)}}}"
+
+
+
+
+# logic and output
+
+if sys.argv[1] == "Get":
+    print(rw("read", str(sys.argv[3].strip("''"))+'.txt'), end='')
+    sys.exit()
+
+
+if sys.argv[1] == "Set":   
+    if  onoffstate() == None: # if tv is off
+        if sys.argv[3].strip("''") == "On" and int(sys.argv[4].strip("''")) == 0: # if characteristic On and value off
+            post("{r: 0, g: 0, b: 0}")
+            rw(sys.argv[4].strip("''"), str(sys.argv[3].strip("''"))+'.txt')
             sys.exit()
-            
-        if int(value) == 0:
-            body = "{r: 0, g: 0, b: 0}"
-
-            try:
-                response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
-            except requests.exceptions.ConnectionError:
-                print("  ----  error connecting turning ambi off ----  ")
-                sys.exit()
-            except requests.exceptions.Timeout:
-                print("  ----  timeout error turning ambi off ----  ")
-                sys.exit()
-
-                
-            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
-            f.write(value)
-            f.close()
-            sys.exit()
-
-print("---- end of file sth went wrong -----")
-sys.exit() #wenn tv an und ich will an machen tu nichts
+        
+        rw(sys.argv[4].strip("''"), str(sys.argv[3].strip("''"))+'.txt')         # any other case set characteristic value
+        post(convert())
+        sys.exit()
