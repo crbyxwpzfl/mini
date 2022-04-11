@@ -1,3 +1,9 @@
+
+
+
+
+# imports and variables
+
 import requests
 
 #import privates variable

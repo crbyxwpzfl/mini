@@ -2,7 +2,7 @@
 
 
 
-# imports and  variable
+# imports and  variables
 
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
