@@ -46,25 +46,23 @@ if sys.argv[3].strip("''") == "name": # rturns name and stops script
     print("mini")
     sys.exit()
 
-output = subprocess.Popen(['ioreg', '-r', '-k', 'AppleClamshellState'], stdout=subprocess.PIPE) # gets lid state
-if '"AppleClamshellState" = Yes' in str(output.stdout.read()): # if lid closed
-    
-    if int(hdmi("read")) == 2 : # if hdmi2 switch to hdmi1 and turn tv off and write hdmi1 in sourcetxt
-        post("activities/launch", {'intent': {'extras': {'query': 'hdmi 1'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}})
-        time.sleep(4)
-        post("input/key", {'key': 'Standby'})
-        hdmi("1")
-    
-    print("OCCUPANCY_NOT_DETECTED")
-
-if '"AppleClamshellState" = Yes' in str(output.stdout.read()): # if lid open 
-    
-    if onoffstate() == None: # if tv off turn tv on
-        post("input/key", {'key': 'Standby'})
-        time.sleep(4)
-
-    if int(hdmi("read")) == 1: # if sourcetxt hdmi1 switch to hdmi2 
-        post("activities/launch", {'intent': {'extras': {'query': 'hdmi 2'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}})
-        hdmi("2")
-    
-    print("OCCUPANCY_DETECTED")
+process = subprocess.Popen(['ioreg', '-r', '-k', 'AppleClamshellState'], universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+for line in process.stdout:
+    if '"AppleClamshellState" = Yes' in str(line): # if lid closed
+        if int(hdmi("read")) == 2 : # if hdmi2 switch to hdmi1 and turn tv off and write hdmi1 in sourcetxt
+            post("activities/launch", {'intent': {'extras': {'query': 'hdmi 1'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}})
+            time.sleep(4)
+            post("input/key", {'key': 'Standby'})
+            hdmi("1")
+        print("OCCUPANCY_NOT_DETECTED")
+        sys.exit()
+        
+    if '"AppleClamshellState" = No' in str(line): # if lid open 
+        if onoffstate() == None: # if tv off turn tv on
+            post("input/key", {'key': 'Standby'})
+            time.sleep(4)
+        if int(hdmi("read")) == 1: # if sourcetxt hdmi1 switch to hdmi2 
+            post("activities/launch", {'intent': {'extras': {'query': 'hdmi 2'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}})
+            hdmi("2")
+        print("OCCUPANCY_DETECTED")
+        sys.exit()
