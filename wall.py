@@ -21,7 +21,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable ht
 # support functions
 
 def post(path, data):
-    response = requests.post(f'https://{privates.ip}:1926/6/{path}', timeout=2, json=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    response = requests.post(f'https://{privates.ip}:1926/6/{path}', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
 
 def onoffstate():
     try:
