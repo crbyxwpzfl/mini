@@ -1,3 +1,6 @@
+import requests
+import math
+
 #import privates variable
 import sys
 import os
@@ -5,67 +8,102 @@ import os
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
 
-import subprocess
-import requests
-from requests.auth import HTTPDigestAuth
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-import time
-
-#asume tv is off
-status = 0
-
 characteristic = sys.argv[3].strip("''")
 
-if characteristic == "name":
-    print("test")
-    sys.exit()
+def go():
+    f = open(os.path.join(privates.minipath, 'Hue.txt'), 'r')
+    h = float(((int(f.read())-7)%360)/360) #((x-farb angleichung)%360 rest ist neuer hue wert)/360 ausgabe von 0-1
+    f.close()
+    f = open(os.path.join(privates.minipath, 'Saturation.txt'), 'r')
+    s = float(math.pow((int(f.read())/100),0.5)) #(x/100)^0.5 um tv saturation settings aus zu gleichen
+    f.close()
+    f = open(os.path.join(privates.minipath, 'Brightness.txt'), 'r')
+    v = float(f.read())/100
+    f.close()
+    
+    if s == 0.0: v*=255; r, g, b = v, v, v
+    i = int(h*6.) # XXX assume int() truncates!
+    f = (h*6.)-i; p,q,t = int(255*(v*(1.-s))), int(255*(v*(1.-s*f))), int(255*(v*(1.-s*(1.-f)))); v*=255; i%=6
+    if i == 0: r, g, b = v, t, p
+    if i == 1: r, g, b = q, v, p
+    if i == 2: r, g, b = p, v, t
+    if i == 3: r, g, b = p, q, v
+    if i == 4: r, g, b = t, p, v
+    if i == 5: r, g, b = v, p, q
 
-#check if tv is off if tv is on status = 1
-response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
-if "On" in str(response.content):
-    status = 1
+    body = f"{{r: {int(r)}, g: {int(g)}, b: {int(b)}}}"
 
-#detect lid status
-output = subprocess.Popen(['ioreg', '-r', '-k', 'AppleClamshellState'], stdout=subprocess.PIPE)
-out = str(output.stdout.read())
+    try:
+        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
+    except requests.exceptions.ConnectionError:
+        print("  ----  error connecting setting ambi ----  ")
+        sys.exit()
+    except requests.exceptions.Timeout:
+        print("  ----  timeout error setting ambi  ----  ")
+        sys.exit()
 
-#read current hdmi state from source.txt
-f = open(os.path.join(privates.minipath, 'source.txt'), 'r')
-hdmi = f.read()
-f.close()
+if sys.argv[1] == "Get":
+        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'r')
+        print(int(f.read()), end='')
+        f.close()
+        sys.exit()
 
-#lid zu
-if '"AppleClamshellState" = Yes' in out:
-
-    #if in hdmi2 turn tv off and wirte hdmi 1 to source.txt
-    if int(hdmi) == 2:
-        data = '{key: "Standby"}'
-        response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+if sys.argv[1] == "Set":
+    #get tv an/aus status
+    from requests.auth import HTTPDigestAuth         
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    status = 0 #standard tv ist aus
+    try:
+        response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
+    except requests.exceptions.ConnectionError:
+        print("  ----  error connecting getting pow  ----  ")
+        sys.exit()
+    except requests.exceptions.Timeout:
+        print("  ----  timeout error getting pow  ----  ")
+        sys.exit()
+    else:
+        if "On" in str(response.content):
+            status = 1
+    
+    value = sys.argv[4].strip("''")
+    
+    if characteristic != "On" and int(status) == 0: #nur wenn tv aus ist
+        f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
+        f.write(value)
+        f.close()
         
-        f = open(os.path.join(privates.minipath, 'source.txt'), 'w')
-        f.write('1')
-        f.close()
-    
-    print("OCCUPANCY_NOT_DETECTED")
+        go()
+        go() #ohne wdh wird abundzu falsche farbe angezeigt
+        
+        sys.exit()
 
-#lid auf
-if '"AppleClamshellState" = No' in out:
-    
-    #ad detection for source state
-    #only switch source if in hdmi1 
-    if int(status) == 0:
-        data = '{key: "Standby"}'
-        response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    if characteristic == "On" and int(status) == 0: #nur wenn tv aus ist
+        if int(value) == 1:
+            go()
+            
+            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
+            f.write(value)
+            f.close()
+            sys.exit()
+            
+        if int(value) == 0:
+            body = "{r: 0, g: 0, b: 0}"
 
-    if int(hdmi) == 1:
-        time.sleep(2)
-        data = {'intent': {'extras': {'query': 'hdmi 2'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}}
-        response = requests.post(f'https://{privates.ip}:1926/6/activities/launch', timeout=2, json=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+            try:
+                response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, data=body)
+            except requests.exceptions.ConnectionError:
+                print("  ----  error connecting turning ambi off ----  ")
+                sys.exit()
+            except requests.exceptions.Timeout:
+                print("  ----  timeout error turning ambi off ----  ")
+                sys.exit()
 
-        f = open(os.path.join(privates.minipath, 'source.txt'), 'w')
-        f.write('2')
-        f.close()
-    
-    print("OCCUPANCY_DETECTED")    
-    sys.exit()
+                
+            f = open(os.path.join(privates.minipath, f'{characteristic}.txt'), 'w')
+            f.write(value)
+            f.close()
+            sys.exit()
+
+print("---- end of file sth went wrong -----")
+sys.exit() #wenn tv an und ich will an machen tu nichts
