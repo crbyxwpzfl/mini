@@ -30,24 +30,42 @@ if "On" in str(response.content):
 output = subprocess.Popen(['ioreg', '-r', '-k', 'AppleClamshellState'], stdout=subprocess.PIPE)
 out = str(output.stdout.read())
 
+#read current hdmi state from source.txt
+f = open(os.path.join(privates.minipath, 'source.txt'), 'r')
+hdmi = int(f.read())
+f.close()
 
 #lid zu
 if '"AppleClamshellState" = Yes' in out:
-	print("OCCUPANCY_NOT_DETECTED")
-    #for now do nothing in the furure turn tv off
+
+    #if in hdmi2 turn tv off and wirte hdmi 1 to source.txt
+    if int(hdmi) == 2:
+        data = '{key: "Standby"}'
+        response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+        
+        f = open(os.path.join(privates.minipath, 'source.txt'), 'w')
+        f.write(1)
+        f.close()
+    
+    print("OCCUPANCY_NOT_DETECTED")
 
 #lid auf
-elif '"AppleClamshellState" = No' in out:
+if '"AppleClamshellState" = No' in out:
     
     #ad detection for source state
     #only switch source if in hdmi1 
     if int(status) == 0:
         data = '{key: "Standby"}'
         response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-        time.sleep(2)
 
+    if int(hdmi) == 1:
+        time.sleep(2)
         data = {'intent': {'extras': {'query': 'hdmi 2'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}}}
         response = requests.post(f'https://{privates.ip}:1926/6/activities/launch', timeout=2, json=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
 
+        f = open(os.path.join(privates.minipath, 'source.txt'), 'w')
+        f.write(2)
+        f.close()
+    
     print("OCCUPANCY_DETECTED")    
     sys.exit()
