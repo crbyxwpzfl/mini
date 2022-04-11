@@ -17,82 +17,63 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable ht
 
 
 
-characteristic = sys.argv[3].strip("''")
 
-#get tv an/aus status
-status = 0 #standard tv ist aus
+# support functions
 
+def post(path, data):
+    response = requests.post(f'https://{privates.ip}:1926/6/{path}', timeout=2, json=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
 
-def req():
-    global status
+def onoffstate():
     try:
         response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
-
-    except requests.exceptions.ConnectionError:    
-        output = subprocess.Popen(['ping', '-c', '1', '-W', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
-        if "100% packet loss" in str(output.stdout.read()): 
-            #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            print("  ----  no connection  ----  ")
-            response = requests.get('http://localhost:8080/motion?mini')
-        else:
-            print("  ----  no connection but ping good  ----  ")
-        
+    except requests.exceptions.ConnectionError:
+        print("  ----  error connecting getting powerstate  ----  ")
         sys.exit()
-    
     except requests.exceptions.Timeout:
-        output = subprocess.Popen(['ping', '-c', '1', '-W', '1', f'{privates.ip}'], stdout=subprocess.PIPE)
-        if "100% packet loss" in str(output.stdout.read()):
-            #output = subprocess.Popen(['sudo', 'systemctl', 'restart', 'hostapd.service'], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            print("  ----  timeout  ----  ")
-            response = requests.get('http://localhost:8080/motion?mini')
-        else:
-            print("  ----  timeout but ping good  ----  ")
-        
+        print("  ----  timeout error getting powerstate  ----  ")
         sys.exit()
-
     else:
         if "On" in str(response.content):
-            status = 1
+            return 1
+        else:
+            return 0
 
+def rw(data, txt):
+    with open(os.path.join(privates.minipath, txt), "r+") as f: # open file as read and wirte
+        if data != "read":  # if data read do not wirte
+            f.write(data)   # write data
+            f.truncate()    # delete rest of file
+        f.seek(0)           # go to beniging of file               
+        try:
+            return f.read() # return read hold back by try 
+        finally:
+            f.close()       # finally closes file then releases return  
+
+
+
+
+# logic and output
 
 if sys.argv[1] == "Get":
-    if characteristic == "Brightness":
-        f = open(os.path.join(privates.minipath, 'Volume.txt'), 'r')
-        volume = int(f.read())
-        f.close()
-        print(volume)
+    if sys.argv[3].strip("''") == "Brightness":
+        print(rw("read", 'Volume.txt'), end='')
         sys.exit()
 
-    if characteristic == "On":
-        req()
-        print(status)
+    if sys.argv[3].strip("''") == "On":
+        print(onoffstate())
         sys.exit()
 
 if sys.argv[1] == "Set":
-    value = sys.argv[4].strip("''")
-    req()
-
-    #set volume nur wenn tv an
-    if characteristic == "Brightness" and int(status) == 1:     
-        data = f"{{ muted: false, current: {int(value)} }}"
-        response = requests.post(f'https://{privates.ip}:1926/6/audio/volume', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-        
-        f = open(os.path.join(privates.minipath, 'Volume.txt'), 'w')
-        f.write(value)
-        f.close()
+    if sys.argv[3].strip("''") == "Brightness" and int(onoffstate()) == 1: # if tv off set volume
+        post("audio/volume", "{'muted': 'false', 'current': '" + sys.argv[4].strip("''") + "'}")
+        rw(sys.argv[4].strip("''"), 'Volume.txt')
         sys.exit()
     
-    if characteristic == "On":
-        #nur wenn gerade aus dann mach an
-        if int(value) == 1 and int(status) == 0:
-            data = '{key: Standby}'
-            response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-            sys.exit()
+    if sys.argv[3].strip("''") == "On" and int(onoffstate()) == 0 and int(sys.argv[4].strip("''")) == 1: # if characteristic On and tv off and value 1 turn tv on
+        post("input/key", "{'key': 'Standby'}")
+        sys.exit()
     
-        #nur wenn gerade an dann mach aus
-        if int(value) == 0 and int(status) == 1:
-            data = '{key: Standby}'
-            response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-            sys.exit()
+    if sys.argv[3].strip("''") == "On" and int(onoffstate()) == 1 and int(sys.argv[4].strip("''")) == 0: # if characteristic On and tv on and value 0 turn tv off
+        post("input/key", "{'key': 'Standby'}")
+        sys.exit()
 
-    sys.exit()

@@ -23,10 +23,10 @@ def onoffstate():
     try:
         response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
     except requests.exceptions.ConnectionError:
-        print("  ----  error connecting getting pow  ----  ")
+        print("  ----  error connecting getting powerstate  ----  ")
         sys.exit()
     except requests.exceptions.Timeout:
-        print("  ----  timeout error getting pow  ----  ")
+        print("  ----  timeout error getting powerstate  ----  ")
         sys.exit()
     else:
         if "On" in str(response.content):
