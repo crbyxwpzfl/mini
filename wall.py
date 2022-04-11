@@ -4,23 +4,25 @@
 
 # imports and variables
 
-import requests
-
-#import privates variable
 import sys
-import os
-#sys.path.append(os.environ.get('privates'))
-sys.path.append('/Users/mini/private/')
+sys.path.append('/Users/mini/Downloads/private/')
 import privates
+from requests.auth import HTTPDigestAuth
+import requests
+import math
+import subprocess
+import os        
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
+
+
 
 characteristic = sys.argv[3].strip("''")
 
 #get tv an/aus status
 status = 0 #standard tv ist aus
-import subprocess
-from requests.auth import HTTPDigestAuth
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
 def req():
     global status
     try:

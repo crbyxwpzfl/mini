@@ -10,7 +10,6 @@ import privates
 from requests.auth import HTTPDigestAuth
 import requests
 import math
-import sys
 import os        
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
