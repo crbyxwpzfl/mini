@@ -1,7 +1,7 @@
 {
     "bridge": {
         "name": "Homebridge A5DC",
-        "username": "0E:6D:B3:6C:A5:DC",
+        "username": "0E:7D:B3:6C:A5:DC",
         "port": 51413,
         "pin": "990-12-081"
     },
@@ -10,6 +10,10 @@
         {
             "name": "Config",
             "port": 8581,
+            "auth": "none",
+            "theme": "auto",
+            "tempUnits": "c",
+            "lang": "auto",
             "platform": "config"
         },
         {
@@ -25,7 +29,7 @@
                     "brightness": 100,
                     "hue": 200,
                     "saturation": 100,
-                    "state_cmd": "python3 /Users/mini/mini/ambilight.py",
+                    "state_cmd": "python3 /Users/mini/Downloads/mini/ambilight.py",
                     "polling": [
                         {
                             "characteristic": "on",
@@ -55,7 +59,7 @@
                             "on": 0,
                             "brightness": 0,
                             "stateChangeResponseTime": 1,
-                            "state_cmd": "python3 /Users/mini/mini/wall.py",
+                            "state_cmd": "python3 /Users/mini/Downloads/mini/wall.py",
                             "polling": [
                                 {
                                     "characteristic": "on",
@@ -89,21 +93,21 @@
                             "timeout": 20000
                         }
                     ],
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'",
+                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/Downloads/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'",
                     "linkedTypes": [
                         {
                             "type": "OccupancySensor",
-                            "displayName": "aptv",
+                            "displayName": "mini",
                             "occupancyDetected": "OCCUPANCY_NOT_DETECTED",
                             "stateChangeResponseTime": 1,
                             "polling": [
                                 {
                                     "characteristic": "occupancyDetected",
-                                    "interval": 60,
-                                    "timeout": 1000
+                                    "interval": 5,
+                                    "timeout": 8000
                                 }
                             ],
-                            "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/sensor.py'"
+                            "state_cmd": "python3 /Users/mini/Downloads/mini/source.py"
                         }
                     ]
                 },
@@ -118,7 +122,7 @@
                     "coolingThresholdTemperature": 20,
                     "heatingThresholdTemperature": 20,
                     "stateChangeResponseTime": 3,
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/thermo.py'",
+                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/Downloads/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/thermo.py'",
                     "polling": [
                         {
                             "characteristic": "currentTemperature",
@@ -151,7 +155,7 @@
             "localhttp": true,
             "cameras": [
                 {
-                    "name": "mini",
+                    "name": "screen",
                     "motion": true,
                     "doorbell": false,
                     "doorbellSwitch": false,
