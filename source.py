@@ -1,13 +1,12 @@
-#import privates variable
+
+
+
+
+# variables and imports
+
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
-
-#ip = privates.ip
-#user = privates.user
-#pw = privates.pw
-#minipath = privates.minipath
-
 import os
 from requests.auth import HTTPDigestAuth
 import requests
@@ -19,6 +18,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable ht
 
 
 
+# support functions
 
 def onoffstate():
     response = requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw))
@@ -41,6 +41,8 @@ def post(path, data):
 
 
 
+
+# logic and output
 
 if sys.argv[3].strip("''") == "name": # rturns name and stops script
     print("mini")
