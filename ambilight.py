@@ -65,6 +65,7 @@ def Set():
     hsv() if json.loads(response.content)['powerstate'] == 'Standby' else sys.exit()    #only when standby
     d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''")) #update value of 'characteristic'
     calculatergb()
+    d['r'] = 1 if d['r'] == 0 and d['g'] == 0 and d['b'] == 0 #inital value issue for hsv conversion
     response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, json={'r': d['r'],'g': d['g'],'b': d['b']})
 
 def hsv():
@@ -91,8 +92,7 @@ d = {'Set': Set, 'Get': Get, 'On': calculateon, 'Hue': hsv,'Saturation': hsv,'Br
 d.get(sys.argv[1].strip("''"))()
 
 # KNOWN ISSUES
-# no initial start values meaning to get going one need to go to full brightness
-
+# colors perhaps not right
 
 
 #d = {'On': geton} # creates dict with 'On'
