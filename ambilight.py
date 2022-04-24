@@ -20,7 +20,7 @@ def Set():
     hsv() if json.loads(response.content)['powerstate'] == 'Standby' else sys.exit()    #only when standby
     d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''")) #update value of 'characteristic'
     calculatergb()
-    d['r'] = 1 if d['r'] == 0 and d['g'] == 0 and d['b'] == 0 #inital value issue for hsv conversion
+    if d['r'] == 0 and d['g'] == 0 and d['b'] == 0 and d['Brightness'] != 0: d['r'] = 1 #inital value issue for hsv conversion
     response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, json={'r': d['r'],'g': d['g'],'b': d['b']})
 
 def hsv():
