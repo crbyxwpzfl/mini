@@ -21,14 +21,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable ht
 
 # support fuctions
 
-def gethsv():
-    response = requests.get(f'https://{privates.ip}:1926/6/ambilight/cached', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-    return hsvof(json.loads(response.content)['layer1']['left']['0']) #returns dict with 'Hue' 'Saturation' 'Brightness'
+#def gethsv():
+#   response = requests.get(f'https://{privates.ip}:1926/6/ambilight/cached', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+#   return hsvof(json.loads(response.content)['layer1']['left']['0']) #returns dict with 'Hue' 'Saturation' 'Brightness'
     
 
-def geton():
-    response = requests.get(f'https://{privates.ip}:1926/6/powerstate', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-    return {json.loads(response.content)['powerstate']: 1} #returns dict with 'On' or 'Standby'
+#def geton():
+#    response = requests.get(f'https://{privates.ip}:1926/6/powerstate', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+#    return {json.loads(response.content)['powerstate']: 1} #returns dict with 'On' or 'Standby'
 
 
 #def get(path):
@@ -36,51 +36,99 @@ def geton():
 #    return response.content
 
 
-def post(body):
-    try:
-        response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, json=body)
-    except requests.exceptions.ConnectionError:
-        print("  ----  error connecting setting ambi ----  ")
-        sys.exit()
-    except requests.exceptions.Timeout:
-        print("  ----  timeout error setting ambi  ----  ")
-        sys.exit()
 
+#def post():
+#    d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''")) #update value of 'characteristic'
+#    calculatergb()
+#    try:
+#       response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, json={'r': d['r'],'g': d['g'],'b': d['b']})
+#        print(response.content)
+#    except requests.exceptions.ConnectionError:
+#        print("  ----  error connecting setting ambi ----  ")
+#        sys.exit()
+#    except requests.exceptions.Timeout:
+#        print("  ----  timeout error setting ambi  ----  ")
+#        sys.exit()
 
-def hsvof(rgb):
-    (h, s, v) = colorsys.rgb_to_hsv(rgb['r']/255, rgb['g']/255, rgb['b']/255)
-    return {'Hue': int(h*360),'Saturation': int(s*100),'Brightness': int(v*100)}
-    
-    #return(int(h*360), int(s*100), int(v*100))
+def Get():
+    d.get(sys.argv[3].strip("''"))()
+    print(d.get(sys.argv[3].strip("''")))
 
-def rgbof(h, s, v):
-    (r, g, b) = colorsys.hsv_to_rgb(((h-7)%360)/360, math.pow((s/100),0.5), (v+1)/100)
-    return(int(r*255), int(g*255), int(b*255)+1)
+def Set():
+    # igonore set on or off
+    # exit when tv on
+    # update rgb values
+    # post rgb when tv off
+    powerstate()
+    d.get(sys.argv[3].strip("''"),  sys.exit)()
+    d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''"))    #update value of 'characteristic'
 
+def powerstate():
+    response = requests.get(f'https://{privates.ip}:1926/6/powerstate', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    d.pop('On') if json.loads(response.content)['powerstate'] == ""
+    #d.pop(json.loads(response.content)['powerstate']) #deletes 'On' or 'Standby'
+    #d.update( {json.loads(response.content)['powerstate']: = 1} )
 
+def hsv():
+    response = requests.get(f'https://{privates.ip}:1926/6/ambilight/cached', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    d.update( json.loads(response.content)['layer1']['left']['0'] ) #updates 'r' 'g' 'b'
+    d.update( calculatehsv() ) #updates 'Hue' 'Saturation' 'Brightness'
+
+def post():
+    d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''")) #update value of 'characteristic'
+    calculatergb()
+    response = requests.post(f'http://{privates.ip}:1925/6/ambilight/cached', timeout=2, json={'r': d['r'],'g': d['g'],'b': d['b']})
+
+def calculatehsv():
+    (h, s, v) = colorsys.rgb_to_hsv(d['r']/255, d['g']/255, d['b']/255)
+    d.update{'Hue': int(h*360),'Saturation': int(s*100),'Brightness': int(v*100)}
+
+def calculatergb():
+    (r, g, b) = colorsys.hsv_to_rgb(((d['Hue']-7)%360)/360, math.pow((d['Saturation']/100),0.5), (d['Brightness']+1)/100)
+    d.update{'r': int(r*255),'g': int(g*255),'b': int(b*255)}
+
+def calculateon():
+    hsv()
+    d.update({'On': int(d.[Brightness]/d.[Brightness]) if d['Brightness'] else 0})
 
 
 # logic and output
 
-if sys.argv[1] == "Get":
-    d = {'On': geton} # creates dict with 'On'
-    d = d.get(sys.argv[3].strip("''"), gethsv)() #overwrites dict with 'Hue' 'Saturation' 'Brightness' or 'Standby' or 'On'
-    print(d.get(sys.argv[3].strip("''"), 0))   #returns value of 'characteristic' or 1 
+d = {'set': Set, 'get', Get, 
+     'On': calculateon, 'Standby': 0,
+     'Hue': hsv,'Saturation': hsv,'Brightness': hsv
+     'r': ,'g': ,'b': }
+d.get(sys.argv[1].strip("''"))()
+
+
 
 
 
 d = {'On': geton} # creates dict with 'On'
-d = d.get(sys.argv[3].strip("''"), gethsv)() #overwrites dict with 'Hue' 'Saturation' 'Brightness' or 'Standby' or 'On'
-if sys.argv[1] == "Set" and geton()['Standby'] == 1: #set only if tv is off
+d = d.get(sys.argv[3].strip("''"), gethsv)() #overwrites dict with 'Hue' 'Saturation' 'Brightness' or 'Standby' or 'On' 
+
+
+if sys.argv[1] == "Set" and d.get('Standby') == 1: #set only if tv is off
+    d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''"))    #update value of 'characteristic'
+    post( d.get('On', rgbof(d)) )   #post 'On' will cause bad request 
+
+if sys.argv[1] == "Get":
+    print(d.get(sys.argv[3].strip("''"), 0))   #returns value of 'characteristic' or 0 
+
+
+#if sys.argv[1] == "Get":
+#    d = {'On': geton} # creates dict with 'On'
+#    d = d.get(sys.argv[3].strip("''"), gethsv)() #overwrites dict with 'Hue' 'Saturation' 'Brightness' or 'Standby' or 'On'
+#   print(d.get(sys.argv[3].strip("''"), 0))   #returns value of 'characteristic' or 1 
     
 
-
-    d = geton() #creates dict with 'On' or 'Standby'
-    if d.get('On') == None: # only if tv is off
-        d.update(gethsv()) #adds 'Hue' 'Saturation' 'Brightness'
-        d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''"))    #update value of 'characteristic' or creates 'On' with value
-        (d['r'], d['g'], d['b']) = rgbof(d['Hue'], d['Saturation'], d['Brightness']) #update 'r' 'g' 'b' values
-        post({'r': d['r']*d['On'], 'g': d['g']*d['On'], 'b': d['b']*d['On']}) #multiplie with 'on' to turn lights off
+#if sys.argv[1] == "Set":
+#    d = geton() #creates dict with 'On' or 'Standby'
+#    if d.get('On') == None: # only if tv is off
+#        d.update(gethsv()) #adds 'Hue' 'Saturation' 'Brightness'
+#       d[sys.argv[3].strip("''")] = int(sys.argv[4].strip("''"))    #update value of 'characteristic' or creates 'On' with value
+#        (d['r'], d['g'], d['b']) = rgbof(d['Hue'], d['Saturation'], d['Brightness']) #update 'r' 'g' 'b' values
+#        post({'r': d['r']*d['On'], 'g': d['g']*d['On'], 'b': d['b']*d['On']}) #multiplie with 'on' to turn lights off
 
 
 #    d = {json.loads(get('powerstate'))['powerstate']: 1} #creates dict with 'On' or 'Standby'
