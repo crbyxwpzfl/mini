@@ -71,7 +71,7 @@ if sys.argv[1] == "Get":
 
 d = {'On': geton} # creates dict with 'On'
 d = d.get(sys.argv[3].strip("''"), gethsv)() #overwrites dict with 'Hue' 'Saturation' 'Brightness' or 'Standby' or 'On'
-if sys.argv[1] == "Set" and geton()['Standby'] == 1: #only if tv is off
+if sys.argv[1] == "Set" and geton()['Standby'] == 1: #set only if tv is off
     
 
 
