@@ -33,7 +33,7 @@ def calculatehsv():
     d.update({'Hue': int(h*360),'Saturation': int(s*100),'Brightness': int(v*100)})
 
 def calculatergb():
-    (r, g, b) = colorsys.hsv_to_rgb(((d['Hue']-7)%360)/360, math.pow((d['Saturation']/100),0.5), (d['Brightness'])/100) #including ue shift and Saturation boost
+    (r, g, b) = colorsys.hsv_to_rgb(((d['Hue']-7)%360)/360, math.pow((d['Saturation']/100),0.5), (d['Brightness'])/100) #including Hue shift and Saturation boost
     d.update({'r': int(r*255),'g': int(g*255),'b': int(b*255)})
 
 def calculateon():
