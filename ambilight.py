@@ -1,9 +1,4 @@
 
-
-
-
-# imports and  variables
-
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
@@ -15,7 +10,6 @@ import math
 import os        
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
-
 
 def Get():
     d.get(sys.argv[3].strip("''"))()
@@ -45,7 +39,6 @@ def calculatergb():
 def calculateon():
     hsv()
     d.update({'On': int(d[Brightness]/d[Brightness]) if d['Brightness'] else 0})
-
 
 d = {'Set': Set, 'Get': Get, 'On': calculateon, 'Hue': hsv,'Saturation': hsv,'Brightness': hsv}
 d.get(sys.argv[1].strip("''"))()
