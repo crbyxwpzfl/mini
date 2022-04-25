@@ -8,12 +8,36 @@ import sys
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
 from requests.auth import HTTPDigestAuth
+import json
 import requests
 import math
-import subprocess
 import os        
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
+
+
+def Get():
+    response = requests.get(f'https://{privates.ip}:1926/6/audio/volume', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    d['Brightness'] = json.loads(response.content)['current']    # adds 'Brightness'
+    print(d.get(sys.argv[3].strip("''"), int(d['Brightness']/d['Brightness']) if d['Brightness'] else 0 ))    # prints 'Brightness' or calculates 'On'
+
+def Set():
+    # only when on turn off
+    response = requests.get(f'https://{privates.ip}:1926/6/powerstate', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    
+    #powerstate On
+    if json.loads(response.content)['powerstate'] == 'On' and sys.argv[4].strip("''") != 0 and sys.argv[3].strip("''") == 'Brightness':
+        # only when powerstate On only change volume when powerstate on
+        response = requests.post(f'https://{privates.ip}:1926/6/audio/volume', timeout=2, json={'muted': 'false', 'current': int(sys.argv[4].strip("''")}, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+
+
+    #powerstate Standby
+    if json.loads(response.content)['powerstate'] == 'Standby' or sys.argv[4].strip("''") == 0:
+        # only when bri 0 turn off OR only when powerstate standby turn on
+        response = requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, json={'key': 'Standby'}, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+
+d = {'Set': Set, 'Get': Get}
+d.get(sys.argv[1].strip("''"))()
 
 
 
@@ -64,7 +88,7 @@ if sys.argv[1] == "Get":
         sys.exit()
 
 if sys.argv[1] == "Set":
-    if sys.argv[3].strip("''") == "Brightness" and int(onoffstate()) == 1: # if tv off set volume
+    if sys.argv[3].strip("''") == "Brightness" and int(onoffstate()) == 1: # if tv on set volume
         post("audio/volume", "{'muted': 'false', 'current': '" + sys.argv[4].strip("''") + "'}")
         rw(sys.argv[4].strip("''"), 'Volume.txt')
         sys.exit()
