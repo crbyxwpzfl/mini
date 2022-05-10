@@ -43,7 +43,9 @@ def parsereadlist():
 
 def head():
     pushsite()
-    
+    #parse readlist()
+    #aria run()
+    #dpl run()
     run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     sys.exit()
 
