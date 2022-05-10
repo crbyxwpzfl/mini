@@ -13,7 +13,7 @@ def Get():
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     lines = subprocess.run(cmdstring , text=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #print(lines.stdout)
+    print(lines.stdout)
     return lines.stdout
 
 def vpnstatus(): # pipe vpn status into dict
@@ -35,15 +35,20 @@ def pushsite(): # pull all repos and push changes of overwritesite()
         run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # gets changes from remote add --quiet to shut up
         d['message']+= r + " "
     overwritesite() # update site content
-    run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push" ) # commit -am does not picup on new created files
-    run(f"osascript -e tell application \"Messages\" to send \"site updated and pulled {message}\" to participant \"{d['phonenr']}\"") # send message site updated
+    run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
 
 
 def parsereadlist():
+    print("todo")
+
+def head():
+    pushsite()
     
+    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+    sys.exit()
 
 
-d = {'Get': Get, # defs for running directly in cli via arguments
+d = {'head': head, 'Get': Get, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
@@ -52,4 +57,4 @@ d = {'Get': Get, # defs for running directly in cli via arguments
     'message': " ", # message to send
     'phonenr': privates.phone,
 }
-dict.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
+d.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
