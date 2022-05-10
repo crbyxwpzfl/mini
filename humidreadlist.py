@@ -3,10 +3,9 @@
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
-
 import os
-
 import subprocess
+import fileinput # for overwritesite()
 
 
 def Get():
@@ -18,25 +17,15 @@ def run(cmdstring): # string here because shell true because only way of chaning
     #print(lines.stdout)
     return lines.stdout
 
-
 def overwritesite():
     fuckedlist = run(d['sshpi'] + "nordvpn status")[12:].strip('\n').split('\n') # clean up output and add to dict
     for count, elem in enumerate(fuckedlist): d[fuckedlist[count].split(': ')[0]] = fuckedlist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value
     d['ccode'] = d.get('Current server', "de")[:2] # insert tihs into calss selector
     d['color'] = "#5cf287" if d['Status'] == 'Connected' else "#fc4444" # insert this into color
-    with open(d['site'], 'r+') as f:
-        lines = f.readlines()
-        lines[6] = f"path.{d['ccode']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n"
-        lines[7] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
-        print(lines[6])
-        print(lines[7])
-        f.seek(0)
-        print(lines)
-        f.writelines(lines)
-
-        lines[6] = f"path.{d['ccode']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n"
-        lines[7] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
-
+    d['line7'] = f"path.{d['ccode']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n"
+    d['line8'] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
+    for line in fileinput.input(d['site'], inplace=True):
+        print(d['line7'], end='') if fileinput.filelineno() == 7 else print(d['line8'], end='') if fileinput.filelineno() == 8 else print(line, end='')
 
 def pushsite():
     for r in d['repos']:
@@ -58,6 +47,6 @@ d = {'Get': Get, # defs for running directly in cli via arguments
     'puthere': '/Users/mini/Downloads/transfer/', # #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
     'message': " ", # message to send
     'phonenr': privates.phone,
-    'site': "/Users/mini/Desktop/indexcopy.txt",
+    'site': "/Users/mini/Desktop/indexcopy.html",
 }
 dict.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
