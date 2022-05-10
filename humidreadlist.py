@@ -26,7 +26,7 @@ def overwritesite():
     d['color'] = "#5cf287" if d['Status'] == 'Connected' else "#fc4444" # get on off color insert color part of css class selector
     d['line7'] = f"path.{d['ccode']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n" # construct linnes
     d['line8'] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
-    for line in fileinput.input(d['site'], inplace=True): # open file and overwrite lines
+    for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line7'], end='') if fileinput.filelineno() == 7 else print(d['line8'], end='') if fileinput.filelineno() == 8 else print(line, end='')
 
 def pushsite():
@@ -48,6 +48,5 @@ d = {'Get': Get, # defs for running directly in cli via arguments
     'puthere': '/Users/mini/Downloads/transfer/', # #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
     'message': " ", # message to send
     'phonenr': privates.phone,
-    'site': "/Users/mini/Desktop/indexcopy.html",
 }
 dict.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
