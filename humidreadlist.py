@@ -56,6 +56,7 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
 
 def setvpn():
+    parsereadlist() # to get desired vpn location and urls
     run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
     pushsite() # only depends on vpn status() not parrsereadlist()
 
@@ -84,7 +85,6 @@ def dlp():
     #   use internal merge/convert tool with ffmpeg to generate mp4
 
 def head():
-    parsereadlist() # to get desired vpn location and urls
     setvpn() # set vpn to location and psuhsite()
     
     # TODO FIRST THING OF ALL if vpn off shut aria down
@@ -95,7 +95,10 @@ def head():
     if d['Status'] == "Connected" and d['ariaurls']:
         aria() # TODO
 
-d = {'dlp', dlp, 'Get': Get, # defs for running directly in cli via arguments
+def test():
+    setvpn()
+
+d = {'test': test, 'dlp': dlp, 'Get': Get, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
