@@ -11,8 +11,7 @@ import subprocess
 import fileinput # for overwritesite()
 import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
-
-import time
+import signal # to close dlp() terminal window
 
 def Get():
     print(dict.get(sys.argv[3].strip("''") , 1))
@@ -72,19 +71,13 @@ def aria():
             #if no downloads left shutdown aria 
 
 def dlp():
-    #TODO replace with ping with dlp process # '-1' account for last \n split
-    if len(run("killall -s Python").split('kill')) == 2:  # +1 account list always len 1 and +1 for Python currently running so this means if no process is up
-        print("starting pig now")
-        print(run("killall -s Python").split('kill'))
-        run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} sayhi arg1 arg2\" ' ")
-        while True:
-            print("og hi", sys.argv[0], sys.argv[1]) 
-            time.sleep(2)
-
-def sayhi():
     while True:
-        print("spawned hi", sys.argv[0], sys.argv[1]) 
+        print("og hi", sys.argv[0], sys.argv[1]) 
         time.sleep(2)
+
+        os.kill(os.getppid(), signal.SIGHUP)
+
+
     
     #check if already a dlp process is running
     #if not
@@ -110,7 +103,11 @@ def head():
     
     if d['Status'] == "Connected":
         aria()
-        dlp()
+        if len(run("killall -s Python").split('kill')) == 2:  # +1 account list always len 1 and +1 for Python currently running so this means if no process is up
+            run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ")
+            while True:
+                print("og hi", sys.argv[0], sys.argv[1]) 
+                time.sleep(2)
 
     #if sth to download for aria/dlp and vpn is ok
         #aria() or dlp()
@@ -119,7 +116,7 @@ def head():
     #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
 
 
-d = {'sayhi': sayhi, 'test': dlp, 'Get': Get, # defs for running directly in cli via arguments
+d = {'dlp': dlp, 'test': dlp, 'Get': Get, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
