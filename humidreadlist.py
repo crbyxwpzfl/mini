@@ -17,17 +17,16 @@ def run(cmdstring): # string here because shell true because only way of chaning
     print(process.stdout.decode())
     return process.stdout.decode()
 
-def parsereadlist():
+def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     run(f"plutil -convert xml1 -o {d['bookmarksxml']} {d['bookmarksplist']}") # TODO move this to setup/backup function
     plist = plistlib.load(open(d['bookmarksplist'], 'rb'))
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
-                print(item['URIDictionary']['title'])
-                print(item['URLString'])
-                if not item['URLString'].startswith('https://'): d['ariaurls'][item['URIDictionary']['title']] = item['URLString'] # all not https into aria
-                if item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'][item['URIDictionary']['title']] = item['URLString'] # all https and not vpn to into dlp
-                if item['URLString'].startswith('https://') and item['URIDictionary']['title'].startswith('vpn '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
+                foldername = (item['URIDictionary']['title'][:100] + item['URLString'][:100]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
+                if foldername not in os.listdir(-TODO-PUT DOWNLOAD- DIR- HERE) and not item['URLString'].startswith('https://'): d['ariaurls'][foldername] = item['URLString'] # all not https into aria
+                if foldername not in os.listdir(".") and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'][foldername] = item['URLString'] # all https and not vpn to into dlp
+                if item['URIDictionary']['title'].startswith('vpn '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
 
 def vpnstatus(): # pipe vpn status into dict
     nicelist = run(d['sshpi'] + "nordvpn status").lstrip('\r-\r  \r\r-\r  \r').rstrip('\n').split('\n') # get vpn status and clean up output a bit
@@ -54,11 +53,24 @@ def setvpn():
     run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
     pushsite() # only depends on vpn status() not parrsereadlist()
 
+def diff():
+    for elem in d['dlpurls']:
+        if elem[(item['URIDictionary']['title'][:100] + item['URLString'][:100]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')] in os.listdir("."): print(elem) 
+        
+        
+        print [name for name in os.listdir(".") if os.path.isdir(name)]
+
+for name in os.listdir("."):
+    if os.path.isdir(name): print(name)
+
+    print(os.listdir(".").isdir(name))
+
 def head():
     parsereadlist() # to get desired vpn location and urls
     setvpn() # set vpn to location and psuhsite()
     
-    #if sth to download for aria or dlp and vpn is ok
+    if 
+    #if sth to download for aria/dlp and vpn is ok
         #aria() or dlp()
 
 
@@ -77,5 +89,6 @@ d = {'test': head, 'Get': Get, # defs for running directly in cli via arguments
     'bookmarksplist': os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), # where apple stores bookmarks plist 
     'ariaurls': {},
     'dlpurls': {},
+    'downpath': "/Users/mini/Desktop/", # path where to download to 
 }
 d.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
