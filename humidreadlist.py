@@ -50,7 +50,7 @@ def overwritesite(): # rewrite site content corrosponding to vpnstatus()
 def pushsite(): # pull all repos and push changes of overwritesite()
     for r in d['repos']:
         run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
-        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # gets changes from remote add --quiet to shut up
+        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # gets changes from remote add --quiet to shut up TODO only pull spinala here rest perhaps in a complete back up funktion
         d['message']+= r + " "
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
@@ -75,8 +75,7 @@ def dlp():
     parsereadlist() # to get desired urls now in new process
     for url in d['dlpurls']:
         d['dlpopts']['outtmpl'] = os.path.join(d['downpath'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
-        with yt_dlp.YoutubeDL(d['dlpopts']) as ydl:
-            ydl.download(url[1]) # the second item in each url list is the url
+        with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
     os.kill(os.getppid(), signal.SIGHUP) # close window when done
 
     # TODO
