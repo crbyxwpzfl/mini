@@ -12,6 +12,7 @@ import fileinput # for overwritesite()
 import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
 import signal # to close dlp() terminal window
+import yt_dlp # for dlp()
 
 def Get():
     print(dict.get(sys.argv[3].strip("''") , 1))
@@ -29,8 +30,8 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
                 foldername = (item['URIDictionary']['title'][:100] + item['URLString'][:100]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
-                if foldername not in os.listdir(d['downpath']) and not item['URLString'].startswith('https://'): d['ariaurls'][foldername] = item['URLString'] # all not https into aria
-                if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'][foldername] = item['URLString'] # all https and not vpn to into dlp
+                if foldername not in os.listdir(d['downpath']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
+                if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('vpn '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
 
 def vpnstatus(): # pipe vpn status into dict
@@ -71,52 +72,31 @@ def aria():
             #if no downloads left shutdown aria 
 
 def dlp():
-    while True:
-        print("og hi", sys.argv[0], sys.argv[1]) 
-        time.sleep(2)
+    parsereadlist() # to get desired urls now in new process
+    for url in d['dlpurls']:
+        d['dlpopts']['outtmpl'] = os.path.join(d['downpath'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
+        with yt_dlp.YoutubeDL(d['dlpopts']) as ydl:
+            ydl.download(url[1]) # the second item in each url list is the url
+    os.kill(os.getppid(), signal.SIGHUP) # close window when done
 
-        os.kill(os.getppid(), signal.SIGHUP)
-
-
-    
-    #check if already a dlp process is running
-    #if not
-        #mkdir foldername
-        #spawn extra process wich downloads 1 dlp urls
-    #ON COMPLETION HOOK
-        #send message or sth
-        #evtl start next dpl download
-    
-    ######OR
-    #check if already a dlp process is runnig
-    #if not
-        #mk all dirs filodernames
-        #spawn extra process wich downloads all urls
-    #ON COMLPETION HOOK
-        #send messsage or sth
-        #evtl check if new urls are to be downloaded
+    # TODO
+    #   send message or sth on completion of each download
+    #           #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+    #   use internal merge/convert tool with ffmpeg to generate mp4
 
 def head():
-    # TODO if vpn off shut aria off
     parsereadlist() # to get desired vpn location and urls
     setvpn() # set vpn to location and psuhsite()
     
-    if d['Status'] == "Connected":
-        aria()
-        if len(run("killall -s Python").split('kill')) == 2:  # +1 account list always len 1 and +1 for Python currently running so this means if no process is up
-            run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ")
-            while True:
-                print("og hi", sys.argv[0], sys.argv[1]) 
-                time.sleep(2)
+    # TODO FIRST THING OF ALL if vpn off shut aria down
 
-    #if sth to download for aria/dlp and vpn is ok
-        #aria() or dlp()
+    if d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+        run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() in new window up
+    
+    if d['Status'] == "Connected" and d['ariaurls']:
+        aria() # TODO
 
-
-    #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
-
-
-d = {'dlp': dlp, 'test': dlp, 'Get': Get, # defs for running directly in cli via arguments
+d = {'dlp', dlp, 'Get': Get, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
@@ -126,8 +106,9 @@ d = {'dlp': dlp, 'test': dlp, 'Get': Get, # defs for running directly in cli via
     'phonenr': privates.phone,
     'bookmarksxml': "/Users/mini/Desktop/SafariBookmarks.xml", # where to export bookmarks to
     'bookmarksplist': os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), # where apple stores bookmarks plist 
-    'ariaurls': {},
-    'dlpurls': {},
+    'ariaurls': [],
+    'dlpurls': [],
     'downpath': "/Users/mini/Desktop/", # path where to download to
+    'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
 }
 d.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
