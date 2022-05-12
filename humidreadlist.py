@@ -13,10 +13,8 @@ import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
 import signal # to close dlp() terminal window
 import yt_dlp # for dlp()
-
-def Get():
-    print(dict.get(sys.argv[3].strip("''") , 1))
-    sys.exit()
+import requests # for aria()
+import json # for aria()
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -29,7 +27,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
-                foldername = (item['URIDictionary']['title'][:100] + item['URLString'][:100]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
+                foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
                 if foldername not in os.listdir(d['downpath']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
                 if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('vpn '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
@@ -60,18 +58,6 @@ def setvpn():
     run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
     pushsite() # only depends on vpn status() not parrsereadlist()
 
-
-def aria():
-    for elem in d['ariaurls']:
-        print("todo")
-        #if aria is off 
-            #start aria
-            #mkdir foldername
-            #add url to aria 
-        #ON COMPLETION HOOK
-            #send message or sth
-            #if no downloads left shutdown aria 
-
 def dlp():
     parsereadlist() # to get desired urls now in new process
     for url in d['dlpurls']:
@@ -84,21 +70,62 @@ def dlp():
     #           #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     #   use internal merge/convert tool with ffmpeg to generate mp4
 
+def aria(): # when called on download complete of aria d['ariaurls'] is empty so no for loop so no post
+    def post(data):
+        try: r = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
+        except requests.exceptions.ConnectionError: run("aria2c --enable-rpc --rpc-listen-all") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+
+    def get(data):
+        try: r = requests.get('http://localhost:6800/jsonrpc', json=data)
+        except requests.exceptions.ConnectionError: run("aria2c --enable-rpc --rpc-listen-all") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+
+    for url in d['ariaurls']:
+        post( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+        
+        # confirm succesful
+        # if succesful either aria made dir or I do cause aria is too slow
+
+    # d['CurrentRelativeHumidity'] = how many downloads are in queue # tell homebridge aria count
+        get( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.tellStopped','params':[0,20,['gid','status','files', 'dir','errorMessage']]} )# get info about arias queue TODO set right offset in params
+        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellActive','params':[['gid','status','dir','files']]} )
+        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellStopped','params':[0,3,['gid','status','dir','files']]} )
+        
+    print(r.content)
+    parsed = json.loads(r.content)
+    resultlist = parsed['result']
+    print(type(resultlist))
+
+    for item in resultlist:
+        print("")
+        print(item['errorMessage'])
+        print(item['status'], item['dir'],item['files'][0]['path'])
+        print("")
+        
+    #send message or sth on completion of each download
+    #    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+    
+    #shut down aria if no downloads left in queue
+    #    data = {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.shutdown'}
+    #    print(requests.post('http://localhost:6800/jsonrpc', json=data) .content)
+
 def head():
     setvpn() # set vpn to location and psuhsite()
     
     # TODO FIRST THING OF ALL if vpn off shut aria down
 
     if d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
-        run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() in new window up
+        run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
     
     if d['Status'] == "Connected" and d['ariaurls']:
         aria() # TODO
 
+    print(d.get(sys.argv[3].strip("''") , 0)) # print aria count to homebridge
+    sys.exit()
+
 def test():
     setvpn()
 
-d = {'test': test, 'dlp': dlp, 'Get': Get, # defs for running directly in cli via arguments
+d = {'test': test, 'dlp': dlp, 'Get': head, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
@@ -112,5 +139,6 @@ d = {'test': test, 'dlp': dlp, 'Get': Get, # defs for running directly in cli vi
     'dlpurls': [],
     'downpath': "/Users/mini/Desktop/", # path where to download to
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
+    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasave.txt --input-file=/Users/mini/Desktop/ariasave.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
 }
-d.get(sys.argv[1].strip("''"), sys.exit)() # call 'Get' or sys exit()
+d.get(sys.argv[1].strip("''"), sys.exit)() # call head() with 'Get' from homebridge or TODO aria() on download completion of aria
