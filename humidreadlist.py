@@ -53,28 +53,26 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
 
-def setvpn():
+def setvpn(): # TODO only run vpn and push site if neccesary
     parsereadlist() # to get desired vpn location and urls
-    run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
+    run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))  
     pushsite() # only depends on vpn status() not parrsereadlist()
+    run(f"osascript -e 'tell application \"Messages\" to send \"site pushed vpn status {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
 
-def dlp():
+def dlp(): # perhaps use internal merge/convert tool with ffmpeg to generate mp4
     parsereadlist() # to get desired urls now in new process
     for url in d['dlpurls']:
         d['dlpopts']['outtmpl'] = os.path.join(d['downpath'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
+        run(f"osascript -e 'tell application \"Messages\" to send \"dlp done {url[0]}\" to participant \"{d['phonenr']}\"'") # send message site updated
     os.kill(os.getppid(), signal.SIGHUP) # close window when done
-
-    # TODO
-    #   send message or sth on completion of each download
-    #           #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
-    #   use internal merge/convert tool with ffmpeg to generate mp4
 
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: if d['Status'] == "Connected": run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
 
-def aria(): # when called on download complete of aria d['ariaurls'] is empty so no urls added no message no purge no shutdown
+# TODO set aria beahviour on system shutdown and restart gernarally mac dont reastart programs on boot up
+def aria(): # perhaps use more advanced opts add trackers and optimize concurren tdownloads and save save file every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
@@ -82,9 +80,8 @@ def aria(): # when called on download complete of aria d['ariaurls'] is empty so
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
-            d['message'] = f"{fs.get('path')} {d['message']}" 
-            if not d['ariaurls']: print(d['message']) # TODO send message here
-            #if not d['ariaurls']:    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+            d['message'] = f"{fs.get('path')} {d['message']}"
+            if not d['ariaurls']: run(f"osascript -e 'tell application \"Messages\" to send \"aria {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     if not d['ariaurls']: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResulti'} ) # purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
@@ -101,7 +98,7 @@ def head():
     if d['Status'] == "Connected" and d['ariaurls']:
         aria()
 
-    print(d.get(sys.argv[3].strip("''") , int(ord(d.get('Uptime', chr(0))[:1])/ord(d.get('Uptime', chr(1))[:1])) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
+    print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
 d = {'Get': head, # defs for running directly in cli via arguments
