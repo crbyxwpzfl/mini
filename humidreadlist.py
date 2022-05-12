@@ -16,13 +16,18 @@ import yt_dlp # for dlp()
 import requests # for aria()
 import json # for aria()
 
+def pluses():
+    run(f"plutil -convert xml1 -o {d['bookmarksxml']} {d['bookmarksplist']}") # out of parsereadlist() TODO move this to setup function
+    for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
+        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
+        d['message']+= r + " "
+
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.decode()) # TODO make programm quiet
     return process.stdout.decode()
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
-    run(f"plutil -convert xml1 -o {d['bookmarksxml']} {d['bookmarksplist']}") # TODO move this to setup/backup function
     plist = plistlib.load(open(d['bookmarksplist'], 'rb'))
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
@@ -44,16 +49,13 @@ def overwritesite(): # overwrite site content corrosponding to parsereadlist() n
         print(d['line7'], end='') if fileinput.filelineno() == 7 else print(d['line8'], end='') if fileinput.filelineno() == 8 else print(line, end='')
 
 def pushsite(): # pull all repos and push changes of overwritesite()
-    for r in d['repos']:
-        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
-        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # TODO gets changes from remote add --quiet to shut up TODO only pull spinala here rest perhaps in a complete back up funktion
-        d['message']+= r + " "
+    run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on newly created files
     run(f"osascript -e 'tell application \"Messages\" to send \"pushed site to {d.get('vpnto', "off")}\" to participant \"{d['phonenr']}\"'") # send message on site updated
 
-def dlp(): # perhaps use internal merge/convert tool with ffmpeg to generate mp4
-    parsereadlist() # to get desired urls now in new process
+def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4
+    parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
         d['dlpopts']['outtmpl'] = os.path.join(d['downpath'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
@@ -65,7 +67,7 @@ def sendaria(data):
         except requests.exceptions.ConnectionError: if d['Status'] == "Connected": run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
 
 # TODO set aria beahviour on system shutdown and restart gernarally mac dont reastart programs on boot up
-def aria(): # perhaps use more advanced opts add trackers and optimize concurren tdownloads and save save file every sec or so
+def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurren tdownloads and save save file every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
