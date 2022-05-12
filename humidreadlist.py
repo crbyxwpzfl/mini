@@ -75,65 +75,31 @@ def dlp():
 
 def aria(): # when called on download complete of aria d['ariaurls'] is empty so no urls added
     def send(data):
-        try: r = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
+        try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-        #print(json.loads(r.content)['result'])
-        for methods in json.loads(r.content)['result']:
-            for rspnslist in methods:
-                print(rspnslist.get('numActive'))
-                print(rspnslist.get('numWaiting'))
-                print(rspnslist.get('status'))
-                print(rspnslist.get('errorMessage'))
-                for fs in rspnslist.get('files', [{'path':'haha'}]):
-                    print(fs.get('path'))
     for url in d['ariaurls']:
         send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
-    #send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'} )
-    #send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.tellStopped','params':[0,20,['status', 'files', 'errorMessage']]} )
+
     send( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} )
-        # confirm succesful
-        # if succesful either aria made dir or I do cause aria is too slow
-
-    # d['CurrentRelativeHumidity'] = how many downloads are in queue # tell homebridge aria count
-        get( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.tellStopped','params':[0,20,['gid','status','files', 'dir','errorMessage']]} )# get info about arias queue TODO set right offset in params
-        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellActive','params':[['gid','status','dir','files']]} )
-        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellWaiting','params':[0,3,['gid','status','dir','files']]} )
-        
-        get({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'})
-
-        requests.post('http://localhost:6800/jsonrpc', json={'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}, verify=False, timeout=2)
-        requests.post('http://localhost:6800/jsonrpc', json={'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'}, verify=False, timeout=2)
-        
-data = {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]}
-print(json.loads(requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2).content)['result'])
-
-         aria2.getGlobalStat([secret])¶
-          aria2.purgeDownloadResult()
-
-[{'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'}, {'jsonrpc': '2.0', 'id': 'mini', }]
-
- {'jsonrpc':'2.0', 'id':'qwer', 'method':'system.multicall', 'params':[[{'method': 'aria2.getGlobalStat'}, {'method': 'aria2.tellStopped','params':[0,20,['status', 'files', 'errorMessage']] }]]}
-
-{'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']] } ] ] }
-
-
-    print(r.content)
-    parsed = json.loads(r.content)
-    resultlist = parsed['result']
-    print(type(resultlist))
-
-    for item in resultlist:
-        print("")
-        print(item['errorMessage'])
-        print(item['status'], item['dir'],item['files'][0]['path'])
-        print("")
-
-    #send message or sth on completion of each download
-    #    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+    d['totalinaria'] = json.loads(d['r'].content)['result'][0][0].get('numActive') + json.loads(d['r'].content)['result'][0][0].get('numWaiting') 
     
-    #shut down aria if no downloads left in queue
-    #    data = {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.shutdown'}
-    #    print(requests.post('http://localhost:6800/jsonrpc', json=data) .content)
+    # all this only on dl completed
+    for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
+        d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
+        for fs in stopped.get('files', [{'path':'nofile'}]):
+            d['message'] = f"{fs.get('path')} {d['message']}" 
+            print(d['message']) # TODO send message here
+            #    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+  
+    # evtl purge aria so next message is clean
+        aria2.purgeDownloadResult
+
+    #if no more to download meaning all done 
+        aria2.shutdown
+
+    # if succesful either aria made dir or I do cause aria is too slow
+    # d['CurrentRelativeHumidity'] = how many downloads are in queue # tell homebridge aria count
+
 
 def head():
     setvpn() # set vpn to location and psuhsite()
