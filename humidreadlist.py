@@ -37,9 +37,6 @@ def vpnstatus(): # pipe vpn status into dict
     for count, elem in enumerate(nicelist): d[nicelist[count].split(': ')[0]] = nicelist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value to dict
 
 def overwritesite(): # rewrite site content corrosponding to vpnstatus()
-    vpnstatus()
-    d['ccode'] = d.get('Current server', "de")[:2] # get country then insert country code into css calss selector
-    
     d['color'] = "#5cf287" if d['Status'] == 'Connected' else "#fc4444" # get on off color insert color part of css class selector
     d['line7'] = f"path.{d['vpnto']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n" # construct linnes
     d['line8'] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
