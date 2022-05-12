@@ -18,7 +18,7 @@ import json # for aria()
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(process.stdout.decode())
+    print(process.stdout.decode()) # TODO make programm quiet
     return process.stdout.decode()
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
@@ -48,7 +48,7 @@ def overwritesite(): # rewrite site content corrosponding to vpnstatus()
 def pushsite(): # pull all repos and push changes of overwritesite()
     for r in d['repos']:
         run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
-        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # gets changes from remote add --quiet to shut up TODO only pull spinala here rest perhaps in a complete back up funktion
+        run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', r)} pull") # TODO gets changes from remote add --quiet to shut up TODO only pull spinala here rest perhaps in a complete back up funktion
         d['message']+= r + " "
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
