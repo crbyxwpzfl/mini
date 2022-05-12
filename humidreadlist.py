@@ -70,26 +70,53 @@ def dlp():
     #           #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     #   use internal merge/convert tool with ffmpeg to generate mp4
 
-def aria(): # when called on download complete of aria d['ariaurls'] is empty so no for loop so no post
-    def post(data):
+
+
+
+def aria(): # when called on download complete of aria d['ariaurls'] is empty so no urls added
+    def send(data):
         try: r = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-        except requests.exceptions.ConnectionError: run("aria2c --enable-rpc --rpc-listen-all") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-
-    def get(data):
-        try: r = requests.get('http://localhost:6800/jsonrpc', json=data)
-        except requests.exceptions.ConnectionError: run("aria2c --enable-rpc --rpc-listen-all") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-
+        except requests.exceptions.ConnectionError: run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+        #print(json.loads(r.content)['result'])
+        for methods in json.loads(r.content)['result']:
+            for rspnslist in methods:
+                print(rspnslist.get('numActive'))
+                print(rspnslist.get('numWaiting'))
+                print(rspnslist.get('status'))
+                print(rspnslist.get('errorMessage'))
+                for fs in rspnslist.get('files', [{'path':'haha'}]):
+                    print(fs.get('path'))
     for url in d['ariaurls']:
-        post( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
-        
+        send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+    #send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'} )
+    #send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.tellStopped','params':[0,20,['status', 'files', 'errorMessage']]} )
+    send( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} )
         # confirm succesful
         # if succesful either aria made dir or I do cause aria is too slow
 
     # d['CurrentRelativeHumidity'] = how many downloads are in queue # tell homebridge aria count
         get( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.tellStopped','params':[0,20,['gid','status','files', 'dir','errorMessage']]} )# get info about arias queue TODO set right offset in params
         get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellActive','params':[['gid','status','dir','files']]} )
-        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellStopped','params':[0,3,['gid','status','dir','files']]} )
+        get( {'jsonrpc': '2.0', 'id': 'qwer', 'method': 'aria2.tellWaiting','params':[0,3,['gid','status','dir','files']]} )
         
+        get({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'})
+
+        requests.post('http://localhost:6800/jsonrpc', json={'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}, verify=False, timeout=2)
+        requests.post('http://localhost:6800/jsonrpc', json={'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'}, verify=False, timeout=2)
+        
+data = {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]}
+print(json.loads(requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2).content)['result'])
+
+         aria2.getGlobalStat([secret])¶
+          aria2.purgeDownloadResult()
+
+[{'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.getGlobalStat'}, {'jsonrpc': '2.0', 'id': 'mini', }]
+
+ {'jsonrpc':'2.0', 'id':'qwer', 'method':'system.multicall', 'params':[[{'method': 'aria2.getGlobalStat'}, {'method': 'aria2.tellStopped','params':[0,20,['status', 'files', 'errorMessage']] }]]}
+
+{'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']] } ] ] }
+
+
     print(r.content)
     parsed = json.loads(r.content)
     resultlist = parsed['result']
@@ -100,7 +127,7 @@ def aria(): # when called on download complete of aria d['ariaurls'] is empty so
         print(item['errorMessage'])
         print(item['status'], item['dir'],item['files'][0]['path'])
         print("")
-        
+
     #send message or sth on completion of each download
     #    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     
@@ -125,8 +152,8 @@ def head():
 def test():
     setvpn()
 
-d = {'test': test, 'dlp': dlp, 'Get': head, # defs for running directly in cli via arguments
-    'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
+#d = {'test': test, 'dlp': dlp, 'Get': head, # defs for running directly in cli via arguments
+d ={'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned
@@ -135,10 +162,10 @@ d = {'test': test, 'dlp': dlp, 'Get': head, # defs for running directly in cli v
     'phonenr': privates.phone,
     'bookmarksxml': "/Users/mini/Desktop/SafariBookmarks.xml", # where to export bookmarks to
     'bookmarksplist': os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), # where apple stores bookmarks plist 
-    'ariaurls': [],
+    'ariaurls': [['linuxiso' ,'magnet:?xt=urn:btih:9b4c1489bfccd8205d152345f7a8aad52d9a1f57&dn=archlinux-2022.05.01-x86_64.iso']],
     'dlpurls': [],
     'downpath': "/Users/mini/Desktop/", # path where to download to
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
-    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasave.txt --input-file=/Users/mini/Desktop/ariasave.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
-}
+    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete=/Users/mini/Desktop/ariahooktest.py --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
+}                                                           # TODO replace this ^ with {pathlib.Path(__file__).resolve()}
 d.get(sys.argv[1].strip("''"), sys.exit)() # call head() with 'Get' from homebridge or TODO aria() on download completion of aria
