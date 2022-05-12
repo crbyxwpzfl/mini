@@ -39,8 +39,9 @@ def vpnstatus(): # pipe vpn status into dict
 def overwritesite(): # rewrite site content corrosponding to vpnstatus()
     vpnstatus()
     d['ccode'] = d.get('Current server', "de")[:2] # get country then insert country code into css calss selector
+    
     d['color'] = "#5cf287" if d['Status'] == 'Connected' else "#fc4444" # get on off color insert color part of css class selector
-    d['line7'] = f"path.{d['ccode']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n" # construct linnes
+    d['line7'] = f"path.{d['vpnto']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n" # construct linnes
     d['line8'] = f"path.{d['ccode']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line7'], end='') if fileinput.filelineno() == 7 else print(d['line8'], end='') if fileinput.filelineno() == 8 else print(line, end='')
@@ -52,12 +53,6 @@ def pushsite(): # pull all repos and push changes of overwritesite()
         d['message']+= r + " "
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on new created files
-
-def setvpn(): # TODO only run vpn and push site if neccesary
-    parsereadlist() # to get desired vpn location and urls
-    run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))  
-    pushsite() # only depends on vpn status() not parrsereadlist()
-    run(f"osascript -e 'tell application \"Messages\" to send \"site pushed vpn status {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
 
 def dlp(): # perhaps use internal merge/convert tool with ffmpeg to generate mp4
     parsereadlist() # to get desired urls now in new process
@@ -86,7 +81,13 @@ def aria(): # perhaps use more advanced opts add trackers and optimize concurren
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
 def head():
-    setvpn() # set vpn to location and psuhsite()
+     # TODO only run vpn and push site if neccesary
+    parsereadlist() # to get desired vpn location and urls
+    vpnstatus() # 
+    run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
+    pushsite() # only depends on vpn status() not parrsereadlist()
+    run(f"osascript -e 'tell application \"Messages\" to send \"site pushed vpn status {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+
 
     if len(run("killall -s aria2c").split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
