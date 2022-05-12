@@ -70,56 +70,42 @@ def dlp():
     #           #run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
     #   use internal merge/convert tool with ffmpeg to generate mp4
 
-
-
-
-def aria(): # when called on download complete of aria d['ariaurls'] is empty so no urls added
-    def send(data):
+def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-        except requests.exceptions.ConnectionError: run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-    for url in d['ariaurls']:
-        send( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+        except requests.exceptions.ConnectionError: if d['Status'] == "Connected": run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
 
-    send( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} )
-    d['totalinaria'] = json.loads(d['r'].content)['result'][0][0].get('numActive') + json.loads(d['r'].content)['result'][0][0].get('numWaiting') 
-    
-    # all this only on dl completed
+def aria(): # when called on download complete of aria d['ariaurls'] is empty so no urls added no message no purge no shutdown
+    for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+    sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
+    d['CurrentRelativeHumidity'] = json.loads(d['r'].content)['result'][0][0].get('numActive') + json.loads(d['r'].content)['result'][0][0].get('numWaiting') # all urls in aria
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
             d['message'] = f"{fs.get('path')} {d['message']}" 
-            print(d['message']) # TODO send message here
-            #    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
-  
-    # evtl purge aria so next message is clean
-        aria2.purgeDownloadResult
-
-    #if no more to download meaning all done 
-        aria2.shutdown
-
-    # if succesful either aria made dir or I do cause aria is too slow
-    # d['CurrentRelativeHumidity'] = how many downloads are in queue # tell homebridge aria count
-
+            if not d['ariaurls']: print(d['message']) # TODO send message here
+            #if not d['ariaurls']:    run(f"osascript -e 'tell application \"Messages\" to send \"site updated and pulled {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
+    if not d['ariaurls']: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResulti'} ) # purge aria so next message is clean shuld be save and shuld not make me miss anything
+    if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
 def head():
     setvpn() # set vpn to location and psuhsite()
-    
-    # TODO FIRST THING OF ALL if vpn off shut aria down
+
+    if len(run("killall -s aria2c").split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
+        run(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'")
 
     if d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
     
     if d['Status'] == "Connected" and d['ariaurls']:
-        aria() # TODO
+        aria()
 
-    print(d.get(sys.argv[3].strip("''") , 0)) # print aria count to homebridge
+    print(d.get(sys.argv[3].strip("''") , int(ord(d.get('Uptime', chr(0))[:1])/ord(d.get('Uptime', chr(1))[:1])) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
-def test():
-    setvpn()
-
-#d = {'test': test, 'dlp': dlp, 'Get': head, # defs for running directly in cli via arguments
-d ={'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for homebridge
+d = {'Get': head, # defs for running directly in cli via arguments
+    'CurrentRelativeHumidity': 80, 'StatusActive': len(run("killall -s aria2c").split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned
@@ -128,10 +114,10 @@ d ={'CurrentRelativeHumidity': 80, 'StatusActive': 1, 'StatusTampered': 0, # for
     'phonenr': privates.phone,
     'bookmarksxml': "/Users/mini/Desktop/SafariBookmarks.xml", # where to export bookmarks to
     'bookmarksplist': os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), # where apple stores bookmarks plist 
-    'ariaurls': [['linuxiso' ,'magnet:?xt=urn:btih:9b4c1489bfccd8205d152345f7a8aad52d9a1f57&dn=archlinux-2022.05.01-x86_64.iso']],
+    'ariaurls': [],
     'dlpurls': [],
     'downpath': "/Users/mini/Desktop/", # path where to download to
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
-    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete=/Users/mini/Desktop/ariahooktest.py --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
-}                                                           # TODO replace this ^ with {pathlib.Path(__file__).resolve()}
-d.get(sys.argv[1].strip("''"), sys.exit)() # call head() with 'Get' from homebridge or TODO aria() on download completion of aria
+    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
+}
+d.get(sys.argv[1].strip("''"), aria)() # call head() with 'Get' from homebridge or aria() on download completion of aria
