@@ -34,8 +34,8 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
             for item in child['Children']:
                 foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
                 if foldername not in os.listdir(d['downpath']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
-                if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('vpn '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
-                if item['URIDictionary']['title'].startswith('vpn '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
+                if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
+                if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
 
 def vpnstate(): # pipe vpn status into dict
     nicelist = run(d['sshpi'] + "nordvpn status").lstrip('\r-\r  \r\r-\r  \r').rstrip('\n').split('\n') # get vpn status and clean up output a bit
@@ -43,10 +43,9 @@ def vpnstate(): # pipe vpn status into dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-    d['line7'] = f"path.{d['vpnto']} {{fill: {d['color']};}}  /* set color and ccode according to on off state */\n" # construct linnes
-    d['line8'] = f"path.{d['vpnto']}:hover {{stroke: {d['color']}; stroke-width: 4; fill: {d['color']};}}\n"
+    d['line'] = f"window.onload = load("{d.get('vpnto', "off")}", "{d['color']}", 12/len(d.get('vpnto', "12")))" # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
-        print(d['line7'], end='') if fileinput.filelineno() == 7 else print(d['line8'], end='') if fileinput.filelineno() == 8 else print(line, end='')
+        print(d['line7'], end='') if fileinput.filelineno() == 7 else print(line, end='')
 
 def pushsite(): # pull all repos and push changes of overwritesite()
     run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
