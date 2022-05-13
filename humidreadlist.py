@@ -17,12 +17,12 @@ import requests # for aria()
 import json # for aria()
 
 def pluses(): # TODO debug
-    run(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'repos', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # out of parsereadlist() TODO move this to setup function
-    print("converted xml to repos/ff/safbookmarksxml")
-
     for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
         run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
         print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
+    
+    run(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # out of parsereadlist() TODO move this to setup function
+
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -65,7 +65,8 @@ def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generat
 
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-        except requests.exceptions.ConnectionError: if d['Status'] == "Connected": run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+        except requests.exceptions.ConnectionError: 
+            if d['Status'] == "Connected": run(f"aria2c {d['ariaopts']}") # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
