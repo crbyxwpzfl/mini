@@ -45,7 +45,7 @@ def vpnstate(): # pipe vpn status into dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-    d['line'] = f'window.onload = load( "{d.get('vpnto', "off")}", "{d['color']}", {12/len(d.get('vpnto', "12"))} )' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
+    d['line'] = f'window.onload = load( \"{d.get('vpnto', "off")}\", \"{d['color']}\", {12/len(d.get('vpnto', "12"))} )' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line7'], end='') if fileinput.filelineno() == 7 else print(line, end='')
 
