@@ -53,7 +53,7 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on newly created files
-    run(f"osascript -e 'tell application \"Messages\" to send \"pushed site to {d.get('vpnto', "off")}\" to participant \"{d['phonenr']}\"'") # send message on site updated
+    run(f"osascript -e 'tell application \"Messages\" to send \"pushed site to {d.get('vpnto', 'off')}\" to participant \"{d['phonenr']}\"'") # send message on site updated
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
