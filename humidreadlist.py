@@ -16,15 +16,17 @@ import yt_dlp # for dlp()
 import requests # for aria()
 import json # for aria()
 
-def pluses():
-    run(f"plutil -convert xml1 -o {d['bookmarksxml']} {d['bookmarksplist']}") # out of parsereadlist() TODO move this to setup function
+def pluses(): # TODO debug
+    run(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'repos', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # out of parsereadlist() TODO move this to setup function
+    print("converted xml to repos/ff/safbookmarksxml")
+
     for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
         run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git") # TODO move this to setup function
-        d['message']+= r + " "
+        print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(process.stdout.decode()) # TODO make programm quiet
+    #print(process.stdout.decode()) # TODO make programm quiet
     return process.stdout.decode()
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
@@ -33,8 +35,8 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
                 foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
-                if foldername not in os.listdir(d['downpath']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
-                if foldername not in os.listdir(d['downpath']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
+                if foldername not in os.listdir(d['puthere']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
+                if foldername not in os.listdir(d['puthere']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
 
 def vpnstate(): # pipe vpn status into dict
@@ -43,7 +45,7 @@ def vpnstate(): # pipe vpn status into dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-    d['line'] = f"window.onload = load("{d.get('vpnto', "off")}", "{d['color']}", 12/len(d.get('vpnto', "12")))" # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
+    d['line'] = f'window.onload = load( "{d.get('vpnto', "off")}", "{d['color']}", {12/len(d.get('vpnto', "12"))} )' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line7'], end='') if fileinput.filelineno() == 7 else print(line, end='')
 
@@ -53,10 +55,10 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on newly created files
     run(f"osascript -e 'tell application \"Messages\" to send \"pushed site to {d.get('vpnto', "off")}\" to participant \"{d['phonenr']}\"'") # send message on site updated
 
-def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4
+def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
-        d['dlpopts']['outtmpl'] = os.path.join(d['downpath'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
+        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
         run(f"osascript -e 'tell application \"Messages\" to send \"dlp done {url[0]}\" to participant \"{d['phonenr']}\"'") # send message site updated
     os.kill(os.getppid(), signal.SIGHUP) # close window when done
@@ -67,7 +69,7 @@ def sendaria(data):
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['downpath'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
     d['CurrentRelativeHumidity'] = json.loads(d['r'].content)['result'][0][0].get('numActive') + json.loads(d['r'].content)['result'][0][0].get('numWaiting') # all urls in aria
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
@@ -97,19 +99,16 @@ def head():
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
-d = {'Get': head, # defs for running directly in cli via arguments
+d = {'debug': pluses,'Get': head, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': len(run("killall -s aria2c").split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned
-    'puthere': '/Users/mini/Downloads/transfer/', # #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/repos/ff/xmlbookmarks  here
     'message': " ", # message to send
     'phonenr': privates.phone,
-    'bookmarksxml': "/Users/mini/Desktop/SafariBookmarks.xml", # where to export bookmarks to
-    'bookmarksplist': os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), # where apple stores bookmarks plist 
     'ariaurls': [],
     'dlpurls': [],
-    'downpath': "/Users/mini/Desktop/", # path where to download to
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
 }
