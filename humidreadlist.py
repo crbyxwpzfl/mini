@@ -30,10 +30,14 @@ def pluses(): # TODO debug
     print("got vpn state")
     print("pulling changes overwriting site and pushhing site")
 
-    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
 
-
+    print(d)
+    print("")
+    print(d['dlpurls'])
+    print("")
+    print(d['Status'])
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -96,17 +100,17 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
 def head():
     parsereadlist() # waht u want vpn location and urls
     vpnstate() # where u are
-    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
 
     if len(run("killall -s aria2c").split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         run(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'")
 
-    if d.get('vpnto', "what u want")[:2] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist() vpn state not vpnstate() eg off not stil on cause vpnstate() is lagging actual vpn is off and bunch others
+    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist() vpn state not vpnstate() eg off not stil on cause vpnstate() is lagging actual vpn is off and bunch others
         aria()
 
-    if d.get('vpnto', "what u want")[:2] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
 
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
