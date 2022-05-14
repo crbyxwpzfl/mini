@@ -46,7 +46,10 @@ def pluses(): # TODO debug
     print("")
     print(d['Status'])
 
-    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    print(f"vpnto is [-2:] - {d.get('vpnto', "what u want wh")[-2:]}")
+    print(f"curr serv is [:2] - {d.get('Current server', "where u are")[:2]}")
+
+    if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
         print("started dlp")
     else:
@@ -64,7 +67,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
-                foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][-20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
+                foldername = (item['URIDictionary']['title'][:40] + item['URLString'][:40] + item['URLString'][-40:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
                 if foldername not in os.listdir(d['puthere']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
                 if foldername not in os.listdir(d['puthere']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
@@ -75,10 +78,10 @@ def vpnstate(): # pipe vpn status into dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-    d['line52'] = f'window.onload = load( \"{d.get("vpnto", "off")[-2:]}\", \"{d["color"]}\", {int(60/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
-    d['line56'] = f'<meta property=\"og:image\" content=\"https://github.com/crbyxwpzfl/spinala/raw/main/locs/{d.get("vpnto", "off")}/trans-og.png\"/> <!-- imessage wont execute js so these musst be set via github push -->\n'
+    d['line52'] = f'window.onload = load( \"{d.get("vpnto", "off")[8:]}\", \"{d["color"]}\", {int(60/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
+    d['line56'] = f'<meta property=\"og:image\" content=\"https://github.com/crbyxwpzfl/spinala/raw/main/locs/{d.get("vpnto", "off")[8:]}/trans-og.png\"/> <!-- imessage wont execute js so these musst be set via github push -->\n'
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
-        print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='')if fileinput.filelineno() == 56 else print(line, end='')
+        print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='') if fileinput.filelineno() == 56 else print(line, end='')
 
 def pushsite(): # pull all repos and push changes of overwritesite()
     run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
@@ -115,17 +118,17 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
 def head():
     parsereadlist() # waht u want vpn location and urls
     vpnstate() # where u are
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    if d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
+    if d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
 
     if len(run("killall -s aria2c").split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         run(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'")
 
-    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist() vpn state not vpnstate() eg off not stil on cause vpnstate() is lagging actual vpn is off and bunch others
+    if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist() vpn state not vpnstate() eg off not stil on cause vpnstate() is lagging actual vpn is off and bunch others
         aria()
 
-    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
 
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
