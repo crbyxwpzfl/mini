@@ -112,8 +112,8 @@ def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generat
         d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
         #run(f"osascript -e 'tell application \"Messages\" to send \"dlp done {url[0]}\" to participant \"{d['phonenr']}\"'") # TODO remove
-        d['message'] = f"d['message'] echo {url[1]} &&"
-    mess("tell app \"Terminal\"", f"-e 'do script \"echo done && {d['message']} du -hs {d['puthere']}*\"' -e 'end tell'")
+        d['message'] = f"d['message'] echo {url[1]} && " # here unlike aria() chained messages
+    mess("tell app \"Terminal\"", f"-e 'do script \"echo done && {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
     os.kill(os.getppid(), signal.SIGHUP) # close window when done
 
 def sendaria(data):
@@ -129,9 +129,9 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
-            d['message'] = f"{fs.get('path')} {d['message']}"
+            d['message'] = f"{fs.get('path')} {d['message']}" # here unlike dlp() no chained messages
             #if not d['ariaurls']: run(f"osascript -e 'tell application \"Messages\" to send \"aria {d['message']}\" to participant \"{d['phonenr']}\"'") # TODO remove message and implement motion call
-            if not d['ariaurls']: mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} && du -hs {d['puthere']}*\"' -e 'end tell'")
+            if not d['ariaurls']: mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
     #if not d['ariaurls']: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResulti'} ) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
