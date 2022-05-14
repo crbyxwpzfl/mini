@@ -28,16 +28,31 @@ def pluses(): # TODO debug
     print("parsed readlist")
     vpnstate() # where u are
     print("got vpn state")
-    print("pulling changes overwriting site and pushhing site")
 
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: 
+        run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
+        print("sshed to change vpn")
+    else:
+        print("did no ssh")
 
-    print(d)
+    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: 
+        pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+        print("pushhed site via git")
+    else:
+        print("did not push anything")
+
     print("")
     print(d['dlpurls'])
     print("")
     print(d['Status'])
+
+    if d.get('vpnto', "what u want")[-2:] == d.get('Current server', "where u are nt")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+        run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
+        print("started dlp")
+    else:
+        print("did not start dlp()")
+
+    
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -49,7 +64,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child['Children']:
-                foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
+                foldername = (item['URIDictionary']['title'][:50] + item['URLString'][:20] + item['URLString'][-20:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
                 if foldername not in os.listdir(d['puthere']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
                 if foldername not in os.listdir(d['puthere']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
@@ -116,7 +131,7 @@ def head():
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
-d = {'debug': pluses,'Get': head, # defs for running directly in cli via arguments
+d = {'debug': pluses,'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': len(run("killall -s aria2c").split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
@@ -129,4 +144,4 @@ d = {'debug': pluses,'Get': head, # defs for running directly in cli via argumen
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
 }
-d.get(sys.argv[1].strip("''"), aria)() # call head() with 'Get' from homebridge or aria() on download completion of aria
+d.get(sys.argv[1].strip("''"), sys.exit)() # call head() with 'Get' from homebridge or TODO instedof sys.exit() aria() on download completion of aria
