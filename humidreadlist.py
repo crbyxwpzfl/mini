@@ -66,9 +66,9 @@ def pluses(): # TODO debug
     # TODO implement in hb and backup config!!
 
 def sub(cmdstring): # string here because shell true because only way of chaning commands
-    process = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    print(process.stdout.decode()) # TODO make programm quiet
-    return process.stdout.decode()
+    >>> p = subprocess.Popen("echo 1 && sleep 4 && echo 2" , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    >>> print(p.communicate()[0].decode())
+    # use this instead of run() and store p in d['subprocess'] when everyou need to look at output just du second line above
 
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
