@@ -15,6 +15,7 @@ import signal # to close dlp() terminal window
 import yt_dlp # for dlp()
 import requests # for aria()
 import json # for aria()
+import time # for mess()
 
 def pluses(): # TODO debug
     for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
@@ -29,13 +30,16 @@ def pluses(): # TODO debug
     vpnstate() # where u are
     print("got vpn state")
 
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: 
+    print(f"vpnto is [-2:] - {d.get('vpnto', 'what u want wh')[-2:]}")
+    print(f"curr serv is [:2] - {d.get('Current server', 'where u are')[:2]}")
+
+    if d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: 
         run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"))
         print("sshed to change vpn")
     else:
         print("did no ssh")
 
-    if d.get('vpnto', "what u want")[-2:] != d.get('Current server', "where u are nt")[:2]: 
+    if d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: 
         pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
         print("pushhed site via git")
     else:
@@ -46,16 +50,28 @@ def pluses(): # TODO debug
     print("")
     print(d['Status'])
 
-    print(f"vpnto is [-2:] - {d.get('vpnto', "what u want wh")[-2:]}")
-    print(f"curr serv is [:2] - {d.get('Current server', "where u are")[:2]}")
-
     if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['dlpurls'] and len(run("killall -s Python").split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         run(f"osascript -e 'tell app \"Terminal\" to do script \"{pathlib.Path(__file__).resolve()} dlp\" ' ") # call itself and bring dlp() up in new window
         print("started dlp")
     else:
         print("did not start dlp()")
 
-    
+    print(d['ariaurls'])
+
+    if len(run("killall -s aria2c").split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
+        run(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'")
+
+    # TODO review new message system and keep debuging especially aria
+    # TODO implement in hb and backup config!!
+
+def mess(tell, rest):
+    win = run(f"osascript -e '{tell}' {rest}").lstrip('tab 1 of window id ').rstrip('\n')
+    response = requests.get('http://localhost:8080/motion?screen'); time.sleep(1)
+    run(f"osascript -e '{tell}' -e 'close window id {win}' -e 'end tell'")
+
+    mess("tell app \"Safari\"", "-e 'make new document with properties {URL:\"https://crbyxwpzfl.github.io/spinala/\"}' -e 'return id of window 1' -e'end tell'")
+    mess("tell app \"Terminal\"", f"-e 'do script \"du -hs {d['puthere']}*\"' -e 'end tell'")
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -87,14 +103,17 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on newly created files
-    run(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'off')} https://crbyxwpzfl.github.io/spinala/\" to participant \"{d['phonenr']}\"'") # send message on site updated
+    run(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'off')} https://crbyxwpzfl.github.io/spinala/\" to participant \"{d['phonenr']}\"'") # TODO perhaps remove send message on site updated
+    mess("tell app \"Safari\"", "-e 'make new document with properties {URL:\"https://crbyxwpzfl.github.io/spinala/\"}' -e 'return id of window 1' -e'end tell'")
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
         d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
-        run(f"osascript -e 'tell application \"Messages\" to send \"dlp done {url[0]}\" to participant \"{d['phonenr']}\"'") # send message site updated
+        #run(f"osascript -e 'tell application \"Messages\" to send \"dlp done {url[0]}\" to participant \"{d['phonenr']}\"'") # TODO remove
+        d['message'] = f"d['message'] echo {url[1]} &&"
+    mess("tell app \"Terminal\"", f"-e 'do script \"echo done && {d['message']} du -hs {d['puthere']}*\"' -e 'end tell'")
     os.kill(os.getppid(), signal.SIGHUP) # close window when done
 
 def sendaria(data):
@@ -111,8 +130,9 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
             d['message'] = f"{fs.get('path')} {d['message']}"
-            if not d['ariaurls']: run(f"osascript -e 'tell application \"Messages\" to send \"aria {d['message']}\" to participant \"{d['phonenr']}\"'") # send message site updated
-    if not d['ariaurls']: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResulti'} ) # purge aria so next message is clean shuld be save and shuld not make me miss anything
+            #if not d['ariaurls']: run(f"osascript -e 'tell application \"Messages\" to send \"aria {d['message']}\" to participant \"{d['phonenr']}\"'") # TODO remove message and implement motion call
+            if not d['ariaurls']: mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} && du -hs {d['puthere']}*\"' -e 'end tell'")
+    #if not d['ariaurls']: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResulti'} ) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
 def head():
