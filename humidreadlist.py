@@ -65,15 +65,35 @@ def pluses(): # TODO debug
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
 
+def sub(cmdstring): # string here because shell true because only way of chaning commands
+    process = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(process.stdout.decode()) # TODO make programm quiet
+    return process.stdout.decode()
+
+
 def run(cmdstring): # string here because shell true because only way of chaning commands
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.decode()) # TODO make programm quiet
     return process.stdout.decode()
 
 def mess(tell, rest):
+    #use these in popen !! 
+    tell application "Terminal"
+	set win to do script "echo some text echo && du -hs /Users/mini/Downloads/* && sleep 2 && exit"
+    end tell
+
+    tell application "Safari"
+	open location "https://crbyxwpzfl.github.io/spinala/"
+	delay 3
+	close (current tab of window 1)
+    end tell
+
+
     mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
     
     run(f"osascript -e 'tell app \"Terminal\" to do script \"/Users/mini/Desktop/test.py \\\"tell app \\\\\\\"Terminal\\\\\\\" \\\"     \\\"-e 'do script \\\\\\\"echo && echo hi && echo && du -hs /Users/mini/Downloads/*\\\\\\\"' -e 'end tell' \\\"   \"'")
+
+
 
     win = run(f"osascript -e '{tell}' {rest}").lstrip('tab 1 of window id ').rstrip('\n')
     response = requests.get('http://localhost:8080/motion?screen'); time.sleep(1) # perhpas makes me miss some messes when called rapidly
