@@ -53,7 +53,7 @@ def vpnstate(): # pipe vpn status into dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-    d['line52'] = f'window.onload = load( \"{d.get("vpnto", "off")[-2:]}\", \"{d["color"]}\", {int(48/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
+    d['line52'] = f'window.onload = load( \"{d.get("vpnto", "off")[-2:]}\", \"{d["color"]}\", {int(60/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
     d['line56'] = f'<meta property=\"og:image\" content=\"https://github.com/crbyxwpzfl/spinala/raw/main/locs/{d.get("vpnto", "off")}/trans-og.png\"/> <!-- imessage wont execute js so these musst be set via github push -->\n'
     for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='')if fileinput.filelineno() == 56 else print(line, end='')
