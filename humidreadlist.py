@@ -77,6 +77,11 @@ def run(cmdstring): # string here because shell true because only way of chaning
     return process.stdout.decode()
 
 def mess(tell, rest):
+    # use this for previews and messages
+    p = subprocess.Popen("qlmanage -p /Users/mini/Desktop" , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    killall -s qlmanage
+
+
     #use these in popen !! 
     tell application "Terminal"
 	set win to do script "echo some text echo && du -hs /Users/mini/Downloads/* && sleep 2 && exit"
