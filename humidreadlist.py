@@ -29,7 +29,10 @@ def pluses(): # TODO debug
     vpnstate() # where u are
     print("got vpn state")
     print("pulling changes overwriting site and pushhing site")
-    pushsite()
+
+    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: run(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect")) # only set vpn when parsereadlist() vpn state not current vpnstate()
+    if d.get('vpnto', "what u want")[:2] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+
 
 
 def run(cmdstring): # string here because shell true because only way of chaning commands
@@ -62,7 +65,7 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     run(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull") # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
     run(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;" ) # commit -am does not picup on newly created files
-    run(f"osascript -e 'tell application \"Messages\" to send \"pushed site to {d.get('vpnto', 'off')}\" to participant \"{d['phonenr']}\"'") # send message on site updated
+    run(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'off')} https://crbyxwpzfl.github.io/spinala/\" to participant \"{d['phonenr']}\"'") # send message on site updated
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
