@@ -65,7 +65,9 @@ def pluses(): # TODO debug
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
-
+    if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d['Status'] == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist() vpn state not vpnstate() eg off not stil on cause vpnstate() is lagging actual vpn is off and bunch others
+        print("now aria() begins")
+        aria()
 
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
@@ -130,8 +132,8 @@ def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generat
 
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-        except requests.exceptions.ConnectionError: 
-            if d['Status'] == "Connected": sub(f"aria2c {d['ariaopts']}", True) # wait until completion # # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+        except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+            if d['Status'] == "Connected": sub(f"aria2c {d['ariaopts']}", True) # wait until completion # if status connected is essential cause all calls of script without any argumt are running aria() this is cause arie completion hook passes gid as first argumetn so non static so not specifiabl in dict
                                           #TODO remove run(f"aria2c {d['ariaopts']}")
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
@@ -169,7 +171,7 @@ def head():
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
-d = {'debug': pluses,'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
+d = {'debug': pluses,'Get': head, 'dlp': dlp, '': aria(),# defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 80, 'StatusActive': len(sub("killall -s aria2c", True).split('kill'))-1, # for homebridge TODO remove run("killall -s aria2c")
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
@@ -182,4 +184,4 @@ d = {'debug': pluses,'Get': head, 'dlp': dlp, # defs for running directly in cli
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=true --auto-file-renaming=false --allow-overwrite=false --seed-time=0",
 }
-d.get(sys.argv[1].strip("''"), sys.exit)() # call head() with 'Get' from homebridge or TODO instedof sys.exit() aria() on download completion of aria
+d.get(sys.argv[1].strip("''"), aria())() # call head() with 'Get' from homebridge or TODO instedof sys.exit() aria() on download completion of aria
