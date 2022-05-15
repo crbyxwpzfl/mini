@@ -79,6 +79,7 @@ def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
             if d['Status'] == "Connected": sub(f"aria2c {d['ariaopts']}", False) # dont until completion so aria does not stop script execution since daemon mode is false so completion hook works # if status connected is essential cause all calls of script without any argumt are running aria() this is cause arie completion hook passes gid as first argumetn so non static so not specifiabl in dict
+            # TODO aria starts to fast so next url call fails so no d['r'] so key error
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
