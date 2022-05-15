@@ -27,6 +27,7 @@ def pluses(): # TODO debug
 
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
+    # TODO test if messages work when aria gets called via homebridge
 
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
