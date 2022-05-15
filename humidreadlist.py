@@ -65,44 +65,20 @@ def pluses(): # TODO debug
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
 
-def sub(cmdstring): # string here because shell true because only way of chaning commands
-    >>> p = subprocess.Popen("echo 1 && sleep 4 && echo 2" , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    >>> print(p.communicate()[0].decode())
-    # use this instead of run() and store p in d['subprocess'] when everyou need to look at output just du second line above
-
-
-def run(cmdstring): # string here because shell true because only way of chaning commands
+def run(cmdstring): # TODO replace this by sub
     process = subprocess.run(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(process.stdout.decode()) # TODO make programm quiet
     return process.stdout.decode()
 
-def mess(tell, rest):
-    # use this for previews and messages
-    p = subprocess.Popen("qlmanage -p /Users/mini/Desktop" , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    killall -s qlmanage
+def sub(cmdstring): # string here because shell true because only way of chaning commands
+    d['sub'] = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #print(d['sub'].communicate()[0].decode()) # this will wait for p to finisih
 
-
-    #use these in popen !! 
-    tell application "Terminal"
-	set win to do script "echo some text echo && du -hs /Users/mini/Downloads/* && sleep 2 && exit"
-    end tell
-
-    tell application "Safari"
-	open location "https://crbyxwpzfl.github.io/spinala/"
-	delay 3
-	close (current tab of window 1)
-    end tell
-
-
-    mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
-    
-    run(f"osascript -e 'tell app \"Terminal\" to do script \"/Users/mini/Desktop/test.py \\\"tell app \\\\\\\"Terminal\\\\\\\" \\\"     \\\"-e 'do script \\\\\\\"echo && echo hi && echo && du -hs /Users/mini/Downloads/*\\\\\\\"' -e 'end tell' \\\"   \"'")
-
-
-
-    win = run(f"osascript -e '{tell}' {rest}").lstrip('tab 1 of window id ').rstrip('\n')
-    response = requests.get('http://localhost:8080/motion?screen'); time.sleep(1) # perhpas makes me miss some messes when called rapidly
-    run(f"osascript -e '{tell}' -e 'close window id {win}' -e 'end tell'")
+def mess(message, title):
+    sub(f"osascript -e 'display notification \"{message}\" with title \"{title}\"'")
+    # TODO implement    sub("osascript -e 'tell app \"Terminal\"' -e ' do script \"qlmanage -p /Users/mini/Desktop/\"' -e 'set W to the id of window 1' -e 'set visible of window 1 to false' -e 'do script \"curl -s \\\"http://localhost:8080/motion?screen\\\" && exit \"' -e 'delay 2' -e 'close window id W' -e 'end tell'")
+    # TODO implement    sub("osascript -e 'tell app \"Safari\"' -e 'open location \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 2' -e 'close (current tab of window 1)' -e 'end tell'")
+    # TODO implement    sub("osascript -e 'tell app \"System Events\"' -e 'keystroke space using {control down}' -e 'delay 0.5' -e 'keystroke the \"message\"' -e 'delay 0.5' -e 'keystroke space using {control down}' -e 'end tell'")
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     plist = plistlib.load(open(os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), 'rb'))
