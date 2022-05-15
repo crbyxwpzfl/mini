@@ -17,6 +17,14 @@ import requests # for aria()
 import json # for aria()
 import time # for mess()
 
+
+def pluses(): # TODO debug
+    for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
+        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git", True) # TODO move this to setup function
+        print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
+    
+    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}", True) # out of parsereadlist() TODO move this to setup function
+
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
 
