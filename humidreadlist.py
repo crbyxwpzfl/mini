@@ -18,6 +18,8 @@ import json # for aria()
 import time # for mess()
 
 def pluses(): # TODO debug
+    sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 2' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # dont wait use this so link preview loads nicely
+
     for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
         sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git", True) # TODO move this to setup function
         print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
@@ -59,7 +61,7 @@ def pluses(): # TODO debug
 
     print(d['ariaurls'])
 
-    if len(sub("killall -s aria2c").split('kill'), True) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
+    if len(sub("killall -s aria2c", True).split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
@@ -74,10 +76,9 @@ def pluses(): # TODO debug
 #    return process.stdout.decode()
 
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
-    d['sub'] = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if wait: 
-        print d['sub'].communicate()[0].decode() # TODO remove this to shutup
-        return d['sub'].communicate()[0].decode() # this will wait for subprocess to finisih
+    p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if waitforcompletion:
+        return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
 def mess(message, title):
     sub(f"osascript -e 'display notification \"{message}\" with title \"{title}\"'")
@@ -154,7 +155,7 @@ def head():
     if d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
            
            # TODO remove run("killall -s aria2c").split('kill')
-    if len(sub("killall -s aria2c").split('kill'), True) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
+    if len(sub("killall -s aria2c", True).split('kill')) == 2 and d.get('Uptime', 'shiiit') == "shiiit": # prolly should not happen but yeah
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
