@@ -23,7 +23,7 @@ def pluses(): # TODO debug
         sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git", True) # TODO move this to setup function
         print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
     
-    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}", True) # out of parsereadlist() TODO move this to setup function
+    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}", True) # out of parsereadlist() TODO move this to setup function
 
     # TODO review new message system and keep debuging especially aria
     # TODO implement in hb and backup config!!
@@ -44,7 +44,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     plist = plistlib.load(open(os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), 'rb'))
     for child in plist['Children']:
         if child.get('Title', None) == 'com.apple.ReadingList':
-            for item in child['Children']:
+            for item in child.get('Children', []):
                 foldername = (item['URIDictionary']['title'][:40] + item['URLString'][:40] + item['URLString'][-10:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
                 if foldername not in os.listdir(d['puthere']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
                 if foldername not in os.listdir(d['puthere']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
@@ -62,7 +62,7 @@ def overwritesite(): # overwrite site content corrosponding to parsereadlist() n
         print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='') if fileinput.filelineno() == 56 else print(line, end='')
 
 def pushsite(): # pull all repos and push changes of overwritesite()
-    sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} pull", True) # TODO gets changes from remote add --quiet to shut up 
+    sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer','reposetories', 'spinala')} pull", True) # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
     sub(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
     sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
@@ -119,8 +119,7 @@ d = {'debug': pluses,'Get': head, 'dlp': dlp,# defs for running directly in cli 
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned
-    'puthere': '/Users/mini/Downloads/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/repos/ff/xmlbookmarks  here
-    'message': " ", # message to send
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories  d['puthere']/gists  d['puthere']/transfer/reposetories/ff/xmlbookmarks  here
     'phonenr': privates.phone,
     'ariaurls': [],
     'dlpurls': [],

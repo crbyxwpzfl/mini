@@ -76,6 +76,32 @@
                     ]
                 },
                 {
+                    "type": "HumiditySensor",
+                    "displayName": "sensor",
+                    "currentRelativeHumidity": 0,
+                    "statusActive": "False",
+                    "statusTampered": "NOT_TAMPERED",
+                    "stateChangeResponseTime": 1,
+                    "polling": [
+                        {
+                            "characteristic": "currentRelativeHumidity",
+                            "interval": 60,
+                            "timeout": 8000
+                        },
+                        {
+                            "characteristic": "statusActive",
+                            "interval": 63,
+                            "timeout": 8000
+                        },
+                        {
+                            "characteristic": "statusTampered",
+                            "interval": 67,
+                            "timeout": 8000
+                        }
+                    ],
+                    "state_cmd": "python3 /Users/mini/Desktop/test.py"
+                },
+                {
                     "type": "Fan",
                     "displayName": "tisch",
                     "on": 0,
@@ -103,7 +129,7 @@
                             "polling": [
                                 {
                                     "characteristic": "occupancyDetected",
-                                    "interval": 5,
+                                    "interval": 10,
                                     "timeout": 8000
                                 }
                             ],
@@ -160,7 +186,7 @@
                     "doorbell": false,
                     "doorbellSwitch": false,
                     "switches": false,
-                    "motionTimeout": 2,
+                    "motionTimeout": 1,
                     "unbridge": false,
                     "videoConfig": {
                         "source": "-f avfoundation -i 1",
