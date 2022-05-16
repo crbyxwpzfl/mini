@@ -1,22 +1,19 @@
-from __future__ import unicode_literals
-from types import DynamicClassAttribute
-from distutils.dir_util import copy_tree
-from pathlib import Path
+
 import sys
+sys.path.append('/Users/mini/Downloads/private/')
+import privates
+
+#from __future__ import unicode_literals
+#from types import DynamicClassAttribute
+#from distutils.dir_util import copy_tree
+#from pathlib import Path
+import pathlib
 import re
 import subprocess
 import os
 import requests
-import pathlib
 import shutil
 
-class Logger(object):    #logger for ytdl pass instead of print(msg) to quiet output
-    def debug(self, msg):
-        print(msg)
-    def warning(self, msg):
-        print(msg)
-    def error(self, msg):
-        print(msg)
 
 def sub(cmd):
     process = subprocess.Popen(cmd, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -41,15 +38,6 @@ def deltemp(at):
     for p in Path(os.path.join(clonehere, at)).glob("tmp*"):    #delete tmp dirs
         shutil.rmtree(p)
 
-def hook(d):    #send a message with filename to confirm ytdl downlad 
-    if d['status'] == 'finished':
-        filename = d['filename'][22:]
-        sub(['osascript', '-e', f'tell application "Messages" to send "{filename}" to participant "{phonenr}"'])
-
-
-privdir = '/Users/mini/Downloads/private/'
-sys.path.append(privdir)
-import privates
 
 currentdir = os.getcwd()    #current dir for converting stuff
 clonehere = '/Users/mini/Downloads/transfer/'  #put ./repos ./gists ./repos/ff/xmlbookmarks ./repos/ff/dwl-archive here
@@ -62,31 +50,6 @@ repos = ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"]   #repos t
 bookmarksxml =  '/Users/mini/Downloads/SafariBookmarks.xml'    #where to export bookmarks to
 bookmarksplist = os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')
 
-ydlopts = {    #set ytdl options
-    'simulate': False,
-    'restrict-filenames': False,
-    'ignoreerrors': True,
-    'download_archive': '/Users/mini/Downloads/readlist-archive.txt',   #where to store archive
-    'outtmpl': os.path.join(currentdir, 'readlist', '%(id)s-%(title).50s.%(ext)s'),
-    'progress_hooks': [hook],
-    'logger': Logger(),
-}
-
-
-for a in sys.argv:
-    if a in ['pr', '-pr', 'pullreadlist', '-pullreadlist']:
-        import youtube_dl
-
-        Path(os.path.join(currentdir, 'readlist')).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
-
-        sub(['plutil', '-convert', 'xml1', '-o', bookmarksxml, bookmarksplist])     #convert bookmark plist to xml
-
-        file = open(bookmarksxml, "r")   #read xml into variable file
-        for line in file:                #dirty but works to find readinglist urls
-            if re.search("^					<string>http", line):
-                url = line[13:-10]
-                with youtube_dl.YoutubeDL(ydlopts) as ydl:
-                    ydl.download([url])
 
     if a in ['co', '-co', 'convert', '-convert']:
         for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
