@@ -17,7 +17,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable ht
 
 def post(path, data):
     response = requests.post(f'https://{privates.ip}:1926/6/{path}', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-    print(response.content)
 
 def Get():
     d['tv'] = 1 if "On" in str(requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw)).content) else 0
@@ -26,9 +25,9 @@ def Get():
     if d['mini'] == int(d['hdmi'] - 1) or (d['tv'] == 0 and d['mini'] == 1): # switch hdmi turns tv on automaticly
         post("activities/launch", f"{{'intent': {{'extras': {{'query': 'hdmi {d['hdmi']}'}}, 'action': 'Intent {{  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }}', 'component': {{'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'}} }} }} ")
         
-        d['line37'] = f"     'hdmi': {3 - int(d['hdmi'])},\n" # prints 2 if was 1 and 1 if was 2 to 'hdmi'
+        d['line36'] = f"     'hdmi': {3 - int(d['hdmi'])},\n" # prints 2 if was 1 and 1 if was 2 to 'hdmi'
         for line in fileinput.input([pathlib.Path(__file__).resolve()], inplace=True): # open file and overwrite lines
-            print(d['line37'], end='') if fileinput.filelineno() == 37 else print(line, end='')
+            print(d['line36'], end='') if fileinput.filelineno() == 36 else print(line, end='')
 
     print(d.get(sys.argv[3].strip("''") , d['mini']  )) # OccupancyDetected is 0 lid closed and 1 lid open
 
