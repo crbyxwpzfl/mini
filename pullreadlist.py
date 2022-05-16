@@ -151,3 +151,27 @@ if a not in [ 'cr', '-cr', 'clonerepos', '-clonerepos',
     -cr -clonerepos     pulls reposetories to {clonehere}reposetories/
                             {repos}
     ''')
+
+
+def pluses(): # TODO debug
+    for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
+        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git", True) # TODO move this to setup function
+        print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
+    
+    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}", True) # out of parsereadlist() TODO move this to setup function
+
+
+        primedir('gists')
+        response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
+        for i in response.json():
+            foldername = i.get('description', " ")
+            for items in i['files']: 
+                foldername += i['files'][x]['filename'].replace(".", "-") + " "
+
+            sub(['git', 'clone', i['git_pull_url'], os.path.join(clonehere, 'gists', foldername)])    #add [, '--quiet'] to shut up    
+        deltemp('gists')
+        sub(['osascript', '-e', f'tell application "Messages" to send "cloned gists" to participant "{phonenr}"'])
+
+
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories  d['puthere']/gists  d['puthere']/transfer/reposetories/ff/xmlbookmarks  here
+    'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned or pulled

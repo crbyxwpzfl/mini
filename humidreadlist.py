@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 #chmod +x /current/file
 
+
 #let the cluster fuck begin
+
 
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
@@ -17,17 +19,6 @@ import requests # for aria()
 import json # for aria()
 import time # for mess()
 
-
-def pluses(): # TODO debug
-    for r in d['repos']: # out of pushsite() TODO only pull spinala here rest perhaps in a complete back up funktion
-        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git", True) # TODO move this to setup function
-        print(f"cloned {r} to {os.path.join(d['puthere'], 'reposetories')}")
-    
-    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff', 'SafariBookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}", True) # out of parsereadlist() TODO move this to setup function
-
-    # TODO review new message system and keep debuging especially aria
-    # TODO implement in hb and backup config!!
-    # TODO test if messages work when aria gets called via homebridge
 
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -64,7 +55,7 @@ def overwritesite(): # overwrite site content corrosponding to parsereadlist() n
 def pushsite(): # pull all repos and push changes of overwritesite()
     sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer','reposetories', 'spinala')} pull", True) # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
-    sub(f"git -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
+    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
     sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
     sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 3' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # dont wait use this so link preview loads nicely
 
@@ -95,6 +86,7 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
+
 def head():
     parsereadlist() # waht u want vpn location and urls
     vpnstate() # where u are
@@ -114,12 +106,12 @@ def head():
     print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
     sys.exit()
 
-d = {'debug': pluses,'Get': head, 'dlp': dlp,# defs for running directly in cli via arguments
+
+d = {'Get': head, 'dlp': dlp,# defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 0, 'StatusActive': len(sub("killall -s aria2c", True).split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
-    'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned
-    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories  d['puthere']/gists  d['puthere']/transfer/reposetories/ff/xmlbookmarks  here
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories/spinala and dwls here
     'phonenr': privates.phone,
     'ariaurls': [],
     'dlpurls': [],
