@@ -34,8 +34,10 @@ def convert():
     for path, subdirs, files in os.walk(pathlib.PurePath(d['puthere'], 'temps')):
         for name in [f for f in files if f.endswith(".mkv")]:
             print(pathlib.PurePath(path, name))
-            sub(f"ffmpeg -i \"{str(pathlib.PurePath(path, name))}\" -metadata title= -map 0 -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(pathlib.PurePath(path, name)).replace('mkv', 'mp4')}\"")
+            newname = name.replace('this','with')
+            sub(f"ffmpeg -i \"{str(pathlib.PurePath(path, name))}\" -metadata title= -map 0 -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(pathlib.PurePath(path, newname)).replace('mkv', 'mp4')}\"")
 
+            
     response = requests.get('http://localhost:8080/motion?mini')
 
 
