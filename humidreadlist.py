@@ -49,7 +49,7 @@ def overwritesite(): # overwrite site content corrosponding to parsereadlist() n
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
     d['line52'] = f'window.onload = load( \"{d.get("vpnto", "connect off")[8:]}\", \"{d["color"]}\", {int(60/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
     d['line56'] = f'<meta property=\"og:image\" content=\"https://github.com/crbyxwpzfl/spinala/raw/main/locs/{d.get("vpnto", "connect off")[8:]}/trans-og.png\"/> <!-- imessage wont execute js so these musst be set via github push -->\n'
-    for line in fileinput.input([os.path.join(d['puthere'], 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
+    for line in fileinput.input([os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
         print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='') if fileinput.filelineno() == 56 else print(line, end='')
 
 def pushsite(): # pull all repos and push changes of overwritesite()
@@ -111,7 +111,7 @@ d = {'Get': head, 'dlp': dlp,# defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 0, 'StatusActive': len(sub("killall -s aria2c", True).split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
-    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories/spinala and dwls here
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories/spinala for site update and dwls here
     'phonenr': privates.phone,
     'ariaurls': [],
     'dlpurls': [],
