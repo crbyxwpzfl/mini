@@ -2,13 +2,7 @@
 import sys
 sys.path.append('/Users/mini/Downloads/private/')
 import privates
-
-#from __future__ import unicode_literals
-#from types import DynamicClassAttribute
-#from distutils.dir_util import copy_tree
-from pathlib import Path
 import pathlib
-import re
 import subprocess
 import os
 import requests
@@ -18,44 +12,23 @@ def sub(cmdstring): # string here because shell true because only way of chaning
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in p.stdout: print(line.decode()) # print line makes me wait until completion
 
-def primedir(at):
-    Path(os.path.join(d['puthere'], at)).mkdir(parents=True, exist_ok=True)    #make dir if not exsits
-    #files = os.listdir(os.path.join(d['puthere'], at))    #prepend tmp to all files names
-    # TODO is this neccesarry if files:   #if files exist
-    for files in os.listdir(os.path.join(d['puthere'], at)):
-        os.replace(os.path.join(d['puthere'], at, files), os.path.join(d['puthere'], at, f"tmp-{files}"))
-
-def deltemp(at):
-    for p in Path(os.path.join(d['puthere'], at)).glob("tmp*"):    #delete tmp dirs
-        sub(f"rm -r -f {p}")
-
-
-for p in Path(os.path.join(d['puthere'], at)).glob("tmp*"):    #delete tmp dirs
-    print(p)
-
-
-def clone():
+def clone(): # clones or pulls all repos in 'toclone' and gists form github
     sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'reposetories', 'ff', 'bookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # puts bookmarks into ff
     sub(f"git -C {os.path.join(d['puthere'], 'reposetories', 'ff')} commit -am \"bookmarks update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'ff')} push ;") # commit -am does not picup on newly created files
 
-    for r in d['repos']: # clone repos
-        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories')} clone git@github.com:crbyxwpzfl/{r}.git")
-    for r in d['repos']: # pull repos
-        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'],'reposetories', r)} pull") # TODO gets changes from remote add --quiet to shut up 
-
-    primedir('gists')
     response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
-
     for gist in response.json(): # use desription or all filenames as filename
         foldername = gist.get('description', "-")
         if foldername == "-":
             for f in gist['files']:
                 foldername += gist['files'][f]['filename'].replace(".", "-") + "-"
-        sub(f"git clone {gist['git_pull_url']} {os.path.join(d['puthere'], 'gists', foldername.replace(' ', '-'))}") # add --quiet to shut up
+        d['toclone'].append(['gists' , foldername.replace(' ', '-'), gist['git_pull_url']])
 
-    #deltemp('gists')
-    sub(f"osascript -e 'tell application \"Messages\" to send \"pushed bookmarks pulled repos and gists\" to participant \"{d['phonenr']}\"'")
-
+    for l in d['toclone']: # clone gists
+        sub(d['gitcssh'] + f" clone {l[2]} {os.path.join(d['puthere'], l[0], l[1])}")
+    for l in d['toclone']: # pull gists
+        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], l[0], l[1])} pull") # TODO gets changes from remote add --quiet to shut up 
+    
 
 def convert():
 
@@ -73,7 +46,6 @@ def convert():
         response = requests.get('http://localhost:8080/motion?mini')
 
 
-
 def helps():
     print(f'''
 
@@ -82,13 +54,14 @@ def helps():
     
     -cl    pushes bookmarks into {d['puthere']}reposetories/ff/bookmarks.xml     ! clean readlist
            clones gists to {d['puthere']}gists/
-           clones or pulls {d['repos']} to {d['puthere']}reposetories/
+           clones or pulls {d['toclone']}
 
     ''')
 
 d = {'-co': convert, '-cl': clone,
     'puthere': '/Users/mini/Downloads/transfer/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/reposetories/ff/xmlbookmarks here
-    'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned or pulled
+    #'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned or pulled
+    'toclone': [['reposetories', 'private', 'git@github.com:crbyxwpzfl/private.git'], ['reposetories', 'mini', 'git@github.com:crbyxwpzfl/mini.git'], ['reposetories', 'ff', 'git@github.com:crbyxwpzfl/ff.git'], ['reposetories', 'spinala', 'git@github.com:crbyxwpzfl/spinala.git'], ['reposetories', 'rogflow', 'git@github.com:crbyxwpzfl/rogflow.git'], ['reposetories', 'crbyxwpzfl', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git']],
     'currentdir': os.getcwd(), #current dir for converting stuff
     'phonenr': privates.phone,    #for imessage update
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
