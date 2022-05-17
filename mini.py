@@ -31,42 +31,12 @@ def clone(): # clones or pulls all repos in 'toclone' and gists form github
     
 
 def convert():
+    for path, subdirs, files in os.walk(pathlib.PurePath(d['puthere'], 'temps')):
+        for name in [f for f in files if f.endswith(".mkv")]:
+            print(pathlib.PurePath(path, name))
+            sub(f"ffmpeg -i \"{str(pathlib.PurePath(path, name))}\" -metadata title= -map 0 -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(pathlib.PurePath(path, name)).replace('mkv', 'mp4')}\"")
 
-for path, subdirs, files in os.walk(pathlib.PurePath(d['puthere'], 'temps')):
-    for name in [f for f in files if f.endswith(".mkv")]:
-        print(pathlib.PurePath(path, name))
-
-        print(pathlib.PurePath(path, name))
-
-
-
-for dirpath, dirnames, filenames in os.walk("."):
-    for filename in [f for f in filenames if f.endswith(".log")]:
-        print os.path.join(dirpath, filename)
-
-import os
-import os.path
-
-for dirpath, dirnames, filenames in os.walk("."):
-    for filename in [f for f in filenames if f.endswith(".log")]:
-        print os.path.join(dirpath, filename)
-
-for path, subdirs, files in os.walk(pathlib.PurePath('/Users/mini/Downloads/', 'temps')):
-    for name in [f for f in files if f.endswith(".mkv")]:
-        print(pathlib.PurePath(path, name))
-
-
-            for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
-                outfile = str(f)[:-4]+".mp4"
-                sub([handbrakedir, '-i', f"{f}", '-o', outfile])
-                sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
-
-        for f in Path(currentdir).glob("mp3*"):    #convert to mp3 ffmpeg in downloads folder is required
-            outfile = str(f)[:-4]+".mp3"
-            sub([ffmpegdir, '-i', f, outfile])
-            sub(['osascript', '-e', f'tell application "Messages" to send "converted {outfile}" to participant "{phonenr}"'])
-
-        response = requests.get('http://localhost:8080/motion?mini')
+    response = requests.get('http://localhost:8080/motion?mini')
 
 
 def helps():
