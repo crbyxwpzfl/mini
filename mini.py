@@ -32,7 +32,6 @@ def clone(): # clones or pulls all repos in 'toclone' and gists form github
 
 def convert():
 
-        if a in ['co', '-co', 'convert', '-convert']:
             for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
                 outfile = str(f)[:-4]+".mp4"
                 sub([handbrakedir, '-i', f"{f}", '-o', outfile])
@@ -60,10 +59,9 @@ def helps():
 
 d = {'-co': convert, '-cl': clone,
     'puthere': '/Users/mini/Downloads/transfer/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/reposetories/ff/xmlbookmarks here
-    #'repos': ["private", "mini", "ff", "spinala", "rogflow", "crbyxwpzfl"], # all these repos get cloned or pulled
     'toclone': [['reposetories', 'private', 'git@github.com:crbyxwpzfl/private.git'], ['reposetories', 'mini', 'git@github.com:crbyxwpzfl/mini.git'], ['reposetories', 'ff', 'git@github.com:crbyxwpzfl/ff.git'], ['reposetories', 'spinala', 'git@github.com:crbyxwpzfl/spinala.git'], ['reposetories', 'rogflow', 'git@github.com:crbyxwpzfl/rogflow.git'], ['reposetories', 'crbyxwpzfl', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git']],
     'currentdir': os.getcwd(), #current dir for converting stuff
-    'phonenr': privates.phone,    #for imessage update
+    'phonenr': privates.phone, #for imessage update
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     # make sure ffmpeg is in /usr/local/bin to be accesible via terminal
 }

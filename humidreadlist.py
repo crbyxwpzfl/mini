@@ -30,6 +30,8 @@ def mess(message, title):
     # TODO implement    sub("osascript -e 'tell app \"Safari\"' -e 'open location \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 2' -e 'close (current tab of window 1)' -e 'end tell'")
     # TODO implement    sub("osascript -e 'tell app \"System Events\"' -e 'keystroke space using {control down}' -e 'delay 0.5' -e 'keystroke the \"message\"' -e 'delay 0.5' -e 'keystroke space using {control down}' -e 'end tell'")
     # TODO implement    sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 2' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False)
+    # TODO implement    sub("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
+
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     plist = plistlib.load(open(os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), 'rb'))
@@ -37,8 +39,8 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if child.get('Title', None) == 'com.apple.ReadingList':
             for item in child.get('Children', []):
                 foldername = (item['URIDictionary']['title'][:40] + item['URLString'][:40] + item['URLString'][-10:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
-                if foldername not in os.listdir(d['puthere']) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
-                if foldername not in os.listdir(d['puthere']) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
+                if foldername not in os.listdir(os.path.join(d['puthere'], 'temps')) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
+                if foldername not in os.listdir(os.path.join(d['puthere'], 'temps')) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
                 if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
 
 def vpnstate(): # pipe vpn status into dict
@@ -55,14 +57,14 @@ def overwritesite(): # overwrite site content corrosponding to parsereadlist() n
 def pushsite(): # pull all repos and push changes of overwritesite()
     sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer','reposetories', 'spinala')} pull", True) # TODO gets changes from remote add --quiet to shut up 
     overwritesite() # update site content
-    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
+    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
     sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
     sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 3' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # dont wait use this so link preview loads nicely
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
-        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
+        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
         sub(f"osascript -e 'display notification \"done {url[1]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
@@ -73,7 +75,7 @@ def sendaria(data):
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call or when aria on but no urls this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], 'temps', url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
     # TODO if no urls passed aria never gets called so never updates count here
     d['CurrentRelativeHumidity'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # all urls in aria
@@ -82,7 +84,6 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
         for fs in stopped.get('files', [{'path':'nofile'}]):
             d['message'] = f"{fs.get('path')} {d['message']}"
             if not d['ariaurls']: sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
-            # TODO remove if not d['ariaurls']: mess("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
@@ -111,7 +112,7 @@ d = {'Get': head, 'dlp': dlp,# defs for running directly in cli via arguments
     'CurrentRelativeHumidity': 0, 'StatusActive': len(sub("killall -s aria2c", True).split('kill'))-1, # for homebridge
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
-    'puthere': '/Users/mini/Downloads/', # put d['puthere']/transfer/reposetories/spinala for site update and dwls here
+    'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
     'phonenr': privates.phone,
     'ariaurls': [],
     'dlpurls': [],
