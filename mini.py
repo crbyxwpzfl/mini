@@ -13,8 +13,8 @@ def sub(cmdstring): # string here because shell true because only way of chaning
     for line in p.stdout: print(line.decode()) # print line makes me wait until completion
 
 def clone(): # clones or pulls all repos in 'toclone' and gists form github
-    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'reposetories', 'ff', 'bookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # puts bookmarks into ff
-    sub(f"git -C {os.path.join(d['puthere'], 'reposetories', 'ff')} commit -am \"bookmarks update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'reposetories', 'ff')} push ;") # commit -am does not picup on newly created files
+    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff', 'bookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # puts bookmarks into ff
+    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff')} commit -am \"bookmarks update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff')} push ;") # commit -am does not picup on newly created files
 
     response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
     for gist in response.json(): # use desription or all filenames as filename
@@ -25,12 +25,36 @@ def clone(): # clones or pulls all repos in 'toclone' and gists form github
         d['toclone'].append(['gists' , foldername.replace(' ', '-'), gist['git_pull_url']])
 
     for l in d['toclone']: # clone gists
-        sub(d['gitcssh'] + f" clone {l[2]} {os.path.join(d['puthere'], l[0], l[1])}")
+        sub(d['gitcssh'] + f" clone {l[2]} {os.path.join(d['puthere'], 'transfer', l[0], l[1])}")
     for l in d['toclone']: # pull gists
-        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], l[0], l[1])} pull") # TODO gets changes from remote add --quiet to shut up 
+        sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', l[0], l[1])} pull") # TODO gets changes from remote add --quiet to shut up 
     
 
 def convert():
+
+for path, subdirs, files in os.walk(pathlib.PurePath(d['puthere'], 'temps')):
+    for name in [f for f in files if f.endswith(".mkv")]:
+        print(pathlib.PurePath(path, name))
+
+        print(pathlib.PurePath(path, name))
+
+
+
+for dirpath, dirnames, filenames in os.walk("."):
+    for filename in [f for f in filenames if f.endswith(".log")]:
+        print os.path.join(dirpath, filename)
+
+import os
+import os.path
+
+for dirpath, dirnames, filenames in os.walk("."):
+    for filename in [f for f in filenames if f.endswith(".log")]:
+        print os.path.join(dirpath, filename)
+
+for path, subdirs, files in os.walk(pathlib.PurePath('/Users/mini/Downloads/', 'temps')):
+    for name in [f for f in files if f.endswith(".mkv")]:
+        print(pathlib.PurePath(path, name))
+
 
             for f in Path(currentdir).glob("[!mp3]*.mkv"):    #convert mkvs to mp4 handbrakeCLI in downloads folder is requird
                 outfile = str(f)[:-4]+".mp4"
@@ -51,14 +75,14 @@ def helps():
     -co    converts {d['currentdir']}/*.mkv to mp4
            converts {d['currentdir']}/mp3*  to mp3
     
-    -cl    pushes bookmarks into {d['puthere']}reposetories/ff/bookmarks.xml     ! clean readlist
-           clones gists to {d['puthere']}gists/
+    -cl    pushes bookmarks into {d['puthere']}'transfer/reposetories/ff/bookmarks.xml     ! clean readlist
+           clones gists to {d['puthere']}transfer/gists/
            clones or pulls {d['toclone']}
 
     ''')
 
 d = {'-co': convert, '-cl': clone,
-    'puthere': '/Users/mini/Downloads/transfer/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/reposetories/ff/xmlbookmarks here
+    'puthere': '/Users/mini/Downloads/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/reposetories/ff/xmlbookmarks here
     'toclone': [['reposetories', 'private', 'git@github.com:crbyxwpzfl/private.git'], ['reposetories', 'mini', 'git@github.com:crbyxwpzfl/mini.git'], ['reposetories', 'ff', 'git@github.com:crbyxwpzfl/ff.git'], ['reposetories', 'spinala', 'git@github.com:crbyxwpzfl/spinala.git'], ['reposetories', 'rogflow', 'git@github.com:crbyxwpzfl/rogflow.git'], ['reposetories', 'crbyxwpzfl', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git']],
     'currentdir': os.getcwd(), #current dir for converting stuff
     'phonenr': privates.phone, #for imessage update
