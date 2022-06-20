@@ -74,8 +74,7 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     for url in d['ariaurls']: # on download completion call or when aria on but no urls this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[0]], { 'dir': os.path.join(d['puthere'], 'temps', url[1]) } ] } ) # send aria the url from list url[0] and the dir with foldername from list url[1]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
-    # TODO if no urls passed aria never gets called so never updates count here
-    d['CurrentRelativeHumidity'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # all urls in aria
+    d['CurrentRelativeHumidity'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # TODO if no urls passed aria never gets called so never updates count here so eg aria dl some files but count shows 0 because this never got called
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
