@@ -18,6 +18,7 @@ import yt_dlp # for dlp()
 import requests # for aria()
 import json # for aria()
 import time # for mess()
+import sqlite3 # for parsereadlist()
 
 
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
@@ -34,14 +35,11 @@ def mess(message, title):
 
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
-    plist = plistlib.load(open(os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist'), 'rb'))
-    for child in plist['Children']:
-        if child.get('Title', None) == 'com.apple.ReadingList':
-            for item in child.get('Children', []):
-                foldername = (item['URIDictionary']['title'][:40] + item['URLString'][:40] + item['URLString'][-10:]).replace('/','-').replace(':','-').replace('.','-').replace(' ','-')
-                if foldername not in os.listdir(os.path.join(d['puthere'], 'temps')) and not item['URLString'].startswith('https://'): d['ariaurls'].append([foldername, item['URLString']]) # all not https into aria
-                if foldername not in os.listdir(os.path.join(d['puthere'], 'temps')) and item['URLString'].startswith('https://') and not item['URIDictionary']['title'].startswith('push vpn to '): d['dlpurls'].append([foldername, item['URLString']]) # all https and not vpn to into dlp
-                if item['URIDictionary']['title'].startswith('push vpn to '): d['vpnto'] = "connect " + item['URLString'][-2:] # vpn to country into d 'vpnto'
+    listoftupls = sqlite3.connect('/Users/mini/Library/Messages/chat.db').cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
+    for tupl in listoftupls:
+        if '??' in tupl[0] and tupl[0].rsplit('??',1)[1].replace('-', ' ') not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('https://'): d['slpurls'].append(tupl[0].rsplit('??',1)) # all https into dlp
+        if '??' in tupl[0] and tupl[0].rsplit('??',1)[1].replace('-', ' ') not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('http://'): d['ariaurls'].append(tupl[0].strip('http://').rsplit('??',1)) # all http into aria
+        if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
 def vpnstate(): # pipe vpn status into dict
     nicelist = sub(d['sshpi'] + "nordvpn status", True).lstrip('\r-\r  \r\r-\r  \r').rstrip('\n').split('\n') # get vpn status and clean up output a bit
@@ -118,5 +116,6 @@ d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'dlpurls': [],
     'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
+    'sqlquery': 'SELECT message.text FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="crbyxwpzfl@icloud.com" OR chat.chat_identifier="+4915224066305") ORDER BY message.date desc;'
 }
 d.get(sys.argv[1].strip("''"), aria)() # call head() with 'Get' from homebridge or aria() on download completion of aria only works daemon false remember to not wait for completion on aria start
