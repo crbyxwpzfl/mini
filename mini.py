@@ -13,9 +13,6 @@ def sub(cmdstring): # string here because shell true because only way of chaning
     for line in p.stdout: print(line.decode()) # print line makes me wait until completion
 
 def clone(): # clones or pulls all repos in 'toclone' and gists form github
-    sub(f"plutil -convert xml1 -o {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff', 'bookmarks.xml')} {os.path.join(os.environ.get('HOME'), 'Library', 'Safari', 'Bookmarks.plist')}") # puts bookmarks into ff
-    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff')} commit -am \"bookmarks update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'ff')} push ;") # commit -am does not picup on newly created files
-
     response = requests.get('https://api.github.com/users/crbyxwpzfl/gists')    #get all gists
     for gist in response.json(): # use desription or all filenames as filename
         foldername = gist.get('description', "-")
@@ -30,14 +27,13 @@ def clone(): # clones or pulls all repos in 'toclone' and gists form github
         sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', l[0], l[1])} pull") # TODO gets changes from remote add --quiet to shut up 
     
 
-def convert():
+def convert(): # TODO rewirte this so mkvs take name from folder above from chatdb on dl via humidreadlist
     for path, subdirs, files in os.walk(pathlib.PurePath(d['puthere'], 'temps')):
         for name in [f for f in files if f.endswith(".mkv")]:
             print(pathlib.PurePath(path, name))
             newname = name.replace('this','with')
             sub(f"ffmpeg -i \"{str(pathlib.PurePath(path, name))}\" -metadata title= -map 0 -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(pathlib.PurePath(path, newname)).replace('mkv', 'mp4')}\"")
 
-            
     response = requests.get('http://localhost:8080/motion?mini')
 
 
