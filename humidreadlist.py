@@ -112,7 +112,7 @@ d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'phonenr': privates.phone, # for vpn message and sql query
     'ariaurls': [],
     'dlpurls': [],
-    'dlpopts': {'simulate': False, 'restrict-filenames': False, 'ignoreerrors': True, 'format': 'bestvideo*,bestaudio', 'verbos': True, 'external_downloader': {'m3u8': 'aria2c'}},
+    'dlpopts': {'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True, 'external_downloader': 'aria2c'},
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
     'chatdb': '/Users/mini/Library/Messages/chat.db',
     'sqlquery': f'SELECT message.text FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
