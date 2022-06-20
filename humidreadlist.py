@@ -36,7 +36,7 @@ def mess(message, title):
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
-        if '??' in tupl[0] and tupl[0].rsplit('??',1)[1].replace('-', ' ') not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('https://'): d['slpurls'].append(tupl[0].rsplit('??',1)) # all https into dlp
+        if '??' in tupl[0] and tupl[0].rsplit('??',1)[1].replace('-', ' ') not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('https://'): d['dlpurls'].append(tupl[0].rsplit('??',1)) # all https into dlp
         if '??' in tupl[0] and tupl[0].rsplit('??',1)[1].replace('-', ' ') not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('http://'): d['ariaurls'].append(tupl[0].strip('http://').rsplit('??',1)) # all http into aria
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
