@@ -61,7 +61,7 @@ def pushsite(): # pull all repos and push changes of overwritesite()
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
-        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', url[1], f"{url[1]}-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s") # the seccond item in each url list is the foldername
+        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', url[1], f"{url[1]}-%(tbr)s-%(fps)s.%(ext)s") # the seccond item in each url list is the foldername
         with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[0]) # the first item in each url list is the url
         sub(f"osascript -e 'display notification \"done {url[1]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
