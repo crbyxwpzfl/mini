@@ -33,7 +33,6 @@ def mess(message, title):
     # TODO implement    sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 2' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False)
     # TODO implement    sub("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
 
-
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
@@ -62,8 +61,8 @@ def pushsite(): # pull all repos and push changes of overwritesite()
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
-        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', url[0], 'filename-vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the first item in each url list is the foldername
-        with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[1]) # the second item in each url list is the url
+        d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', url[1], 'vc:%(vcodec)s-ac:%(acodec)s.%(ext)s') # the seccond item in each url list is the foldername
+        with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url[0]) # the first item in each url list is the url
         sub(f"osascript -e 'display notification \"done {url[1]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
 def sendaria(data):
@@ -73,7 +72,7 @@ def sendaria(data):
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call or when aria on but no urls this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], 'temps', url[0]) } ] } ) # send aria the url from lit url[1] and the dir with foldername from list url[0]
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[0]], { 'dir': os.path.join(d['puthere'], 'temps', url[1]) } ] } ) # send aria the url from list url[0] and the dir with foldername from list url[1]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
     # TODO if no urls passed aria never gets called so never updates count here
     d['CurrentRelativeHumidity'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # all urls in aria
