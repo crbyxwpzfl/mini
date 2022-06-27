@@ -100,7 +100,7 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
     if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
 
-    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls'] + len['dlpurls'] ))) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
+    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
     sys.exit()
 
 
