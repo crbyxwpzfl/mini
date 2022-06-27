@@ -41,7 +41,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
 def vpnstate(): # pipe vpn status into dict
-    nicelist = sub(d['sshpi'] + "nordvpn status", True).lstrip('\r-\r  \r\r-\r  \r').rstrip('\n').split('\n') # get vpn status and clean up output a bit
+    nicelist = sub(d['sshpi'] + "nordvpn status", True).rstrip(); nicelist = nicelist[nicelist.index("Status"):].split('\n') # get vpn status and clean up output a bit works unless trailing tarsh is added to cmd output
     for count, elem in enumerate(nicelist): d[nicelist[count].split(': ')[0]] = nicelist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value to dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
@@ -57,7 +57,6 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
     #sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
     #sub("osascript -e 'tell app \"Messages\"' -e 'delay 120' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 3' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # first delay is so github already built the site with correct thubnail dont wait use this so link preview loads nicely
-
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
