@@ -87,6 +87,8 @@ def ariasort():
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
+    # TODO start stop parsec
+    # TODO make backup
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
