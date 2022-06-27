@@ -58,6 +58,10 @@ def pushsite(): # pull all repos and push changes of overwritesite()
     #sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
     #sub("osascript -e 'tell app \"Messages\"' -e 'delay 120' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 3' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # first delay is so github already built the site with correct thubnail dont wait use this so link preview loads nicely
 
+def swapfoto():
+    
+
+
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
     for url in d['dlpurls']:
@@ -86,26 +90,25 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
-    if sys.argv[3].strip("''") == "StatusTampered": vpnstate() # where u are
-    if sys.argv[3].strip("''") == "StatusTampered" and d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    if sys.argv[3].strip("''") == "StatusTampered" and d.get('vpnto', "what u want wh")[-2:] != d.get('Current server', "where u are")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    vpnstate() # where u are
+    if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
+    if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
 
-    if sys.argv[3].strip("''") == "StatusTampered" and d['StatusActive'] == 1 and d.get('Uptime', 'shiiiit') == "shiiiit": # prolly should not happen but yeah
+    if  len(sub("killall -s aria2c", True).split('kill'))-1 == 1 and d.get('Uptime', 'shiiiit') == "shiiiit": # prolly should not happen but yeah aria on but vpn off
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
-    if (d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['ariaurls']) or (sys.argv[3].strip("''") == "CurrentRelativeHumidity" and d['StatusActive'] == 1): # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
+    if (d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['ariaurls']) or (len(sub("killall -s aria2c", True).split('kill'))-1 == 1): # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
         aria()
 
-    if d.get('vpnto', "what u want wh")[-2:] == d.get('Current server', "where u are")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
 
-    print(d.get(sys.argv[3].strip("''") , int(len(d.get('Uptime', ''))/len(d.get('Uptime', '1'))) )) # print aria count to homebridge or print aria on as 'StatusActive' or calculate vpn on as 'StatusTampered' as in location tampered
+    print(d.get(sys.argv[3].strip("''") , 0 )) # print aria count 'CurrentRelativeHumidity' to homebridge or print 0
     sys.exit()
 
 
 d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
-    'CurrentRelativeHumidity': 0, 'StatusActive': len(sub("killall -s aria2c", True).split('kill'))-1, # for homebridge 'CurrentRelativeHumidity' as aria count 'StatusActive' as aria active 'StatusTampered' as vpn location tampered
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
