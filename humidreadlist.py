@@ -74,14 +74,14 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     for url in d['ariaurls']: # on download completion call or when aria on but no urls this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[0]], { 'dir': os.path.join(d['puthere'], 'temps', url[1]) } ] } ) # send aria the url from list url[0] and the dir with foldername from list url[1]
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
-    d['CurrentRelativeHumidity'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # TODO if no urls passed aria never gets called so never updates count here so eg aria dl some files but count shows 0 because this never got called
+    d['numactive'] = int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting')) # TODO if no urls passed aria never gets called so never updates count here so eg aria dl some files but count shows 0 because this never got called
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
         for fs in stopped.get('files', [{'path':'nofile'}]):
             d['message'] = f"{fs.get('path')} {d['message']}"
             if not d['ariaurls']: sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
-    if not d['ariaurls'] and d['CurrentRelativeHumidity'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
+    if not d['ariaurls'] and d['numactive'] == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria 
 
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
@@ -100,7 +100,7 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
     if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
 
-    print(d.get(sys.argv[3].strip("''") , 0 )) # print aria count 'CurrentRelativeHumidity' to homebridge or print 0
+    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls'] + len['dlpurls'] ))) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
     sys.exit()
 
 
