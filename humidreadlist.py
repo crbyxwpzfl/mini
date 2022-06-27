@@ -82,6 +82,12 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
 
+def ariasort():
+    #TODO sorting algorithm for aria dls
+
+def interpreter():
+    #TODO perhaps wirte an interpreter for message commands
+
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
     vpnstate() # where u are
@@ -92,6 +98,7 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
+    # TODO why did aria not start on every run with or (len(sub("killall -s aria2c", True).split('kill'))-1 == 1)
     if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
         aria()
 
