@@ -41,8 +41,8 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if '??' in tupl[0] and tupl[0].rsplit('??',1)[1] not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('http://'): d['ariaurls'].append(tupl[0].strip('http://').rsplit('??',1)) # all http into aria
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
-def currentloc(): # TODO atleast check response code here otherwise anything but de will be handled as if vpn is on
-    d['currentloc'] = requests.get(f'http://ipinfo.io/country', timeout=2, verify=False).content.decode().strip().lower()', # here no https cause of error message
+def currentloc():
+    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
 # TODO theoreticly outdated by ping ip
 #def vpnstate(): # pipe vpn status into dict
 #    nicelist = sub(d['sshpi'] + "nordvpn status", True).rstrip(); nicelist = nicelist[nicelist.index("Status"):].split('\n') # get vpn status and clean up output a bit works unless trailing tarsh is added to cmd output
