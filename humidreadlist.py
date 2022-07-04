@@ -19,6 +19,7 @@ import requests # for aria()
 import json # for aria()
 import time # for mess()
 import sqlite3 # for parsereadlist()
+import requests # for currentloc()
 
 
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
@@ -85,7 +86,7 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
 
-def ariasort():
+def sort():
     #TODO sorting algorithm for aria dls
 
 def interpreter():
@@ -97,7 +98,7 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
     currentloc() # where u are
 
-    if d['currentloc'] == "de" and len(sub("killall -s aria2c", True).split('kill'))-1 == 1: # prolly should not happen but yeah aria on but vpn off
+    if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # prolly should not happen but yeah aria on but vpn off kill all
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
@@ -114,13 +115,10 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
     if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
         aria()
 
-    if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and not sub("pgrep -lf .dlp", True):  # and not dlp currently running then do dlp()
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
-    sys.exit()
-
-
 d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
