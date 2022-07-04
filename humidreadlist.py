@@ -91,7 +91,7 @@ def sort():
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
-    # TODO start stop parsec
+    # TODO start stop parsec if d['parsecoff'] and sub("pgrep -lf .parsec", True): sub("killall parsecd", True) else sub("open /Applications/Parsec.app", True)
     # TODO make backup
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
