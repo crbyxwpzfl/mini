@@ -40,9 +40,12 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
         if '??' in tupl[0] and tupl[0].rsplit('??',1)[1] not in os.listdir(os.path.join(d['puthere'], 'temps')) and tupl[0].startswith('http://'): d['ariaurls'].append(tupl[0].strip('http://').rsplit('??',1)) # all http into aria
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
-def vpnstate(): # pipe vpn status into dict
-    nicelist = sub(d['sshpi'] + "nordvpn status", True).rstrip(); nicelist = nicelist[nicelist.index("Status"):].split('\n') # get vpn status and clean up output a bit works unless trailing tarsh is added to cmd output
-    for count, elem in enumerate(nicelist): d[nicelist[count].split(': ')[0]] = nicelist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value to dict
+def currentloc():
+    d['currentloc'] = requests.get(f'http://ipinfo.io/country', timeout=2, verify=False).content.decode().strip().lower()', # here no https cause of error message
+# TODO theoreticly outdated by ping ip
+#def vpnstate(): # pipe vpn status into dict
+#    nicelist = sub(d['sshpi'] + "nordvpn status", True).rstrip(); nicelist = nicelist[nicelist.index("Status"):].split('\n') # get vpn status and clean up output a bit works unless trailing tarsh is added to cmd output
+#    for count, elem in enumerate(nicelist): d[nicelist[count].split(': ')[0]] = nicelist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value to dict
 
 def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
     d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
@@ -68,7 +71,7 @@ def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generat
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-            if d.get('Status', 'Disconnected') ==  "Connected": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running aria() this is cause arie completion hook passes gid as first argumetn so non static so not specifiabl in dict
+            if d['currentloc'] != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running aria() this is cause arie completion hook passes gid as first argumetn so non static so not specifiabl in dict
 
 def aria(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call or when aria on but no urls this bitsh empty so yeeet    smae for if not d['ariaurls'] at shutdown purge send message
@@ -91,24 +94,27 @@ def interpreter():
     # TODO make backup
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
-
-    #TODO safety with this curl
-    #TODO print(requests.get(f'https://ipinfo.io/country', timeout=2, verify=False).content) 
-
     parsereadlist() # waht u want vpn location and urls
-    vpnstate() # where u are
-    if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    currentloc() # where u are
 
-    if  len(sub("killall -s aria2c", True).split('kill'))-1 == 1 and d.get('Uptime', 'shiiiit') == "shiiiit": # prolly should not happen but yeah aria on but vpn off
+    if d['currentloc'] == "de" and len(sub("killall -s aria2c", True).split('kill'))-1 == 1: # prolly should not happen but yeah aria on but vpn off
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); pushsite() # TODO dont wait on sub to finish here! only set vpn when parsereadlist() vpn state not current vpnstate()
+
+    # TODO theoreticly outdated via ip ping
+    # if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
+    # if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
+    # if  len(sub("killall -s aria2c", True).split('kill'))-1 == 1 and d.get('Uptime', 'shiiiit') == "shiiiit": # prolly should not happen but yeah aria on but vpn off
+    #    sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
+    #    sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
+
     # TODO why did aria not start on every run with or (len(sub("killall -s aria2c", True).split('kill'))-1 == 1)
-    if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
         aria()
 
-    if d.get('vpnto', "connect --")[-2:] == d.get('Current server', "--")[:2] and d.get('Status', 'Disconnected') == "Connected" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and len(sub("killall -s Python", True).split('kill')) == 2:  # +1 account for list.split always len 1 and +1 for Python currently running so this means if no dlp is up
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
