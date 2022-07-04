@@ -91,6 +91,10 @@ def interpreter():
     # TODO make backup
 
 def head(): # run full head just on 'StatusTampered' to minimize pi querries
+
+    #TODO safety with this curl
+    #TODO print(requests.get(f'https://ipinfo.io/country', timeout=2, verify=False).content) 
+
     parsereadlist() # waht u want vpn location and urls
     vpnstate() # where u are
     if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
