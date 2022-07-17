@@ -10,7 +10,6 @@ sys.path.append('/Users/mini/Downloads/private/')
 import privates
 import os
 import subprocess
-#    import fileinput # for overwritesite()
 import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
 import signal # to close dlp() terminal window
@@ -28,11 +27,6 @@ def sub(cmdstring, waitforcompletion): # string here because shell true because 
 
 def mess(message, title):
     sub(f"osascript -e 'display notification \"{message}\" with title \"{title}\"'")
-    # TODO implement    sub("osascript -e 'tell app \"Terminal\"' -e ' do script \"qlmanage -p /Users/mini/Desktop/\"' -e 'set W to the id of window 1' -e 'set visible of window 1 to false' -e 'do script \"curl -s \\\"http://localhost:8080/motion?screen\\\" && exit \"' -e 'delay 2' -e 'close window id W' -e 'end tell'")
-    # TODO implement    sub("osascript -e 'tell app \"Safari\"' -e 'open location \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 2' -e 'close (current tab of window 1)' -e 'end tell'")
-    # TODO implement    sub("osascript -e 'tell app \"System Events\"' -e 'keystroke space using {control down}' -e 'delay 0.5' -e 'keystroke the \"message\"' -e 'delay 0.5' -e 'keystroke space using {control down}' -e 'end tell'")
-    # TODO implement    sub("osascript -e 'tell app \"Messages\"' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 2' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False)
-    # TODO implement    sub("tell app \"Terminal\"", f"-e 'do script \"echo {d['message']} echo && du -hs {d['puthere']}*\"' -e 'end tell'")
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
     d['sqlquery'] = f'SELECT message.text FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
@@ -44,24 +38,6 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
 
 def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
-# TODO theoreticly outdated by ping ip
-#def vpnstate(): # pipe vpn status into dict
-#    nicelist = sub(d['sshpi'] + "nordvpn status", True).rstrip(); nicelist = nicelist[nicelist.index("Status"):].split('\n') # get vpn status and clean up output a bit works unless trailing tarsh is added to cmd output
-#    for count, elem in enumerate(nicelist): d[nicelist[count].split(': ')[0]] = nicelist[count].split(':')[1].strip() # for each elem split elem by : then add first elem of split as key and second as value to dict
-
-# TODO exlude this for simplicety and speed
-#def overwritesite(): # overwrite site content corrosponding to parsereadlist() not vpnstate()
-#    d['color'] = "#fc4444" if d.get('vpnto', "Disconnected") == "Disconnected" else "#5cf287" # get on off color insert color part of css class selector
-#    d['line52'] = f'window.onload = load( \"{d.get("vpnto", "connect off")[8:]}\", \"{d["color"]}\", {int(60/len(d.get("vpnto", "chars-to-divide-to-one-this-is-long--ha--thats-what-she-said")))} )\n' # pass site vpn loc and color and stroke width. css displays 'off' state just by color with css class selector, therefore germany has class 'de' and 'off' but js loads diferent icon for 'off' and 'de'
-#    d['line56'] = f'<meta property=\"og:image\" content=\"https://github.com/crbyxwpzfl/spinala/raw/main/locs/{d.get("vpnto", "connect off")[8:]}/trans-og.png\"/> <!-- imessage wont execute js so these musst be set via github push -->\n'
-#    for line in fileinput.input([os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala', 'index.html')], inplace=True): # open file and overwrite lines
-#        print(d['line52'], end='') if fileinput.filelineno() == 52 else print(d['line56'], end='') if fileinput.filelineno() == 56 else print(line, end='')
-#def pushsite(): # pull all repos and push changes of overwritesite()
-#    sub(d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer','reposetories', 'spinala')} pull", True) # TODO gets changes from remote add --quiet to shut up 
-#    overwritesite() # update site content
-#    sub(f"git -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} commit -am \"site update\" ; " + d['gitcssh'] + f" -C {os.path.join(d['puthere'], 'transfer', 'reposetories', 'spinala')} push ;", True) # commit -am does not picup on newly created files
-#    #sub(f"osascript -e 'tell application \"Messages\" to send \"{d.get('vpnto', 'connect off')}\" to participant \"{d['phonenr']}\"'", False)
-#    #sub("osascript -e 'tell app \"Messages\"' -e 'delay 120' -e 'activate' -e 'delay 1' -e 'end tell' -e 'tell application \"System Events\"' -e 'keystroke the \"https://crbyxwpzfl.github.io/spinala/\"' -e 'delay 1' -e 'keystroke return' -e 'delay 3' -e 'keystroke \"q\" using {command down}' -e 'end tell'", False) # first delay is so github already built the site with correct thubnail dont wait use this so link preview loads nicely
 
 def dlp(): # TODO perhaps use internal merge/convert tool with ffmpeg to generate mp4 and use archive at d['puthere']/repos/ff/dwl-archive
     parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
@@ -103,14 +79,7 @@ def head(): # run full head just on 'StatusTampered' to minimize pi querries
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
-    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); #   pushsite() # TODO dont wait on sub to finish here! only set vpn when parsereadlist() vpn state not current vpnstate()
-
-    # TODO theoreticly outdated via ip ping
-    # if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True) # only set vpn when parsereadlist() vpn state not current vpnstate()
-    # if d.get('vpnto', "connect --")[-2:] != d.get('Current server', "--")[:2]: pushsite() # only push site when parsereadlist() vpnstate not current vpnstate(). pushsite() itself sets site corrosponding to parsereadlist() not vpnstate()
-    # if  len(sub("killall -s aria2c", True).split('kill'))-1 == 1 and d.get('Uptime', 'shiiiit') == "shiiiit": # prolly should not happen but yeah aria on but vpn off
-    #    sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
-    #    sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); # TODO dont wait on sub to finish here! only set vpn when parsereadlist() vpn state not current vpnstate()
 
     # TODO why did aria not start on every run with or (len(sub("killall -s aria2c", True).split('kill'))-1 == 1)
     if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate() or do aria if arria2c running for updating relhumidity
