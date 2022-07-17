@@ -87,7 +87,7 @@ def aria(): # TODO perhaps use more advanced opts add trackers and optimize conc
     if not d['ariaurls']: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if not d['ariaurls'] and (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
 
-def sort():
+def sortaria():
     #TODO sorting algorithm for aria dls
 
 def interpreter():
