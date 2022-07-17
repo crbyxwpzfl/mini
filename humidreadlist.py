@@ -29,7 +29,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     d['sqlquery'] = f'SELECT message.text FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
-        if tupl[0].startswith('https://') and yt_dlp.YoutubeDL({'ignoreerrors': True, 'no_warnings': True, 'quiet': True}).extract_info(tupl[0], download=False)['title'] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append(tupl[0]) # all https into dlp
+        if tupl[0].startswith('https://') and tupl[0]. not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append(tupl[0]) # all https into dlp
         if tupl[0].startswith('http://') and tupl[0].strip('http://').rsplit('?',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].strip('http://').rsplit('?',1)) # all http into aria split on first ? so naming convention is http://filename?...
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
@@ -94,8 +94,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
-d = {
-    #'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
+d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
@@ -103,7 +102,7 @@ d = {
     'ariaurls': [],
     'dlpurls': [],
     'dlpopts':{'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True},
-    #'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
+    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
     'chatdb': '/Users/mini/Library/Messages/chat.db'
 }
 d.get(sys.argv[1].strip("''"), ariahead)() # call head() with 'Get' from homebridge or ariahead() on download completion of aria only works daemon false remember to not wait for completion on aria start
