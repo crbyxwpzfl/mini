@@ -29,7 +29,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     d['sqlquery'] = f'SELECT message.text, datetime(message.date/1000000000 + 978307200,"unixepoch","localtime") FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
-        if tupl[0].startswith('https://') and tupl[1].replace(":", "-") not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append(tupl[0].replace(":", "-")) # all https into dlp
+        if tupl[0].startswith('https://') and tupl[1].replace(":", "-") not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( [tuple[0], tupl[1].replace(":", "-")] ) # all https into dlp
         if tupl[0].startswith('http://') and tupl[0].strip('http://').split('?',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].strip('http://').split('?',1)) # all http into aria split on first ? so naming convention is http://filename?...
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
