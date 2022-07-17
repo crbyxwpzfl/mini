@@ -36,24 +36,15 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
 def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
 
-def dlp(url, name): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
-#    parsereadlist() # to get desired urls now in new process here head() and paresreadlist never got called
-#    for url in d['dlpurls']:
-    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', name, f"{name}-%(title)s.%(ext)s") # the seccond item in each url list is the foldername
-    with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(url) # the first item in each url list is the url
-    sub(f"osascript -e 'display notification \"done {url}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
+def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
+    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"{name}-%(title)s.%(ext)s") # the seccond item in each url list is the foldername
+    with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2]) # the first item in each url list is the url
+    sub(f"osascript -e 'display notification \"done {sys.argv[2]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
             if d['currentloc'] != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
-
-def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
-    for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[0]], { 'dir': os.path.join(d['puthere'], 'temps', url[1]) } ] } ) # send aria the url from list url[0] and the dir with foldername from list url[1]
-    if not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls']
-    if not d['ariaurls']: ariacleanup() # just on completion call so no paresreadlist so no d['ariaurls']
-    if not d['ariaurls']: ariasort() # just on completion call so no paresreadlist so no d['ariaurls']
 
 def ariainfo():
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
@@ -69,6 +60,14 @@ def ariacleanup():
 
 def sortaria():
     #TODO sorting algorithm for aria dls
+
+def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
+    for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[0]], { 'dir': os.path.join(d['puthere'], 'temps', url[1]) } ] } ) # send aria the url from list url[0] and the dir with foldername from list url[1]
+    if not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls']
+    if not d['ariaurls']: ariacleanup() # just on completion call so no paresreadlist so no d['ariaurls']
+    if not d['ariaurls']: ariasort() # just on completion call so no paresreadlist so no d['ariaurls']
+
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
@@ -90,11 +89,11 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
         aria()
 
     if d['currentloc'] != d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and not sub("pgrep -lf .dlp", True):  # and not dlp currently running then do dlp()
-        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp {d['dlpurls'][0]} {d['dlpurls'][1]} && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up in new window
+        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"{pathlib.Path(__file__).resolve()} dlp {d['dlpurls'][0]} {d['dlpurls'][1]} && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
-d = {'Get': head, 'dlp': dlp(sys.argv[1], sys.argv[2]), # defs for running directly in cli via arguments
+d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
