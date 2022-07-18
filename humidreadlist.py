@@ -61,11 +61,9 @@ def ariacleanup():
 
 def ariasort():
     #TODO sorting algorithm for aria dls
-    d['ariapath'] = sys.argv[3].split('/') if sys.argv[3]
+    d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else "error"
+    pathtowalk = os.path.join(d['puthere'], 'temps', d['finalfile'])
 
-    finalfile = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] + ".mp4"
-    
-    pathtowalk = os.path.dirname(sys.argv[3])
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
