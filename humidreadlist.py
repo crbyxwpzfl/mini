@@ -54,18 +54,17 @@ def ariainfo(): # TODO longterm rework the message handling
             d['message'] = f"{fs.get('path')} {d['message']}"
             sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
 
-def ariacleanup():
-    # TODO logterm remove url wich are not any longer in dlpurls as a way to cancle downloads
+def ariacleanup(): # TODO logterm remove url wich are not any longer in dlpurls as a way to cancle downloads
     if (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
     else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
 
 def ariasort(finalfile): # TODO perhaps include nested folders into filenaming
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
-        for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]: # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs when present
+        for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]: # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
         for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]: # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4
-            print(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{d.get('iter','')}{str(os.path.join(path, finalfile))}.mp4\"", True)
+            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{d.get('iter','')}{str(os.path.join(path, finalfile))}.mp4\"", True)
             d['iter'] = d.get('iter',0) + 1 # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
