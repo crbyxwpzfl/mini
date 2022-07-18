@@ -29,7 +29,7 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
-        if tupl[0].startswith('https://') and tupl[1] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(tupl) ) # all https into dlp
+        if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) ) # all https into dlp
         if tupl[0].startswith('http://') and tupl[0].strip('http://').split('?',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].strip('http://').split('?',1)) # all http into aria split on first ? so naming convention is http://filename?...
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
@@ -46,7 +46,7 @@ def sendaria(data):
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
             if d['currentloc'] != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
 
-def ariainfo():
+def ariainfo(): # TODO longterm rework the message handling
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
     for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
         d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
@@ -55,8 +55,8 @@ def ariainfo():
             sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
 
 def ariacleanup():
-    # sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
     if (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
+    else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
 
 def ariasort():
     #TODO sorting algorithm for aria dls
