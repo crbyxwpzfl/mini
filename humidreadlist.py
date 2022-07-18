@@ -61,8 +61,23 @@ def ariacleanup():
 
 def ariasort():
     #TODO sorting algorithm for aria dls
-    d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else "error"
-    pathtowalk = os.path.join(d['puthere'], 'temps', d['finalfile'])
+    d = {'includesubs': "-map 0",
+         'puthere': '/Users/mini/Downloads/'}
+    sysargv3 = "/Users/mini/Downloads/temps/uncharted-small/Uncharted.2022.HDRip.XviD.AC3-EVO.avi"
+    
+    finalfile = sysargv3.split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sysargv3 else "error"
+    pathtowalk = os.path.join(d['puthere'], 'temps', finalfile)
+    
+    for path, subdirs, files in os.walk(pathtowalk): # this selects the most nested subt.srt and overwrites '-map 0' in ['includesubs']
+        for name in [f for f in files if f.endswith(".srt")]:
+            d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
+    for path, subdirs, files in os.walk(pathtowalk):
+        i = 1
+        for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]:
+            print(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d['includesubs']} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, finalfile))}-{i}.mp4\"", True)
+            i = i + 1
+
+ariasort()
 
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
