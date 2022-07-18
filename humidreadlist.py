@@ -63,7 +63,7 @@ def ariasort(finalfile): # TODO perhaps include nested folders into filenaming
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
         for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]: # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4
-            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + " " + finalfile.replace('-', ' ') ))}.mp4\"", True)
+            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + finalfile.replace('-', ' ') ))}.mp4\"", True)
             d['iter'] = d.get('iter',0) + 1 # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
