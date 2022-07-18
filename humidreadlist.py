@@ -43,7 +43,7 @@ def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-            if d['currentloc'] != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
+            if d.get('currentloc', "de") != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
 
 def ariainfo(): # TODO longterm rework the message handling
     sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
@@ -69,14 +69,15 @@ def ariasort(finalfile): # TODO perhaps include nested folders into filenaming
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], 'temps', url[0]) } ] } ) # send aria the url from list url[1] and the dir with foldername from list url[0]
-    if not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls']
-    if not d['ariaurls']: ariacleanup() # just on completion call so no paresreadlist so no d['ariaurls']
+    if sub("pgrep -lf aria.", True) and not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls'] only exe when aria running
+    if sub("pgrep -lf aria.", True) and not d['ariaurls']: ariacleanup()
     if not d['ariaurls']: ariasort( sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit() ) # pass foldername as filename to ariasort when no sysargv[3] exit instead of catching error since this is last line anyways
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
     # TODO start stop parsec if d['parsecoff'] and sub("pgrep -lf .parsec", True): sub("killall parsecd", True) else sub("open /Applications/Parsec.app", True)
     # TODO make backup
+    print("todo")
 
 def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
