@@ -10,7 +10,6 @@ sys.path.append('/Users/mini/Downloads/private/')
 import privates
 import os
 import subprocess
-#import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
 import signal # to close dlp() terminal window
 import yt_dlp # for dlp()
@@ -84,12 +83,12 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     currentloc() # where u are
 
     if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} )
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.forceShutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
-    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); # TODO dont wait on sub to finish here! only set vpn when parsereadlist() vpn state not current vpnstate()
+    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: 
+        sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); # TODO longterm perhaps dont wait on sub to finish here # only set vpn when parsereadlist() vpn state not current vpnstate()
 
-    # TODO why did aria not start on every run with or (len(sub("killall -s aria2c", True).split('kill'))-1 == 1)
     if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate()
         ariahead()
 
