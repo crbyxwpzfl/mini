@@ -10,7 +10,7 @@ sys.path.append('/Users/mini/Downloads/private/')
 import privates
 import os
 import subprocess
-import plistlib # for parsereadlist()
+#import plistlib # for parsereadlist()
 import pathlib # for calling itself in dlp()
 import signal # to close dlp() terminal window
 import yt_dlp # for dlp()
@@ -55,12 +55,17 @@ def ariainfo(): # TODO longterm rework the message handling
             sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
 
 def ariacleanup():
+    # TODO logterm remove url wich are not any longer in dlpurls as a way to cancle downloads
     if (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
     else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
 
 def ariasort():
     #TODO sorting algorithm for aria dls
-    print("todo")
+    d['ariapath'] = sys.argv[3].split('/') if sys.argv[3]
+
+    finalfile = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] + ".mp4"
+    
+    pathtowalk = os.path.dirname(sys.argv[3])
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
     for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
@@ -73,7 +78,6 @@ def interpreter():
     #TODO perhaps wirte an interpreter for message commands
     # TODO start stop parsec if d['parsecoff'] and sub("pgrep -lf .parsec", True): sub("killall parsecd", True) else sub("open /Applications/Parsec.app", True)
     # TODO make backup
-    print("todo")
 
 def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
