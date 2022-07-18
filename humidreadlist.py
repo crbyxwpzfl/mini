@@ -59,25 +59,18 @@ def ariacleanup():
     if (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
     else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
 
-def ariasort():
-    #TODO sorting algorithm for aria dls
-    d = {'includesubs': "-map 0",
-         'puthere': '/Users/mini/Downloads/'}
-    sysargv3 = "/Users/mini/Downloads/temps/uncharted-small/Uncharted.2022.HDRip.XviD.AC3-EVO.avi"
-    
-    finalfile = sysargv3.split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sysargv3 else "error"
-    pathtowalk = os.path.join(d['puthere'], 'temps', finalfile)
-    
-    for path, subdirs, files in os.walk(pathtowalk): # this selects the most nested subt.srt and overwrites '-map 0' in ['includesubs']
-        for name in [f for f in files if f.endswith(".srt")]:
+def ariasort(finalfile):
+    d = {'puthere': '/Users/mini/Downloads/'}
+    # TODO perhaps include nested folders into filenaming
+    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
+        for name in [f for f in files if f.endswith(".srt")]: # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs when present
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
-    for path, subdirs, files in os.walk(pathtowalk):
-        i = 1
-        for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]:
-            print(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d['includesubs']} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, finalfile))}-{i}.mp4\"", True)
-            i = i + 1
+        for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]: # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4
+            print(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', "-map 0")} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{d.get('iter',"")}{str(os.path.join(path, finalfile))}.mp4\"", True)
+            d['iter'] = d.get('iter',0) + 1 # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
 
-ariasort()
+sysargv3 = "/Users/mini/Downloads/temps/uncharted-small/Uncharted.2022.HDRip.XviD.AC3-EVO.avi"
+ariasort(sysargv3.split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sysargv3 else None)
 
 
 def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
@@ -85,7 +78,7 @@ def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize 
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], 'temps', url[0]) } ] } ) # send aria the url from list url[1] and the dir with foldername from list url[0]
     if not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls']
     if not d['ariaurls']: ariacleanup() # just on completion call so no paresreadlist so no d['ariaurls']
-    if not d['ariaurls']: ariasort() # just on completion call so no paresreadlist so no d['ariaurls']
+    if not d['ariaurls']: ariasort( sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else None ) # just on completion call so no paresreadlist so no d['ariaurls']
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
