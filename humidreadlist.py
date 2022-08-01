@@ -98,7 +98,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
-d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
+d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
     'sshpi': f"ssh {privates.piaddress} -i {privates.opensshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
@@ -109,4 +109,4 @@ d = {'Get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session=/Users/mini/Desktop/ariasfile.txt --input-file=/Users/mini/Desktop/ariasfile.txt --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
     'chatdb': '/Users/mini/Library/Messages/chat.db'
 }
-d.get(sys.argv[1].strip("''"), ariahead)() # call head() with 'Get' from homebridge or ariahead() on download completion of aria only works daemon false remember to not wait for completion on aria start
+d.get(sys.argv[1].strip("''").lower(), ariahead)() # call head() with 'Get' from homebridge or ariahead() on download completion of aria only works daemon false remember to not wait for completion on aria start

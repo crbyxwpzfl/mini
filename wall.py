@@ -19,7 +19,7 @@ def Set():    # assumes 'Brightness' and 'On' get sent together otherwise this w
     response = requests.get(f'https://{privates.ip}:1926/6/powerstate', timeout=2, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
     if json.loads(response.content)['powerstate'] == 'On' and sys.argv[3].strip("''") == 'Brightness':    # change volume when On
         requests.post(f'https://{privates.ip}:1926/6/audio/volume', timeout=2, json={'muted': 'false', 'current': int(sys.argv[4].strip("''")) }, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
-    if json.loads(response.content)['powerstate'] == 'Standby' or sys.argv[4].strip("''") == 0:    # press powerbutton when vlaue 0 or in Standby
+    if json.loads(response.content)['powerstate'] == 'Standby' or (sys.argv[4].strip("''") == 0 and sys.argv[3].strip("''") == 'Brightness'):    # press powerbutton just once! when vlaue 0 or when in Standby
         requests.post(f'https://{privates.ip}:1926/6/input/key', timeout=2, json={'key': 'Standby'}, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
 
 d = {'Set': Set, 'Get': Get}
