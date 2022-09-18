@@ -13,12 +13,14 @@ crtl shift e #explorer
 
 ### [ffmpeg](https://www.ffmpeg.org/download.html)
 
-### [ytdl](https://github.com/ytdl-org/youtube-dl)
+### [dlp](https://github.com/yt-dlp/yt-dlp)
+
+### [aria2c](https://github.com/aria2/aria2)
 
 ### python
 ```bash
 python3 -m pip install requests    #install requests
-python3 -m pip install --upgrade youtube-dl  #install ytdl
+python3 -m pip install -U yt-dlp   #install dlp
 ```
 
 ### ssh
@@ -29,17 +31,20 @@ ssh user@ip -i "path/to/openssh-private"
 
 ### general
 ```bash
-defaults write com.apple.finder AppleShowAllFiles TRUE  #show hidden files in finder
-killall Finder
-chflags hidden /path/to/folder #hide a folder
-/Users/mini/Library/Android/sdk/emulator/emulator -list-avds #list vms
-/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -no-window #run vm headless
-/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full #keine ahnung mehr
+defaults write com.apple.finder AppleShowAllFiles TRUE && killall Finder  #show hidden files in finder
+chflags hidden /path/to/folder  #hide a folder
 rm -rf #drag drop icloud drive folders to delete them
 ```
 
-### git
+### [android studio](https://developer.android.com/studio)
+```bash
+/Users/mini/Library/Android/sdk/emulator/emulator -list-avds                                             #list vms
+/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -no-window                             #run vm headless
+/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full  #und mehr
 ```
+
+### git
+```bash
 git #then follow promt
 git -c core.sshCommand="ssh -i /path/to/sshprivate" pull #to pull changes
 ```
