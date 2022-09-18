@@ -5,7 +5,7 @@
 # variables and imports
 
 import sys
-sys.path.append('/Users/mini/Downloads/private/')
+sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
 import privates
 from requests.auth import HTTPDigestAuth
 import requests

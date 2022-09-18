@@ -1,6 +1,6 @@
 
 import sys
-sys.path.append('/Users/mini/Downloads/private/')
+sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
 import privates
 import pathlib
 import subprocess
