@@ -29,8 +29,11 @@ open /Users/mini/Library/Python  #python versions live here
 /Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full  #und mehr
 ```
 
-### python
-##### [dlp](https://github.com/yt-dlp/yt-dlp)
+### [homebridge](https://github.com/homebridge/homebridge)
+[cmd4](https://github.com/ztalbot2000/homebridge-cmd4)
+[camera](https://github.com/Sunoo/homebridge-camera-ffmpeg)
+
+### python + [dlp](https://github.com/yt-dlp/yt-dlp)
 ```bash
 python3 -m pip install requests    #install requests
 python3 -m pip install -U yt-dlp   #install dlp
