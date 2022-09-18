@@ -19,7 +19,7 @@
         {
             "platform": "Cmd4",
             "name": "Cmd4",
-            "debug": false,
+            "debug": true,
             "accessories": [
                 {
                     "type": "Lightbulb",
@@ -29,7 +29,7 @@
                     "brightness": 100,
                     "hue": 200,
                     "saturation": 100,
-                    "state_cmd": "python3 /Users/mini/Downloads/mini/ambilight.py",
+                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reposetories/mini/ambilight.py",
                     "polling": [
                         {
                             "characteristic": "on",
@@ -59,7 +59,7 @@
                             "on": 0,
                             "brightness": 0,
                             "stateChangeResponseTime": 1,
-                            "state_cmd": "python3 /Users/mini/Downloads/mini/wall.py",
+                            "state_cmd": "python3 /Users/mini/Downloads/transfer/reposetories/mini/wall.py",
                             "polling": [
                                 {
                                     "characteristic": "on",
@@ -76,36 +76,10 @@
                     ]
                 },
                 {
-                    "type": "HumiditySensor",
-                    "displayName": "sensor",
-                    "currentRelativeHumidity": 0,
-                    "statusActive": "False",
-                    "statusTampered": "NOT_TAMPERED",
-                    "stateChangeResponseTime": 1,
-                    "polling": [
-                        {
-                            "characteristic": "currentRelativeHumidity",
-                            "interval": 60,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "statusActive",
-                            "interval": 63,
-                            "timeout": 8000
-                        },
-                        {
-                            "characteristic": "statusTampered",
-                            "interval": 67,
-                            "timeout": 8000
-                        }
-                    ],
-                    "state_cmd": "python3 /Users/mini/Desktop/test.py"
-                },
-                {
                     "type": "Fan",
                     "displayName": "tisch",
-                    "on": 0,
                     "rotationSpeed": 0,
+                    "on": 0,
                     "stateChangeResponseTime": 1,
                     "polling": [
                         {
@@ -119,23 +93,23 @@
                             "timeout": 20000
                         }
                     ],
-                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/Downloads/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'",
-                    "linkedTypes": [
+                    "state_cmd": "ssh pi@192.168.2.1 -i \"/Users/mini/Downloads/private/gscheit-openssh-privat\" 'python3 /home/pi/spinala/tisch.py'"
+                },
+                {
+                    "type": "HumiditySensor",
+                    "displayName": "sensor",
+                    "currentRelativeHumidity": 0,
+                    "statusActive": "False",
+                    "statusTampered": "NOT_TAMPERED",
+                    "stateChangeResponseTime": 1,
+                    "polling": [
                         {
-                            "type": "OccupancySensor",
-                            "displayName": "mini",
-                            "occupancyDetected": "OCCUPANCY_NOT_DETECTED",
-                            "stateChangeResponseTime": 1,
-                            "polling": [
-                                {
-                                    "characteristic": "occupancyDetected",
-                                    "interval": 10,
-                                    "timeout": 8000
-                                }
-                            ],
-                            "state_cmd": "python3 /Users/mini/Downloads/mini/source.py"
+                            "characteristic": "currentRelativeHumidity",
+                            "interval": 60,
+                            "timeout": 8000
                         }
-                    ]
+                    ],
+                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reposetories/mini/humidreadlist.py"
                 },
                 {
                     "type": "Thermostat",
