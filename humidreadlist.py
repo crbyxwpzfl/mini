@@ -36,6 +36,7 @@ def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
 
 def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
+    d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
     d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"{sys.argv[3]}-%(title)s.%(ext)s") # the seccond sys arg in each dlp call is the foldername
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2]) # the first sys arg in each dlp call is the url
     sub(f"osascript -e 'display notification \"done {sys.argv[3]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
@@ -43,6 +44,7 @@ def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
 def sendaria(data):
         try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
         except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+            d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
             if d.get('currentloc', "de") != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
 
 def ariainfo(): # TODO longterm rework the message handling
@@ -105,8 +107,7 @@ d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'phonenr': privates.phone, # for vpn message and sql query
     'ariaurls': [],
     'dlpurls': [],
-    'dlpopts':{'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True},
-    'ariaopts': f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0", # daemon false otherwise no message on completion reason unknown
     'chatdb': '/Users/mini/Library/Messages/chat.db'
 }
+
 d.get(sys.argv[1].strip("''").lower(), ariahead)() # call head() with 'Get' from homebridge or ariahead() on download completion of aria only works daemon false remember to not wait for completion on aria start
