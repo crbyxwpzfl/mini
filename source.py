@@ -1,5 +1,5 @@
 
-
+# not in use turn tv on and off via state of laptiop lid closed and open
 
 
 # variables and imports
