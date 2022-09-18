@@ -1,8 +1,7 @@
-# this will become some sort of bacup and maintainance script for auto updating repos and python libs and auto runnig android virtual device
 
-import sys
-sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
-import privates
+
+import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
+
 import pathlib
 import subprocess
 import os
@@ -54,9 +53,11 @@ d = {'-co': convert, '-cl': clone,
     'puthere': '/Users/mini/Downloads/', # put d['puthere']/reposetories  d['puthere']/gists  d['puthere']/reposetories/ff/xmlbookmarks here
     'toclone': [['reposetories', 'private', 'git@github.com:crbyxwpzfl/private.git'], ['reposetories', 'mini', 'git@github.com:crbyxwpzfl/mini.git'], ['reposetories', 'ff', 'git@github.com:crbyxwpzfl/ff.git'], ['reposetories', 'spinala', 'git@github.com:crbyxwpzfl/spinala.git'], ['reposetories', 'rogflow', 'git@github.com:crbyxwpzfl/rogflow.git'], ['reposetories', 'crbyxwpzfl', 'git@github.com:crbyxwpzfl/crbyxwpzfl.git']],
     'currentdir': os.getcwd(), #current dir for converting stuff
-    'phonenr': privates.phone, #for imessage update
-    'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
+    'phonenr': secs.phone, #for imessage update
+    'gitcssh': f"git -c core.sshCommand=\"ssh -i {secs.openpriv}\"", # for clone pull psuh
     # make sure ffmpeg is in /usr/local/bin to be accesible via terminal
 }
 
 d.get(sys.argv[1].strip("''"), helps)() # call arg() or help()
+
+# this will become some sort of bacup and maintainance script for auto updating repos and python libs and auto runnig android virtual device

@@ -5,9 +5,8 @@
 #let the cluster fuck begin
 
 
-import sys
-sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
-import privates
+import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
+
 import os
 import subprocess
 import pathlib # for calling itself in dlp()
@@ -25,7 +24,7 @@ def sub(cmdstring, waitforcompletion): # string here because shell true because 
     if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
 def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{privates.mail}" OR chat.chat_identifier="{privates.phone}") ORDER BY message.date desc;'
+    d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") ORDER BY message.date desc;'
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
         if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) ) # all https into dlp
@@ -101,10 +100,10 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
 d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
-    'gitcssh': f"git -c core.sshCommand=\"ssh -i {privates.opensshpriv}\"", # for clone pull psuh
-    'sshpi': f"ssh pi@pi@192.168.2.1 -i {privates.opensshpriv} ", # attentione to the last space
+    'gitcssh': f"git -c core.sshCommand=\"ssh -i {secs.openpriv}\"", # for clone pull psuh
+    'sshpi': f"ssh pi@pi@192.168.2.1 -i {secs.openpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
-    'phonenr': privates.phone, # for vpn message and sql query
+    'phonenr': secs.phone, # for vpn message and sql query
     'ariaurls': [],
     'dlpurls': [],
     'chatdb': '/Users/mini/Library/Messages/chat.db'

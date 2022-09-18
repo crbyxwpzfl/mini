@@ -1,12 +1,7 @@
 
-# not in use turn tv on and off via state of laptiop lid closed and open
 
+import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
 
-# variables and imports
-
-import sys
-sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
-import privates
 from requests.auth import HTTPDigestAuth
 import requests
 import fileinput
@@ -16,10 +11,10 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
 
 def post(path, data):
-    response = requests.post(f'https://{privates.ip}:1926/6/{path}', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(privates.user, privates.pw))
+    response = requests.post(f'https://{secs.wallip}:1926/6/{path}', timeout=2, data=data, verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw))
 
 def Get():
-    d['tv'] = 1 if "On" in str(requests.get(f'https://{privates.ip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(privates.user, privates.pw)).content) else 0
+    d['tv'] = 1 if "On" in str(requests.get(f'https://{secs.wallip}:1926/6/powerstate', verify=False, timeout=2, auth=HTTPDigestAuth(secs.walluser, secs.wallpw)).content) else 0
     d['mini'] = 0 if '"AppleClamshellState" = Yes' in  str(subprocess.run(['ioreg', '-r', '-k', 'AppleClamshellState'], stdout=subprocess.PIPE).stdout.decode()) else 1
 
     if d['mini'] == int(d['hdmi'] - 1) or (d['tv'] == 0 and d['mini'] == 1): # switch hdmi turns tv on automaticly
@@ -36,3 +31,5 @@ d = {'Get': Get, # defs for running directly in cli via arguments
      'hdmi': 2,
     }
 d.get(sys.argv[1].strip("''"), sys.exit)()
+
+# not in use turn tv on and off via state of laptiop lid closed and open
