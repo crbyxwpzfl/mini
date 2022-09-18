@@ -49,6 +49,7 @@ ssh user@ip -i "path/to/openssh-private"
 ```bash
 git #then follow promt
 git -c core.sshCommand="ssh -i /path/to/sshprivate" pull #to pull changes
+sudo chmod 600 /path/to/priv #for warning file to open 
 ```
 
 ### node
