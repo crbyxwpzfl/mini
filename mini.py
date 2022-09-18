@@ -1,3 +1,4 @@
+# this will become some sort of bacup and maintainance script for auto updating repos and python libs and auto runnig android virtual device
 
 import sys
 sys.path.append('/Users/mini/Downloads/transfer/reposetories/private/')
