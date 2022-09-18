@@ -15,12 +15,6 @@ crtl shift e #explorer
 
 ### [ytdl](https://github.com/ytdl-org/youtube-dl)
 
-### [handbrake](https://github.com/HandBrake/HandBrake/releases)
-```
-cd "dir/with/mkvs"
-for i in *.mkv; do /Users/mini/Downloads/HandBrakeCLI -i "$i" -o "${i%.*}.mp4" ; done   #reencode all mkvs in dir
-```
-
 ### python
 ```bash
 python -m pip install requests    #install requests
