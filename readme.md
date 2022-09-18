@@ -15,6 +15,7 @@ defaults write com.apple.finder AppleShowAllFiles TRUE && killall Finder  #show 
 chflags hidden /path/to/folder  #hide a folder
 rm -rf #drag drop icloud drive folders to delete them
 open /usr/local/bin/  #aria2c + ffmpeg  + ffplay  + ffprobe (yt-dlp) binaries here
+open /Users/mini/Library/Python  #python versions live here
 ```
 
 ### [ffmpeg](https://www.ffmpeg.org/download.html)
