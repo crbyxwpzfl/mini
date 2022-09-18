@@ -17,8 +17,8 @@ crtl shift e #explorer
 
 ### python
 ```bash
-python -m pip install requests    #install requests
-python -m pip install --upgrade youtube-dl  #install ytdl
+python3 -m pip install requests    #install requests
+python3 -m pip install --upgrade youtube-dl  #install ytdl
 ```
 
 ### ssh
