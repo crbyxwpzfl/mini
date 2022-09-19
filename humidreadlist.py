@@ -101,7 +101,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
 
 d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'gitcssh': f"git -c core.sshCommand=\"ssh -i {secs.openpriv}\"", # for clone pull psuh
-    'sshpi': f"ssh pi@pi@192.168.2.1 -i {secs.openpriv} ", # attentione to the last space
+    'sshpi': f"ssh spinala@pi@192.168.2.1 -i {secs.minisshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
     'phonenr': secs.phone, # for vpn message and sql query
     'ariaurls': [],
