@@ -9,11 +9,11 @@ import urllib3
 import time
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # disable http warnings
 
-def Set():  # routine is switch hdmi when wall on and volume 0 then presspowerbutton when wall off or volume 0 then set volume when wall on and volume not 0
+def set():  # routine is switch hdmi when wall on and volume 0 then presspowerbutton when wall off or volume 0 then set volume when wall on and volume not 0
     if d['Brightness'] >= 1 and sys.argv[3] == 'Brightness' and sys.argv[4] == '0':  # switch hdmi to 2 when set volume 0
         requests.post(f'https://{secs.wallip}:1926/6/activities/launch',  timeout=2, json={'intent': {'extras': {'query': 'hdmi 1'}, 'action': 'Intent {  act=android.intent.action.ASSIST cmp=com.google.android.katniss/com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline flg=0x10200000 }', 'component': {'packageName': 'com.google.android.katniss', 'className': 'com.google.android.apps.tvsearch.app.launch.trampoline.SearchActivityTrampoline'} } } , verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw))
         time.sleep(4)
-        
+
     if d['Brightness'] == 0 or (sys.argv[3] == 'Brightness' and sys.argv[4] == '0'):  # press power button when wall off or when volume 0
         requests.post(f'https://{secs.wallip}:1926/6/input/key', timeout=2, json={'key': 'Standby'}, verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw))
 
