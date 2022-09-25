@@ -20,7 +20,6 @@ def set():  # routine is switch hdmi when wall on and volume 0 then presspowerbu
     if d['Brightness'] >= 1 and sys.argv[3] == 'Brightness' and sys.argv[4] != '0':  #  set volume when wall on and dont change volume to 0 when shutting off
         requests.post(f'https://{secs.wallip}:1926/6/audio/volume', timeout=2, json={'muted': 'false', 'current': int(sys.argv[4]) }, verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw))
 
-d = {
-    'Brightness': json.loads(requests.get(f'https://{secs.wallip}:1926/6/audio/volume', timeout=2, verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw)).content)['current']
+d = {'Brightness': json.loads(requests.get(f'https://{secs.wallip}:1926/6/audio/volume', timeout=2, verify=False, auth=HTTPDigestAuth(secs.walluser, secs.wallpw)).content)['current']
     }
 print(d.get(sys.argv[3], max( min(d['Brightness'],1), 0) )) if sys.argv[1] == 'Get' else set()  # calls set or prints 'Brightness' or calculates/prints 'On' calculation assumes arc turns volume 0 and powerbutton turns volume 0
