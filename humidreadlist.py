@@ -1,5 +1,5 @@
-#r/bin/env python3
-#chzmod +x /current/file
+#!/bin/env python3
+#chmod +x /current/file
 
 
 #let the cluster fuck begin
