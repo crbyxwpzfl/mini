@@ -5,6 +5,7 @@
 #let the cluster fuck begin
 
 
+
 import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
 
 import os
@@ -27,8 +28,9 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
     d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") ORDER BY message.date desc;'
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
-        if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) ) # all https into dlp
-        if tupl[0].startswith('http://') and tupl[0].strip('http://').split('?',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].strip('http://').split('?',1)) # all http into aria split on first ? so naming convention is http://filename?...
+        if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) )  # all https into dlp
+        if tupl[0].startswith('http://') and tupl[0].replace('http://', '').split('/',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].replace('http://', '').split('/',1))  # all http into aria split on first / after http:// strip so naming convention is http://filename/...
+        if tupl[0].startswith('http://'): d['allariaurls'].append(tupl[0].replace('http://', '').split('/',1))  # all aria urls present in messages to check against for removal in arai cleanup
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
 def currentloc():
@@ -40,39 +42,32 @@ def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2]) # the first sys arg in each dlp call is the url
     sub(f"osascript -e 'display notification \"done {sys.argv[3]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
-def sendaria(data):
-        try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-        except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-            d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
-            if d.get('currentloc', "de") != "de": sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to true' -e 'delay 1' -e 'end tell'", True) # open aria like this and wait delay so aria is propperly up before next request # if status connected is essential cause all calls of script without any argumt are running ariahead() this is cause arie completion hook passes gid as first argumetn so non static so not specifiable in dict
+def sendaria(data):  # sends json to aria or starts aria if aria not reachable
+    try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
+    except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
+        d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
+        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to false' -e 'delay 1' -e 'end tell'", True)  # open aria like this and wait delay so aria is propperly up before next request  status connected check is not essential cause no completioncall any more
 
-def ariainfo(): # TODO longterm rework the message handling
-    sendaria( {'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[{'methodName':'aria2.getGlobalStat'}, {'methodName': 'aria2.tellStopped', 'params':[0,20,['status', 'files', 'errorMessage']]}]]} ) # retrive info of aria
-    for stopped in json.loads(d['r'].content)['result'][1][0]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
-        d['message'] = f"{stopped.get('status')} {stopped.get('errorMessage')[:80]}" # make message
-        for fs in stopped.get('files', [{'path':'nofile'}]):
-            d['message'] = f"{fs.get('path')} {d['message']}"
-            sub(f"osascript -e 'display notification \"{d['message']}\" with title \"aria\"'", False) # dont wait on completion just fire notification # only on aria completion call so when no parsing happend so ther is no d['ariaurls']
+def ariacleanup():
+    sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[ {'methodName':'aria2.getGlobalStat'}, {'methodName':'aria2.tellStopped', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellWaiting', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellActive', 'params':[['status', 'gid', 'dir']]} ]] })  
+    if (len(d['ariaurls']) + int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ); sys.exit()  # no ariaurls no active no waiting shutdown aria and sys exit otherwise for loop benethe will throw error list index out of range since no actives
+    # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) #  purge aria so aria save file is celan
+    for actives in json.loads(d['r'].content)['result'][3][0]:
+        if not any(actives.get('dir').split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] in sublist for sublist in d['allariaurls']): sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[actives.get('gid')] })
+    
+    #for urldirlists in d['allariaurls']:  # removes active urls not in allariaurls to cancle downloads
+    #    for toremove in [ actives for actives in json.loads(d['r'].content)['result'][3][0] if os.path.join(d['puthere'], 'temps', urldirlists[0]) not in actives.get('dir') ]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
+    #        print({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[toremove['gid']] })
 
-def ariacleanup(): # TODO logterm remove url wich are not any longer in dlpurls as a way to cancle downloads
-    if (int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ) #if no active and no waiting in queue shutdown aria
-    else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) # TODO no purge to keep history of errors  purge aria so next message is clean shuld be save and shuld not make me miss anything
-
-def ariasort(finalfile): # TODO perhaps include nested folders into filenaming
-    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
-        for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]: # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
+def sortaria():  # TODO perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+    d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
+    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
+        for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
-    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', finalfile)):
+    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]: # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4
-            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + finalfile.replace('-', ' ') ))}.mp4\"", True)
-            d['iter'] = d.get('iter',0) + 1 # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
-
-def ariahead(): # TODO perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
-    for url in d['ariaurls']: # on download completion call this bitsh empty so yeeet    smae for no d['ariaurls'] at shutdown purge send message
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [url[1]], { 'dir': os.path.join(d['puthere'], 'temps', url[0]) } ] } ) # send aria the url from list url[1] and the dir with foldername from list url[0]
-    if sub("pgrep -lf aria.", True) and not d['ariaurls']: ariainfo() # just on completion call so no paresreadlist so no d['ariaurls'] only exe when aria running
-    if sub("pgrep -lf aria.", True) and not d['ariaurls']: ariacleanup()
-    if not d['ariaurls']: ariasort( sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit() ) # pass foldername as filename to ariasort when no sysargv[3] exit instead of catching error since this is last line anyways
+            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
+            d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
@@ -89,10 +84,13 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
 
     if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: 
-        sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True); # TODO longterm perhaps dont wait on sub to finish here # only set vpn when parsereadlist() vpn state not current vpnstate()
+        sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True);  # only set vpn when parsereadlist() vpn state not current vpnstate() this sometimes waits long for sub completion but dont feel good witch just a dispatch here
+
+    if sub("pgrep -lf aria.", True):  # when aria is up
+        ariacleanup()  # removes ariaurls and stops aria when no active or waiting
 
     if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate()
-        ariahead()
+        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [d['ariaurls'][0][1]], { 'dir': os.path.join(d['puthere'], 'temps', d['ariaurls'][0][0]) } ] } )  # send aria the first url[1] dir[0] pair from ariaurls list  perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
 
     if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and not sub("pgrep -lf .dlp", True): # not dlp currently running then do dlp()
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"mkdir -p {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1])} && {pathlib.Path(__file__).resolve()} dlp \\\"{d['dlpurls'][0][0]}\\\" {d['dlpurls'][0][1]} &> {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1], 'log.txt')} && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
@@ -103,9 +101,8 @@ d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
     'sshpi': f"ssh spinala@192.168.2.1 -i {secs.minisshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
     'phonenr': secs.phone, # for vpn message and sql query
-    'ariaurls': [],
-    'dlpurls': [],
+    'ariaurls': [], 'allariaurls': [['list', 'notempty']], 'dlpurls': [],
     'chatdb': '/Users/mini/Library/Messages/chat.db'
 }
 
-d.get(sys.argv[1].strip("''").lower(), ariahead)() # call head() with 'Get' from homebridge or ariahead() on download completion of aria only works daemon false remember to not wait for completion on aria start
+d.get(sys.argv[1].strip("''").lower(), sortaria)()  # call head() with 'Get' from homebridge or ariasort() on download completion of aria  only works daemon false remember to not wait for completion on aria start
