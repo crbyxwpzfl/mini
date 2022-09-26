@@ -10,23 +10,22 @@ import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); im
 
 import os
 import subprocess
-import pathlib # for calling itself in dlp()
-import signal # to close dlp() terminal window
-import yt_dlp # for dlp()
-import requests # for aria()
-import json # for aria()
-import time # for mess()
-import sqlite3 # for parsereadlist()
-import requests # for currentloc()
+import pathlib  # for calling itself in dlp()
+import signal  # to close dlp() terminal window
+import yt_dlp  # for dlp()
+import requests  # for aria() rpc interface
+import json  # for aria()
+import sqlite3  # for parsereadlist()
+import requests  # for currentloc()
 
 
-def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
+def sub(cmdstring, waitforcompletion):  # string here because shell true because only way of chaning commands
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
-def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp dict
+def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
     d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") ORDER BY message.date desc;'
-    listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall() # sql connect make cursor execute query wait for query to finish
+    listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall()  # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
         if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) )  # all https into dlp
         if tupl[0].startswith('http://') and tupl[0].replace('http://', '').split('/',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].replace('http://', '').split('/',1))  # all http into aria split on first / after http:// strip so naming convention is http://filename/...
@@ -36,11 +35,11 @@ def parsereadlist(): # when foldername not in downloaddir add url to aria or dlp
 def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
 
-def dlp(): # TODO perhaps use archive at d['puthere']/repos/ff/dwl-archive
+def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
     d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
-    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"{sys.argv[3]}-%(title)s.%(ext)s") # the seccond sys arg in each dlp call is the foldername
-    with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2]) # the first sys arg in each dlp call is the url
-    sub(f"osascript -e 'display notification \"done {sys.argv[3]}\" with title \"dlp\"'", True) # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
+    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"{sys.argv[3]}-%(title)s.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
+    with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
+    sub(f"osascript -e 'display notification \"done {sys.argv[3]}\" with title \"dlp\"'", True)  # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
 def sendaria(data):  # sends json to aria or starts aria if aria not reachable
     try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
@@ -48,18 +47,13 @@ def sendaria(data):  # sends json to aria or starts aria if aria not reachable
         d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"aria2c {d['ariaopts']} && exit\"' -e 'set miniaturized of window 1 to false' -e 'delay 1' -e 'end tell'", True)  # open aria like this and wait delay so aria is propperly up before next request  status connected check is not essential cause no completioncall any more
 
-def ariacleanup():
+def ariacleanup():   # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) #  purge aria so aria save file is celan
     sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[ {'methodName':'aria2.getGlobalStat'}, {'methodName':'aria2.tellStopped', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellWaiting', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellActive', 'params':[['status', 'gid', 'dir']]} ]] })  
     if (len(d['ariaurls']) + int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ); sys.exit()  # no ariaurls no active no waiting shutdown aria and sys exit otherwise for loop benethe will throw error list index out of range since no actives
-    # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) #  purge aria so aria save file is celan
     for actives in json.loads(d['r'].content)['result'][3][0]:
         if not any(actives.get('dir').split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] in sublist for sublist in d['allariaurls']): sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[actives.get('gid')] })
-    
-    #for urldirlists in d['allariaurls']:  # removes active urls not in allariaurls to cancle downloads
-    #    for toremove in [ actives for actives in json.loads(d['r'].content)['result'][3][0] if os.path.join(d['puthere'], 'temps', urldirlists[0]) not in actives.get('dir') ]: # man im numb all this nested list dict shit braeks me here we want the first list in the second list in r content result list
-    #        print({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[toremove['gid']] })
-
-def sortaria():  # TODO perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+            
+def sortaria():  # perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
