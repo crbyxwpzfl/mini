@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-#chmod +x /current/file
+#r/bin/env python3
+#chzmod +x /current/file
 
 
 #let the cluster fuck begin
@@ -11,7 +11,6 @@ import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); im
 import os
 import subprocess
 import pathlib  # for calling itself in dlp()
-import signal  # to close dlp() terminal window
 import yt_dlp  # for dlp()
 import requests  # for aria() rpc interface
 import json  # for aria()
@@ -33,13 +32,12 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
         if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
 
 def currentloc():
-    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() # TODO everything but de will be treated as vpn on this is very bad here no https cause of error message
+    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
 
 def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
     d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
-    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"{sys.argv[3]}-%(title)s.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
+    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"%(title)s-{sys.argv[3]}.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
-    sub(f"osascript -e 'display notification \"done {sys.argv[3]}\" with title \"dlp\"'", True)  # wait on completion for notification so on last run '&& exit' does not kill process until notification is out
 
 def sendaria(data):  # sends json to aria or starts aria if aria not reachable
     try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
@@ -87,7 +85,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [d['ariaurls'][0][1]], { 'dir': os.path.join(d['puthere'], 'temps', d['ariaurls'][0][0]) } ] } )  # send aria the first url[1] dir[0] pair from ariaurls list  perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
 
     if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and not sub("pgrep -lf .dlp", True): # not dlp currently running then do dlp()
-        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"mkdir -p {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1])} && {pathlib.Path(__file__).resolve()} dlp \\\"{d['dlpurls'][0][0]}\\\" {d['dlpurls'][0][1]} &> {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1], 'log.txt')} && exit\"' -e 'set miniaturized of window 1 to true' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
+        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"mkdir -p {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1])} && {pathlib.Path(__file__).resolve()} dlp \\\"{d['dlpurls'][0][0]}\\\" {d['dlpurls'][0][1]} &> {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1], 'log.txt')} ; exit\"' -e 'set miniaturized of window 1 to false' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
