@@ -29,9 +29,11 @@ open /Users/mini/Library/Python  #python versions live here
 /Users/mini/Library/Android/sdk/emulator/emulator -avd name -netdelay none -netspeed full  #und mehr
 ```
 
-### [homebridge](https://github.com/homebridge/homebridge)
-[cmd4](https://github.com/ztalbot2000/homebridge-cmd4)
-[camera](https://github.com/Sunoo/homebridge-camera-ffmpeg)
+### [homebridge](https://github.com/homebridge/homebridge) + [cmd](https://github.com/ztalbot2000/homebridge-cmd4) + [cam](https://github.com/Sunoo/homebridge-camera-ffmpeg)
+```sh
+homebridge -D -U /path/to/config #  bring hb up in debug mode and config path
+sudo hb-service update-node  #  helper to update node
+```
 
 ### python + [dlp](https://github.com/yt-dlp/yt-dlp)
 ```bash
