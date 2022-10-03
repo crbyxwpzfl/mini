@@ -61,3 +61,17 @@ sudo npm install -g npm #update npm
 npm update #update local pacages
 npm update -g #update gobal packages
 ``` 
+
+### screen
+```sh
+ctrl a d # detatch from screen
+screen -list #  list current up screens
+screen -r name, nr #  connect to screen
+screen -S name -d -m cmd #  start named detached screen running a cmd
+nano ~/.screenrc #  add or crate rc file with conent down below
+```
+```
+# Enable mouse scrolling and scroll bar history scrolling
+termcapinfo xterm* ti@:te@
+
+```
