@@ -25,8 +25,8 @@ open /Users/mini/Library/Python  #python versions live here
 ### [android studio](https://developer.android.com/studio)
 ```bash
 /Users/mini/Library/Android/sdk/emulator/emulator -list-avds  #list vms
-/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -no-window  #run vm headless
-/Users/mini/Library/Android/sdk/emulator/emulator @Pixel_4_API_30 -avd wa -netdelay none -netspeed full  #und mehr
+/Users/mini/Library/Android/sdk/emulator/emulator -avd name -no-window  #run vm headless
+/Users/mini/Library/Android/sdk/emulator/emulator -avd name -netdelay none -netspeed full  #und mehr
 ```
 
 ### [homebridge](https://github.com/homebridge/homebridge)
