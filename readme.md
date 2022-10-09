@@ -76,4 +76,6 @@ nano ~/.screenrc #  add or crate rc file with conent down below
 # Enable mouse scrolling and scroll bar history scrolling
 termcapinfo xterm* ti@:te@
 
+# scroll buffer
+defscrollback 200000
 ```
