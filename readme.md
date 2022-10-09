@@ -73,9 +73,12 @@ screen -S name -d -m cmd #  start named detached screen running a cmd
 nano ~/.screenrc #  add or crate rc file with conent down below
 ```
 ```
-# Enable mouse scrolling and scroll bar history scrolling
-termcapinfo xterm* ti@:te@
+# set scroll buffer
+defscrollback 100000
 
-# scroll buffer
-defscrollback 200000
+# bind ? to scroll mode
+bindkey "?" copy
+
+# Enable mouse scrolling and scroll bar history scrolling
+# termcapinfo xterm* ti@:te@
 ```
