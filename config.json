@@ -8,15 +8,6 @@
     "accessories": [],
     "platforms": [
         {
-            "name": "Config",
-            "port": 8581,
-            "auth": "none",
-            "theme": "auto",
-            "tempUnits": "c",
-            "lang": "auto",
-            "platform": "config"
-        },
-        {
             "platform": "Cmd4",
             "name": "Cmd4",
             "debug": false,
