@@ -5,11 +5,10 @@
 import os
 import subprocess
 import time
-    
+
 def sub(cmdstring, waitforcompletion): # string here because shell true because only way of chaning commands
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if waitforcompletion:
-        for line in p.stdout: print(line.decode()) # print line makes me wait until completion
+    if waitforcompletion: print(p.communicate()[0].decode()) # this will wait for subprocess to finisih 
         
 sub("screen -S hb -d -m homebridge",False) #  summon hb
 time.sleep(2)
