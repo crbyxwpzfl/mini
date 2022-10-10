@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-#chmod +x /current/file
+
+# chmod +x /current/file && cd "/current/" && git config core.filemode true && git commit -am "commit chmodx" && git -c core.sshCommand="ssh -i /path/to/priv" push
 
 import os
 import subprocess
