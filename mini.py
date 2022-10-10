@@ -12,7 +12,7 @@ def sub(cmdstring, waitforcompletion): # string here because shell true because 
     if waitforcompletion: print(p.communicate()[0].decode()) # this will wait for subprocess to finisih 
 
 
-time.sleep(2)
+time.sleep(4)
 sub("screen -S vs -d -m code-server serve",False) #  summon vs
 time.sleep(2)
 sub(f"screen -S hb -d -m homebridge -U {os.path.abspath(os.path.dirname( __file__ ))}",False) #  summon hb
