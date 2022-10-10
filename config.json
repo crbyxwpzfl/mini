@@ -1,9 +1,9 @@
 {
     "bridge": {
         "name": "Homebridge A5DC",
-        "username": "0E:7D:B3:6C:A5:DC",
+        "username": "0E:7D:B1:3C:A5:DC",
         "port": 51413,
-        "pin": "990-12-081"
+        "pin": "111-12-081"
     },
     "accessories": [],
     "platforms": [
