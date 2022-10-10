@@ -11,7 +11,7 @@ def sub(cmdstring, waitforcompletion): # string here because shell true because 
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if waitforcompletion: print(p.communicate()[0].decode()) # this will wait for subprocess to finisih 
 
-time.sleep(4); print("-------- node status")  #print all versions off manually installed packages so no python since python comes with macos
+time.sleep(4); print(); print(); print("-------- node status")  #print all versions off manually installed packages so no python since python comes with macos
 sub("npm view node",True)
 sub("node -v",True)
 
