@@ -44,7 +44,7 @@ time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps/privates/git.py 
 
 print(); print(); print("as up 10 sec close to stop")
 time.sleep(10); sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"/Users/mini/Library/Android/sdk/emulator/emulator -avd as; exit;\"' -e 'set miniaturized of window 1 to false' -e 'end tell'", False) # open as for a few minutes
-time.sleep(60*15); sub("/Useres/mini/Library/Android/sdk/platform-tools/adb -e emu kill",True)
+time.sleep(60*15); sub("/Users/mini/Library/Android/sdk/platform-tools/adb -e emu kill",True)
 
 
 sys.exit()
