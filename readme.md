@@ -37,6 +37,7 @@ code-server unregister #to fix connection bug
 
 ### [android studio](https://developer.android.com/studio)
 ```bash
+# installed via installer
 /Users/mini/Library/Android/sdk/emulator/emulator -list-avds  #list vms
 /Users/mini/Library/Android/sdk/emulator/emulator -avd name -no-window  #run vm headless
 /Users/mini/Library/Android/sdk/emulator/emulator -avd name -netdelay none -netspeed full  #und mehr
@@ -63,6 +64,7 @@ ssh user@ip -i "path/to/openssh-private"
 
 ### [node](https://nodejs.org/) + [npm](https://docs.npmjs.com/)
 ```bash
+# installed via installer
 npm show node  #show newest node verison
 node -v  #compare version with lts or v16lts or website
 # then update either via npm install -g node@version or installer from nodejs.org
