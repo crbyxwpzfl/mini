@@ -39,7 +39,7 @@ time.sleep(4); sub(f"screen -S hb -d -m homebridge -U {os.path.abspath(os.path.d
 time.sleep(2); sub("screen -list",True)
 
 print(); print(); print("pull changes of of gh")
-time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps/privates/git.py -pull",True)  # pulling gh changes
+time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps-privates/git.py -pull",True)  # pulling gh changes
 
 
 print(); print(); print("as up 10 sec close to stop")
