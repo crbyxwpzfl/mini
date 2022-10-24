@@ -20,7 +20,7 @@
                     "brightness": 100,
                     "hue": 200,
                     "saturation": 100,
-                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reps/mini/ambilight.py",
+                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reps-mini/ambilight.py",
                     "polling": [
                         {
                             "characteristic": "on",
@@ -50,7 +50,7 @@
                             "on": 0,
                             "brightness": 0,
                             "stateChangeResponseTime": 1,
-                            "state_cmd": "python3 /Users/mini/Downloads/transfer/reps/mini/wall.py",
+                            "state_cmd": "python3 /Users/mini/Downloads/transfer/reps-mini/wall.py",
                             "polling": [
                                 {
                                     "characteristic": "on",
@@ -84,7 +84,7 @@
                             "timeout": 20000
                         }
                     ],
-                    "state_cmd": "ssh spinala@192.168.2.1 -i \"/Users/mini/Downloads/transfer/reps/privates/openpriv\" 'python3 /home/spinala/spinala/tisch.py'"
+                    "state_cmd": "ssh spinala@192.168.2.1 -i \"/Users/mini/Downloads/transfer/reps-privates/openpriv\" 'python3 /home/spinala/spinala/tisch.py'"
                 },
                 {
                     "type": "HumiditySensor",
@@ -100,7 +100,7 @@
                             "timeout": 8000
                         }
                     ],
-                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reps/mini/humidreadlist.py"
+                    "state_cmd": "python3 /Users/mini/Downloads/transfer/reps-mini/humidreadlist.py"
                 },
                 {
                     "type": "Thermostat",
@@ -113,7 +113,7 @@
                     "coolingThresholdTemperature": 20,
                     "heatingThresholdTemperature": 20,
                     "stateChangeResponseTime": 3,
-                    "state_cmd": "ssh spinala@192.168.2.1 -i \"/Users/mini/Downloads/transfer/reps/privates/openpriv\" 'python3 /home/spinala/spinala/thermo.py'",
+                    "state_cmd": "ssh spinala@192.168.2.1 -i \"/Users/mini/Downloads/transfer/reps-privates/openpriv\" 'python3 /home/spinala/spinala/thermo.py'",
                     "polling": [
                         {
                             "characteristic": "currentTemperature",
