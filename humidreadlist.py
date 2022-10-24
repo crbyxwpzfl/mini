@@ -6,7 +6,7 @@
 
 
 
-import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
+import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import secs  # fetch secrets
 
 import os
 import subprocess
