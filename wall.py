@@ -1,6 +1,6 @@
 # set up alex app on tv so tv stays in light sleep not deep sleep so api is responsive at all times even after long times of inactivety
 
-import sys; sys.path.append('/Users/mini/Downloads/transfer/reps/privates/'); import secs  # fetch secrets
+import sys; sys.path.append('/Users/mini/Downloads/transfer-reps/privates/'); import secs  # fetch secrets
 
 from requests.auth import HTTPDigestAuth
 import json
