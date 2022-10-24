@@ -11,7 +11,7 @@ alt  #toggle menue bar
 ```bash
 defaults write com.apple.finder AppleShowAllFiles TRUE && killall Finder  #show hidden files in finder
 chflags hidden /path/to/folder  #hide a folder
-rm -rf #drag drop icloud drive folders to delete them
+rm -rf #drag drop icloud drive folders to delete them then relauche finder
 open /usr/local/bin/  #aria2c + ffmpeg  + ffplay  + ffprobe (yt-dlp) (code-server) binaries here
 open /Users/mini/Library/Python  #python versions live here
 ```
