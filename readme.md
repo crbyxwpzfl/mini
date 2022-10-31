@@ -46,6 +46,7 @@ homebridge -D -U /path/to/config #  bring hb up in debug mode and config path
 ```bash
 python3 -m pip install requests  #install requests
 python3 -m pip install --upgrade yt-dlp  #install dlp and update dlp
+python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz  #to install master branch
 pip3 list  #list all installed packages
 pip3 list --outdated  #smae same but just outdated
 ```
