@@ -56,6 +56,11 @@ pip3 list  #list all installed packages
 pip3 list --outdated  #smae same but just outdated
 ```
 
+### git
+```
+xcode-select --install # install commandline tools after macos upgrade
+```
+
 ### ssh
 ```bash
 chmod 600 /path/to/openpriv/   #set permissions for key file
