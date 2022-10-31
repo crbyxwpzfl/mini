@@ -51,7 +51,7 @@ def ariacleanup():   # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0'
     for actives in json.loads(d['r'].content)['result'][3][0]:
         if not any(actives.get('dir').split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] in sublist for sublist in d['allariaurls']): sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[actives.get('gid')] })
 
-def sortaria():  # perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+def sortaria():  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
