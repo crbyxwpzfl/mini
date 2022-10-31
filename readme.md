@@ -37,14 +37,6 @@ code-server unregister #to fix connection bug
 # /usr/local/bin/aria2c binary from gh rp
 ```
 
-### [android studio](https://developer.android.com/studio)
-```bash
-# installed via installer
-/Users/mini/Library/Android/sdk/emulator/emulator -list-avds  #list vms
-/Users/mini/Library/Android/sdk/emulator/emulator -avd name -no-window  #run vm headless
-/Users/mini/Library/Android/sdk/emulator/emulator -avd name -netdelay none -netspeed full  #und mehr
-```
-
 ### [homebridge](https://github.com/homebridge/homebridge) + [cmd](https://github.com/ztalbot2000/homebridge-cmd4) + [cam](https://github.com/Sunoo/homebridge-camera-ffmpeg)
 ```sh
 homebridge -D -U /path/to/config #  bring hb up in debug mode and config path
