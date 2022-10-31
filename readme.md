@@ -14,6 +14,8 @@ chflags hidden /path/to/folder  #hide a folder
 rm -rf #drag drop icloud drive folders to delete them then relauche finder
 open /usr/local/bin/  #aria2c + ffmpeg  + ffplay  + ffprobe (yt-dlp) (code-server) binaries here
 open /Users/mini/Library/Python  #python versions live here
+pmset -g sched  #show current powerup/down schedule or go to systeminformation app under power tab
+xcode-select --install  #install commandline tools after macos upgrade
 ```
 
 ### [ffmpeg](https://www.ffmpeg.org/download.html)
@@ -54,11 +56,6 @@ python3 -m pip install requests  #install requests
 python3 -m pip install --upgrade yt-dlp  #install dlp and update dlp
 pip3 list  #list all installed packages
 pip3 list --outdated  #smae same but just outdated
-```
-
-### git
-```
-xcode-select --install # install commandline tools after macos upgrade
 ```
 
 ### ssh
