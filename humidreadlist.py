@@ -23,7 +23,20 @@ def sub(cmdstring, waitforcompletion):  # string here because shell true because
     if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") ORDER BY message.date desc;'
+    d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID WHERE message.associated_message_type = 0 AND (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") AND message.is_from_me = 0 AND chat_recoverable_message_join.message_id IS NULL ORDER BY message.date desc; '
+ 
+    # TODO find out hwere edited or 2min deleted messages go
+
+    # TODO cleanup()
+    # interpret recived messages with "!!" as delete this message to interrupt downloads and to clear queu
+
+    # TODO whathappend()
+    # -> tapback "thumbsup" for all done downloading
+    # -> tapback "thumbsdown" for currently downloading
+    # -> tapback "HAHA" for error
+
+
+
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall()  # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
         if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) )  # all https into dlp
@@ -45,11 +58,14 @@ def sendaria(data):  # sends json to aria or starts aria if aria not reachable
         d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
         sub(f"screen -S aria -d -m aria2c {d['ariaopts']}", False)  # open aria like this no wait cause next call in 60sec wait delay so aria is propperly up before next request  status connected check is not essential cause #TODO why we have completion call!! no completioncall any more
 
+
+
 def ariacleanup():   # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) #  purge aria so aria save file is celan
     sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[ {'methodName':'aria2.getGlobalStat'}, {'methodName':'aria2.tellStopped', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellWaiting', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellActive', 'params':[['status', 'gid', 'dir']]} ]] })  
     if (len(d['ariaurls']) + int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ); sys.exit()  # no ariaurls no active no waiting shutdown aria and sys exit otherwise for loop benethe will throw error list index out of range since no actives
     for actives in json.loads(d['r'].content)['result'][3][0]:
         if not any(actives.get('dir').split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] in sublist for sublist in d['allariaurls']): sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[actives.get('gid')] })
+
 
 def sortaria():  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
@@ -60,6 +76,7 @@ def sortaria():  #with /humidreadlist.py palce holder /path/to/file.mkv you manu
         for name in sorted([f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]): # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4 in sorted order
             sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
+
 
 def interpreter():
     #TODO perhaps wirte an interpreter for message commands
