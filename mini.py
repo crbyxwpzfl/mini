@@ -38,7 +38,6 @@ time.sleep(4); sub("screen -S vs -d -m code-server serve",False) #  summon vs
 time.sleep(4); sub(f"screen -S hb -d -m homebridge -U {os.path.abspath(os.path.dirname( __file__ ))}",False) #  summon hb
 time.sleep(2); sub("screen -list",True)
 
-print(); print(); print("pull changes of of gh")
+print(); print(); print("pull changes of of gh") # rewrite this to import thses funktions
 time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps-privates/git.py -pull",True)  # pulling gh changes
-
-sys.exit()
+time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps-privates/git.py -clone",True)  # cloning new gists or reps
