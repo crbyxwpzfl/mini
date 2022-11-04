@@ -39,5 +39,8 @@ time.sleep(4); sub(f"screen -S hb -d -m homebridge -U {os.path.abspath(os.path.d
 time.sleep(2); sub("screen -list",True)
 
 print(); print(); print("pull changes of of gh") # rewrite this to import thses funktions
-time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps-privates/git.py -pull",True)  # pulling gh changes
-time.sleep(2); sub("python3 /Users/mini/Downloads/transfer/reps-privates/git.py -clone",True)  # cloning new gists or reps
+import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import git  # fetch pull() + clone()
+time.sleep(2); git.pull()
+time.sleep(2); git.clone()
+
+time.sleep(10)
