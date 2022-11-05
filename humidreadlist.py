@@ -52,14 +52,19 @@ def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
     # dlp rewrite TODO just get extracted url from dlp and pass url into aria to get completion, active, error updates
         # then mark folder for sort() so audio gets extracted
         # handle error case when dlp cant get url
-    
+
+    # this still prints ERROR: unsupported URL to stdout/stderr
+    try: import yt_dlp; print(yt_dlp.YoutubeDL({'no_warnings': True, 'quiet': True, 'format_sort': ['ext'],'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, }).extract_info(URLS, download=False)['format_id']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
+    except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError): print("error")
+
+
     d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
     d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"%(title)s-{sys.argv[3]}.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
-    # TODO find a way to detect active dl of dlp -> put actives in tapbacklist[(message , thumbs down), ...]
-    # TODO find a way to cancle active dlp wich are in tapback[] and have value !! AND deleted messages (if they are not in list already)
-    # TODO find a way to detect error of dlp -> update errors in tapback['message': ?, ...]
-    # TODO find a way to detect complete dl -> put in tapback['message': thumbsup]
+    # [ ] TODO find a way to detect active dl of dlp -> put actives in tapbacklist[(message , thumbs down), ...]
+    # [ ] TODO find a way to cancle active dlp wich are in tapback[] and have value !! AND deleted messages (if they are not in list already)
+    # [ ] TODO find a way to detect error of dlp -> update errors in tapback['message': ?, ...]
+    # [ ] TODO find a way to detect complete dl -> put in tapback['message': thumbsup]
         # all detections maby possible via spawning dlp as server like aria responding to questions ????
 
 def sendaria(data):  # sends json to aria or starts aria if aria not reachable
@@ -89,7 +94,8 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
     # TODO parse puthere folder convert all not alreadyconverted in seperate process
     # TODO update sort to auto put in bin (30d deletion!)
-    
+
+
     # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
 def tapback():
