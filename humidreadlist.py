@@ -49,6 +49,10 @@ def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
 
 def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
+    # dlp rewrite TODO just get extracted url from dlp and pass url into aria to get completion, active, error updates
+        # then mark folder for sort() so audio gets extracted
+        # handle error case when dlp cant get url
+    
     d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
     d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"%(title)s-{sys.argv[3]}.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
@@ -85,6 +89,8 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
     # TODO parse puthere folder convert all not alreadyconverted in seperate process
     # TODO update sort to auto put in bin (30d deletion!)
+    
+    # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
 def tapback():
     # take dict of kind ['message text': tapback nr, ...] -> tapback accordingly on after on other
