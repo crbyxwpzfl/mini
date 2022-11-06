@@ -4,7 +4,7 @@
 
 #let cluster fuck begin
 
-# each call handle one message without tapback
+# each call handle one message without tapback (vllt nur if no messages with !! are present)
 # if (message is direct link)
 #       sendtoaria(message)
 #       thumbdown(message)
@@ -12,13 +12,13 @@
 #       sendtoaria( dlpextracturl(message) )
 #       thumbdown(message)
 #
-# ech call handles one message with thumbsdown
+# ech call handles one message with thumbsdown (vllt nur if no messages with !! are present)
 # if (aria is complete) and (dir contains mp4/m4a/)
 #       thumbsup(message)
 # else if (aria is not active or waiting) # meaning aria is error
 #       flag?(message)
 #
-# each call handles one message wit ?
+# each call handles one message wit ? (vllt nur if no messages without are present)
 # tryfulldlp(message) # eg for hls
 #
 # each call handles one message with !!
