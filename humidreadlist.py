@@ -2,8 +2,28 @@
 # chmod +x /current/file && cd "/current/" && git config core.filemode true && git commit -am "commit chmodx" && git -c core.sshCommand="ssh -i /path/to/priv" push
 
 
-#let the cluster fuck begin
+#let cluster fuck begin
 
+# each call handle one message without tapback
+# if (message is direct link)
+#       sendtoaria(message)
+#       thumbdown(message)
+# else
+#       sendtoaria( dlpextracturl(message) )
+#       thumbdown(message)
+#
+# ech call handles one message with thumbsdown
+# if (aria is complete) and (dir contains mp4/m4a/)
+#       thumbsup(message)
+# else if (aria is not active or waiting) # meaning aria is error
+#       flag?(message)
+#
+# each call handles one message wit ?
+# tryfulldlp(message) # eg for hls
+#
+# each call handles one message with !!
+# take message tapback !! and delete
+#
 
 
 import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import secs  # fetch secrets
