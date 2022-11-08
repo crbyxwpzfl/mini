@@ -15,6 +15,10 @@
 # check for vpn and how many screens are active i ok
 #   spawn screen with ytdl( message without tapback ).logger(on error start aria) add thumbsdown
 #
+# needs solid way to find active screens
+# needs to alway end screen on fail or finished dl
+# needs solid way to search dir for succesfull dl
+#
 # if thumbdown messages not in active screens and message hase no dir/files
 #   tapback ?
 # else
