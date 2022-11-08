@@ -4,6 +4,25 @@
 
 #let cluster fuck begin
 
+
+# currently best idea
+#
+# each call handles one message with !!
+# take message tapback !! and delete message
+#
+# find a good way to name screens use message date only as addon to uniquefy the name
+#
+# check for vpn and how many screens are active i ok
+#   spawn screen with ytdl( message without tapback ).logger(on error start aria) add thumbsdown
+#
+# if thumbdown messages not in active screens and message hase no dir/files
+#   tapback ?
+# else
+#   tapback thumbs up
+
+
+
+
 # each call handle one message without tapback (vllt nur if no messages with !! are present)
 # if (message is direct link)
 #       sendtoaria(message)
