@@ -7,6 +7,9 @@
 
 # currently best idea
 #
+# vllt screen set vpn too and vllt screen tapbacks too
+#
+#
 # each call handles one message with !!
 # if message with !! has screen delete/drop screen
 # take message tapback !! and delete message
