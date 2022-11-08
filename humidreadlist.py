@@ -8,6 +8,7 @@
 # currently best idea
 #
 # each call handles one message with !!
+# if message with !! has screen delete/drop screen
 # take message tapback !! and delete message
 #
 # find a good way to name screens use message date only as addon to uniquefy the name
