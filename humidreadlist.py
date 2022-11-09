@@ -8,49 +8,28 @@
 # currently best idea
 #
 # vllt screen set vpn too and vllt screen tapbacks too
+# differentiate aria and dlp screens launche new dlps but not arias
 #
-#
-# each call handles one message with !!
-# if message with !! has screen delete/drop screen
-# take message tapback !! and delete message
+# shut off all dlp and aria screens when vpn is off
 #
 # find a good way to name screens use message date only as addon to uniquefy the name
-#
-# check for vpn and how many screens are active i ok
-#   spawn screen with ytdl( message without tapback ).logger(on error start aria) add thumbsdown
 #
 # needs solid way to find active screens
 # needs to alway end screen on fail or finished dl
 # needs solid way to search dir for succesfull dl
 #
-# if thumbdown messages not in active screens and message hase no dir/files
+# each call handles one message with !!
+#
+# if message with !! has screen delete/drop screen
+# take message tapback !! and delete message
+#
+# check for vpn and how many screens are active i ok
+#   spawn screen with ytdl( message without tapback ).logger(on error start aria) add thumbsdown
+#
+# if thumbdown messages not in active screens and message hase no dir/files check for mp4 files!
 #   tapback ?
 # else
 #   tapback thumbs up
-
-
-
-
-# each call handle one message without tapback (vllt nur if no messages with !! are present)
-# if (message is direct link)
-#       sendtoaria(message)
-#       thumbdown(message)
-# else
-#       sendtoaria( dlpextracturl(message) )
-#       thumbdown(message)
-#
-# ech call handles one message with thumbsdown (vllt nur if no messages with !! are present)
-# if (aria is complete) and (dir contains mp4/m4a/)
-#       thumbsup(message)
-# else if (aria is not active or waiting) # meaning aria is error
-#       flag?(message)
-#
-# each call handles one message wit ? (vllt nur if no messages without are present)
-# tryfulldlp(message) # eg for hls
-#
-# each call handles one message with !!
-# take message tapback !! and delete
-#
 
 
 import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import secs  # fetch secrets
@@ -72,18 +51,9 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
     d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID WHERE message.associated_message_type = 0 AND (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") AND message.is_from_me = 0 AND chat_recoverable_message_join.message_id IS NULL ORDER BY message.date desc; '
     # TODO find out where edited or 2min deleted messages go
 
-    # add all messages with !! to list for tapback() 
-        # NOTE MAKE ABOLUTLY SURE deleted messages dont stay in here cause eg -> vpn turns off every time there is a tapback['vpn to': !!]
-        # NOTE so deleted messages dont stick in list
-
-    # sth is already handled is no longer determind by folder exists but tapback status
-    # when sth is done it will be marked with thumbs up -> eclude from list
-    # when sth is error it will be marked with ? -> eclude from list
-    # when sth is active it will be marked with thumbs down -> exclude from list
-    # when sth is toberemoved it will be marked with !! -> exlude from list
-        # NOTE this means all tapback() need to run in same proces (cant be dispatched) 
-        # NOTE so tapbacks cant lack behind since what to do relies detects based on tapback status 
-        # NOTE this gets problematic for a lot of tapbacks in one run (eg set vpn and delete a bunch off messages)
+    # parse() -> for cleanup         -> !!tapbacks        [date, text] # make sue already deleted messages are not in this list anymore
+    #            for todo message    -> notapbacks        [date, text, screen name, finalfile] make sure this hase no message wich are already associated with a tapback
+    #            for tocheck message -> thumbdowntapbacks [date, text, screen name, finalfile]
 
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall()  # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
@@ -153,6 +123,55 @@ def tapback():
 def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
     parsereadlist() # waht u want vpn location and urls
     currentloc() # where u are
+
+    # parse() -> for cleanup         -> !!tapbacks        [date, text, prio, screen name, finalfile, tapback] make sure already deleted messages are not in this list anymore
+    #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
+    #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
+    # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
+
+# need to handle list out of range here!! or use multible list at the beninging
+
+    # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
+    # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
+    if [message for message in d['messages'] if '!!' in message]: 
+        cleanup = [message for message in d['messages'] if '!!' in message][0] # prevent list index out of range error
+        tapback(cleanup[1], '!!')  # take first item from list of all messages with !! and tapback !!
+        if cleanup[1] == 'to ...': vpnoff() and dropalldlscreens else dropscreen(cleanup[2])
+        deletemessage(cleanup[1])
+        return len(messages); sys.exit()
+
+    # prio 2 act on message -> message no tapback -> tapback thumbdown -> screen dlp( message ) with logger on error starts aria( message ) / screen set vpn / ignore -> exit
+    #    make sure vpn gets handled first
+    # for message in notapbacks[]: tapback(messagetext, thumbdown) -> start screen dl(message) / screen vpn on / ignore
+    if [message for message in d['messages'] if None in message]: 
+        acton = [message for message in d['messages'] if None in message][0] # prevent list index out of range error
+        tapback(acton[1], 'thumbsdown') # take first item from list of all messages with no tapbacks and tapback thumbsdown
+        if acton[1] == 'to ...': screen vpn on else if vpn ok: dl(acton[1])
+
+    # alway message with thumb down   -> check active screen and final file is correct (this includes set vpn) -> tapback thumbsup or ? -> exit
+    #    make sure vpn gets handled first
+    # for message in thumbsdown[]: check screen name not up and finalfile present -> tapback thumbs up
+    if [message for message in d['messages'] if 'thumbsdown' in message]: 
+        tocheck = [message for message in d['messages'] if 'thumbsdown' in message][0]
+        if tocheck[2] not in active screens:
+            if tocheck[3] in os.listdir: 
+                tapback(tocheck[1], 'thumbsup')
+            else:
+                tapback(tocheck[1], '?')
+
+
+thumbsdownlist = [message for message in d['messages'] if 'thumbsdown' in message]
+not_active_anymore = [message for message in thumbsdownlist if message[2] not in active screens]
+in_oslistdir = [message for message in thumbsdownlist if message[3] in oslistdir]
+
+
+thumbsuplist = [message for message in not_active_anymore if message[3] in oslistdir]
+qlist = [message for message in not_active_anymore if message[3] not in oslistdir]
+
+if any(message[3] in os.listdir for message in not_active_anymore): tapback('thumbsup') else tapback('?')
+
+
+
 
     if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.forceShutdown'} )
