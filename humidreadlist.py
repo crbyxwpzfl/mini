@@ -128,15 +128,29 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
     #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
     # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
+    d['!!'] = 
+    d['None'] = 
+    d['downs'] = 
+    or d['allmessages'] = 
 
 # need to handle list out of range here!! or use multible list at the beninging
+# perhaps use for loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#or a = [1,2,3]
+
+try:
+ print(a[4])
+except IndexError:
+ pass
+
+ # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
     # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
     if [message for message in d['messages'] if '!!' in message]: # prevent list index out of range error
         cleanup = [message for message in d['messages'] if '!!' in message][0] 
         tapback(cleanup[1], '!!')  # take first item from list of all messages with !! and tapback !!
-        if cleanup[1] == 'to ...': vpnoff() and dropalldlscreens else dropscreen(cleanup[2])
+        if cleanup[1] == 'to ...': vpnoff() and dropalldlscreens 
+        else dropscreen(cleanup[2])
         deletemessage(cleanup[1])
         return len(messages); sys.exit()
 
@@ -146,7 +160,8 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     if [message for message in d['messages'] if None in message]: 
         acton = [message for message in d['messages'] if None in message][0] # prevent list index out of range error
         tapback(acton[1], 'thumbsdown') # take first item from list of all messages with no tapbacks and tapback thumbsdown
-        if acton[1] == 'to ...': screen vpn on else if vpn ok: dl(acton[1])
+        if acton[1] == 'to ...': screen vpn on 
+        else if vpn ok: dl(acton[1])
 
     # alway message with thumb down   -> check active screen and final file is correct (this includes set vpn) -> tapback thumbsup or ? -> exit
     #    make sure vpn gets handled first
