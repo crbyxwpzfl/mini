@@ -133,8 +133,8 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
 
     # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
     # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
-    if [message for message in d['messages'] if '!!' in message]: 
-        cleanup = [message for message in d['messages'] if '!!' in message][0] # prevent list index out of range error
+    if [message for message in d['messages'] if '!!' in message]: # prevent list index out of range error
+        cleanup = [message for message in d['messages'] if '!!' in message][0] 
         tapback(cleanup[1], '!!')  # take first item from list of all messages with !! and tapback !!
         if cleanup[1] == 'to ...': vpnoff() and dropalldlscreens else dropscreen(cleanup[2])
         deletemessage(cleanup[1])
