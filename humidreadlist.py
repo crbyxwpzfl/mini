@@ -55,6 +55,42 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
     #            for todo message    -> notapbacks        [date, text, screen name, finalfile] make sure this hase no message wich are already associated with a tapback
     #            for tocheck message -> thumbdowntapbacks [date, text, screen name, finalfile]
 
+"""
+------------------------todo / no tapback -> all messages wich dont have an other message with a associated message guid
+d['sqlquery'] = '''
+SELECT message.text, , message.date
+FROM message m
+LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
+LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
+WHERE Lm.associated_message_guid IS NULL AND message.associated_message_guid IS NULL                  --exclude messages with associated tapback
+AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deletd messages
+AND message.text IS NOT NULL;                                                                         --perhaps edited messages some how have text null !!!!!!!!!!!!! <- check das nochmal !!!!!!!
+'''
+
+-----------------------to cleanup / !! form telefon -> all !! messages FROM TELEFON NOT MINI but exclude deleted
+d['sqlquery'] = '''
+SELECT message.text, message.date
+FROM message
+LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
+LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
+WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 0                                    --include messages with associated tapback but exclude outgoing tapbacks
+AND chat_recoverable_message_join.message_id IS NULL --to exclude deletd messages                     --exclude deleted messages
+AND Lm.associated_message_type = 2004;                                                                --filter for messages with !!(2004) or thdown(2002)
+'''
+
+-----------------------tocheck / thumdowns -> all messages from telefon with thumbdown tapback
+d['sqlquery'] = '''
+SELECT message.text, message.date
+FROM message
+LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
+LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
+WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 1                                    --include messages with associated tapback but exclude incoming tapbacks
+AND chat_recoverable_message_join.message_id IS NULL --to exclude deletd messages                     --exclude deleted messages
+AND Lm.associated_message_type = 2002;                                                                --filter for messages with !!(2004) or thdown(2002)
+'''
+"""
+
+
     listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall()  # sql connect make cursor execute query wait for query to finish
     for tupl in listoftupls:
         if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) )  # all https into dlp
