@@ -56,7 +56,7 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
     #            for tocheck message -> thumbdowntapbacks [date, text, screen name, finalfile]
 
 """
-------------------------todo / no tapback -> all messages wich dont have an other message with a associated message guid
+------------------------d['todos']  / no tapback -> all messages wich dont have an other tapback-message conncted to it via associated message guid excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, , message.date
 FROM message m
@@ -67,7 +67,7 @@ AND chat_recoverable_message_join.message_id IS NULL                            
 AND message.text IS NOT NULL;                                                                         --perhaps edited messages some how have text null !!!!!!!!!!!!! <- check das nochmal !!!!!!!
 '''
 
------------------------to cleanup / !! form telefon -> all !! messages FROM TELEFON NOT MINI but exclude deleted
+-----------------------d['cleanups'] / !! form telefon -> all messages marked with !! FROM TELEFON NOT MINI excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, message.date
 FROM message
@@ -78,7 +78,7 @@ AND chat_recoverable_message_join.message_id IS NULL --to exclude deletd message
 AND Lm.associated_message_type = 2004;                                                                --filter for messages with !!(2004) or thdown(2002)
 '''
 
------------------------tocheck / thumdowns -> all messages from telefon with thumbdown tapback
+-----------------------d['waiting'] / thumdowns -> all messages marked with thdown FROM MINI NOT TELEFON excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, message.date
 FROM message
@@ -164,10 +164,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
     #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
     # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
-    d['!!'] = 
-    d['None'] = 
-    d['downs'] = 
-    or d['allmessages'] = 
+
 
 # need to handle list out of range here!! or use multible list at the beninging
 # perhaps use for loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
