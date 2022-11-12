@@ -136,8 +136,7 @@ tupl[0].replace('http://', '').split('/',1)
 # perhaps use for item in d['todos'] list loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # or try: ... except IndexError: pass     to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    # SAFETY any active screens and vpn is off -> kill screens
-    for panics in any[]:
+    for panics in any[]: #safety any active screens and vpn is off - kill screens
         kill_screen(panics[date])
         send_message("screen on vpn off")
         sys.exit()
@@ -147,7 +146,6 @@ tupl[0].replace('http://', '').split('/',1)
         kill_all_screens()
         screen_vpn_off()
         tapback(message, '!!'); delete(message); break
-
     # message starts 'http' and has !! (from me) -> specific screen off
     for dlcleanups in [message for message in d['sqllist'] if 2004 in message and message[0].startswith('http')]:
         drop_dl_screen()
@@ -155,8 +153,8 @@ tupl[0].replace('http://', '').split('/',1)
         tapback(message, '!!'); delete(message); break
 
     for cleanups in [message for message in d['sqllist'] if 2004 in message]:
-        if cleanups[0].startswith('http'): drop_dl_screen(); vllt_delete_dl_files() # message starts 'http' and has !! (from me) -> specific screen off
-        if cleanups[0].startswith('to'): kill_all_screens(); screen_vpn_off() # message starts 'to' and has !! (from me) and vpn currently on -> vpn off
+        if cleanups[0].startswith('http'): drop_dl_screen(); vllt_delete_dl_files() #http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and currentloc() != 'de': kill_all_screens(); screen_vpn_off() #to message and has !! (from me) and vpn currently on - vpn off
         tapback(message, '!!'); delete(message); break
 
 
@@ -164,31 +162,30 @@ tupl[0].replace('http://', '').split('/',1)
     for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() == 'de']
         screen_vpn_on()
         tapback(message, 'dislike'); break
-
     # message starts 'http' and has None tapback and vpn currently on -> dl on
     for dltodo in [message for message in d['sqllist'] if None in message and message[0].startswith('http') and currentloc() != 'de']
         screen_dl_on()
         tapback(message, 'dislike'); break
 
-    for todos in [message for message in d['sqllist'] if None in message]: # vpn should be on top cause of sql sort
-        if todos[0].startswith('to') and d['currentloc'] != 'de': screen_dl_on() # message starts 'http' and has None tapback and vpn currently on -> dl on
-        if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() # message starts 'to' and has None tapback and vpn currently off -> vpn on
+    for todos in [message for message in d['sqllist'] if None in message]: #vpn should be on top cause of sql sort
+        if todos[0].startswith('to') and d['currentloc'] != 'de': screen_dl_on() #message starts 'http' and has None tapback and vpn currently on - dl on
+        if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() #message starts 'to' and has None tapback and vpn currently off - vpn on
         tapback(message, 'dislike'); break
 
 
     # message starts 'to' and has dislike and has no active screen and vpn currently on -> tapback like
     for vpnwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('to') and message[date] not in active_screens and currentloc() != 'de']
         tapback(message, 'like'); break
-
     # message starts 'http' and has dislike and has no active screen and has mp4/mp3-> tapback like
     for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 in os.listdir(message[dir])]
         tapback(message, 'like'); break
-
     # message starts 'http' and has dislike and has no active screen and has n mp4/mp3 -> tapback?
     for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 not in os.listdir(message[dir])]
         tapback(message, '?'); break
 
-
+    for waitings [message for message in d['sqllist'] if 2002 in message and message[date] not in active_screens] #has dislike and has no active screen
+        if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(message, 'like'); break #message has no active screen and complete condition true -> tapback like
+        if ( waitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir] ): tapback(message, '?'); break #message has no active screen and complete condition fasle -> tapback ?
 
     # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
     # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
