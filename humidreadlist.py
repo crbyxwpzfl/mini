@@ -136,7 +136,7 @@ tupl[0].replace('http://', '').split('/',1)
 # perhaps use for item in d['todos'] list loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # or try: ... except IndexError: pass     to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    # SAFETY any active screens and vpn is off -> kill screen
+    # SAFETY any active screens and vpn is off -> kill screens
     for panics in any[]:
         kill_screen(panics[date])
         send_message("screen on vpn off")
@@ -154,9 +154,13 @@ tupl[0].replace('http://', '').split('/',1)
         vllt_delete_dl_files()
         tapback(message, '!!'); delete(message); break
 
+    for cleanups in [message for message in d['sqllist'] if 2004 in message]:
+        if cleanups[0].startswith('http'): drop_dl_screen(); vllt_delete_dl_files() # message starts 'http' and has !! (from me) -> specific screen off
+        if cleanups[0].startswith('to'): kill_all_screens(); screen_vpn_off() # message starts 'to' and has !! (from me) and vpn currently on -> vpn off
+        tapback(message, '!!'); delete(message); break
 
 
-    # message stats 'to' and has None tapback and vpn currently off -> vpn on
+    # message starts 'to' and has None tapback and vpn currently off -> vpn on
     for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() == 'de']
         screen_vpn_on()
         tapback(message, 'dislike'); break
@@ -166,6 +170,10 @@ tupl[0].replace('http://', '').split('/',1)
         screen_dl_on()
         tapback(message, 'dislike'); break
 
+    for todos in [message for message in d['sqllist'] if None in message]: # vpn should be on top cause of sql sort
+        if todos[0].startswith('to') and d['currentloc'] != 'de': screen_dl_on() # message starts 'http' and has None tapback and vpn currently on -> dl on
+        if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() # message starts 'to' and has None tapback and vpn currently off -> vpn on
+        tapback(message, 'dislike'); break
 
 
     # message starts 'to' and has dislike and has no active screen and vpn currently on -> tapback like
