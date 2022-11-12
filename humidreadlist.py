@@ -32,6 +32,15 @@
 #   tapback thumbs up
 
 
+
+    # parse() -> for cleanup         -> !!tapbacks        [date, text, prio, screen name, finalfile, tapback] make sure already deleted messages are not in this list anymore
+    #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
+    #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
+    # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
+
+
+
+
 import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import secs  # fetch secrets
 
 import os
@@ -45,7 +54,7 @@ import requests  # for currentloc()
 
 def sub(cmdstring, waitforcompletion):  # string here because shell true because only way of chaning commands
     p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
+    if waitforcompletion: return p.communicate()[0].decode()  # this will wait for subprocess to finisih
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
     d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
@@ -112,124 +121,51 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
 
     # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
+def upscreens(name):
+    out = sub('screen -list', True)
+    print(out[out.index(":\r")+3:out.index("\n1 Socket")].replace('\t','').split('\n') )
+    
+def upscreens(name):
+    return True if sub(f'screen -list | grep "{name}"', True) else False
+
+
 def tapback():
     # take dict of kind ['message text': tapback nr, ...] -> tapback accordingly on after on other
         # delete all items of list with tapback !! -> esential to clear out all tapback[] items with value !! especially for vpn off these must be gone on next run
         # NOTE messages taged with !! form mini mean this is a old message its deleted and not looked at agian
 
 def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
-    parsereadlist() # waht u want vpn location and urls
-    currentloc() # where u are
+    parsereadlist() #waht u want vpn location and urls
 
-    # parse() -> for cleanup         -> !!tapbacks        [date, text, prio, screen name, finalfile, tapback] make sure already deleted messages are not in this list anymore
-    #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
-    #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
-    # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
+    currentloc() #where u are
+    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
 
-tupl[0].replace('http://', '').split('/',1)
+    upscreens() #collect dl screens in a list
+    d['upscreens'] = 
+
+
 # add screen commands to sql lists in the beninging here
-    for item in d['sqllist']:
-        item.append(f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}') # appending dir to put files in
-        item.append(f'{item['date']}') # screen name
-        if item[] item.append(f'') # appending command
-
-# perhaps use for item in d['todos'] list loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# or try: ... except IndexError: pass     to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}' is dir to put files in
+    # item['date'] is screen name
 
     for panics in any[]: #safety any active screens and vpn is off - kill screens
         kill_screen(panics[date])
         send_message("screen on vpn off")
         sys.exit()
 
-    # message starts 'to' and has !! (from me) and vpn currently on -> vpn off
-    for vpncleanup in [message for message in d['sqllist'] if 2004 in message and message[0].startswith('to') and currentloc() != 'de']:
-        kill_all_screens()
-        screen_vpn_off()
-        tapback(message, '!!'); delete(message); break
-    # message starts 'http' and has !! (from me) -> specific screen off
-    for dlcleanups in [message for message in d['sqllist'] if 2004 in message and message[0].startswith('http')]:
-        drop_dl_screen()
-        vllt_delete_dl_files()
-        tapback(message, '!!'); delete(message); break
-
     for cleanups in [message for message in d['sqllist'] if 2004 in message]:
         if cleanups[0].startswith('http'): drop_dl_screen(); vllt_delete_dl_files() #http message and has !! (from me) - specific screen off
         if cleanups[0].startswith('to') and currentloc() != 'de': kill_all_screens(); screen_vpn_off() #to message and has !! (from me) and vpn currently on - vpn off
         tapback(message, '!!'); delete(message); break
-
-
-    # message starts 'to' and has None tapback and vpn currently off -> vpn on
-    for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() == 'de']
-        screen_vpn_on()
-        tapback(message, 'dislike'); break
-    # message starts 'http' and has None tapback and vpn currently on -> dl on
-    for dltodo in [message for message in d['sqllist'] if None in message and message[0].startswith('http') and currentloc() != 'de']
-        screen_dl_on()
-        tapback(message, 'dislike'); break
 
     for todos in [message for message in d['sqllist'] if None in message]: #vpn should be on top cause of sql sort
         if todos[0].startswith('to') and d['currentloc'] != 'de': screen_dl_on() #message starts 'http' and has None tapback and vpn currently on - dl on
         if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() #message starts 'to' and has None tapback and vpn currently off - vpn on
         tapback(message, 'dislike'); break
 
-
-    # message starts 'to' and has dislike and has no active screen and vpn currently on -> tapback like
-    for vpnwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('to') and message[date] not in active_screens and currentloc() != 'de']
-        tapback(message, 'like'); break
-    # message starts 'http' and has dislike and has no active screen and has mp4/mp3-> tapback like
-    for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 in os.listdir(message[dir])]
-        tapback(message, 'like'); break
-    # message starts 'http' and has dislike and has no active screen and has n mp4/mp3 -> tapback?
-    for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 not in os.listdir(message[dir])]
-        tapback(message, '?'); break
-
     for waitings [message for message in d['sqllist'] if 2002 in message and message[date] not in active_screens] #has dislike and has no active screen
         if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(message, 'like'); break #message has no active screen and complete condition true -> tapback like
         if ( waitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir] ): tapback(message, '?'); break #message has no active screen and complete condition fasle -> tapback ?
-
-    # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
-    # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
-    # for is better for exeting after one entry
-    for cleanups in [message for message in d['sqllist'] if 2004 in message and 0 in message]: # list comprehension filters !! messages (2004) from me (0)
-        tapback(cleanups[1][1], '!!') # take first item from list of all messages with !! and tapback !!
-        if cleanups[1].startswith('to') and d['currentloc'] != 'de': vpnoff() and dropalldlscreens # if text is vpn text shut down vpn and drop all screens
-        if cleanups[1].startswith('http') and cleanups[date] in active_screens: dropscreen(cleanups[date])  # if not vpn text just drop specific screeen
-        deletemessage(cleanup[1][1]) # delete message with text
-        return len(messages); sys.exit() # sys exit after cleanup
-
-
-    # prio 2 act on message -> message no tapback -> tapback thumbdown -> screen dlp( message ) with logger on error starts aria( message ) / screen set vpn / ignore -> exit
-    #    make sure vpn gets handled first
-    # for message in notapbacks[]: tapback(messagetext, thumbdown) -> start screen dl(message) / screen vpn on / ignore
-    for todos in [message for message in d['messages'] if None in message]:
-        tapback(acton[1], 'thumbsdown') # take first item from list of all messages with no tapbacks and tapback thumbsdown
-        if acton[1] == 'to ...': screen vpn on; break
-        else if vpn ok: dl(acton[1]); break
-
-    for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() != 'de']:
-        scree_startvpn()
-
-
-    # alway message with thumb down   -> check active screen and final file is correct (this includes set vpn) -> tapback thumbsup or ? -> exit
-    #    make sure vpn gets handled first
-    # for message in thumbsdown[]: check screen name not up and finalfile present -> tapback thumbs up
-    for waiting in [message for message in d['messages'] if 2002 in message and 1 in message and message[0] not in active_screens]: #  list comp filters disliked messages (2002) from mini (1)
-        if waiting[1][3] in os.listdir: # if any mp4 in os list dir thats a thumbs up
-            tapback(waiting[1][0]), 'like'); break
-        else:
-            tapback(waiting[1][0], '?'); break
-
-
-thumbsdownlist = [message for message in d['messages'] if 'thumbsdown' in message]
-not_active_anymore = [message for message in thumbsdownlist if message[2] not in active screens]
-in_oslistdir = [message for message in thumbsdownlist if message[3] in oslistdir]
-
-
-thumbsuplist = [message for message in not_active_anymore if message[3] in oslistdir]
-qlist = [message for message in not_active_anymore if message[3] not in oslistdir]
-
-if any(message[3] in os.listdir for message in not_active_anymore): tapback('thumbsup') else tapback('?')
-
 
 
 
