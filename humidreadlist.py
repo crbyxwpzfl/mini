@@ -121,30 +121,42 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
 
     # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
-def upscreens(name):
-    out = sub('screen -list', True)
-    print(out[out.index(":\r")+3:out.index("\n1 Socket")].replace('\t','').split('\n') )
-    
-def upscreens(name):
+def dl():
+    # everything into dlp
+    # if dlp fails
+    #    pass to aria
+    #    sort output
+    # make sure screen gets closed after finish downloading
+
+def upscreen(name):
     return True if sub(f'screen -list | grep "{name}"', True) else False
 
-
-def tapback():
-    # take dict of kind ['message text': tapback nr, ...] -> tapback accordingly on after on other
-        # delete all items of list with tapback !! -> esential to clear out all tapback[] items with value !! especially for vpn off these must be gone on next run
-        # NOTE messages taged with !! form mini mean this is a old message its deleted and not looked at agian
+def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004)
+    sub(f""" osascript -e '
+        tell application \"System Events\" to tell process \"Messages\"
+            set frontmost to true
+            tell application \"System Events\" to keystroke \"f\" using command down
+            tell application \"System Events\" to keystroke \"{message}\"
+            tell application \"System Events\" to keystroke return
+            delay 1
+            perform action \"AXPress\" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+            delay 1
+            set smalerlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list)
+            repeat with n from 1 to count of smalerlist 
+                if (value of item n of smalerlist contains \"{message}\") then --to get this loop right use xcodes accssesebilety inspector and the gist findmessage
+                    perform action \"AXPress\" of item n of smalerlist
+                    exit repeat
+                end if
+            end repeat
+            delay 1
+            tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"}
+            tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
+        end tell' """, True)
 
 def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
     parsereadlist() #waht u want vpn location and urls
+    currentloc()
 
-    currentloc() #where u are
-    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
-
-    upscreens() #collect dl screens in a list
-    d['upscreens'] = 
-
-
-# add screen commands to sql lists in the beninging here
     # f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}' is dir to put files in
     # item['date'] is screen name
 
@@ -163,7 +175,7 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
         if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() #message starts 'to' and has None tapback and vpn currently off - vpn on
         tapback(message, 'dislike'); break
 
-    for waitings [message for message in d['sqllist'] if 2002 in message and message[date] not in active_screens] #has dislike and has no active screen
+    for waitings [message for message in d['sqllist'] if 2002 in message and not upscreen(message[date])] #has dislike and has no active screen
         if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(message, 'like'); break #message has no active screen and complete condition true -> tapback like
         if ( waitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir] ): tapback(message, '?'); break #message has no active screen and complete condition fasle -> tapback ?
 
