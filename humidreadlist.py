@@ -48,87 +48,16 @@ def sub(cmdstring, waitforcompletion):  # string here because shell true because
     if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqlquery'] ='''SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
-                    LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapbacks with original message
-                    LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --connect deleted with messages
-                    WHERE m.associated_message_guid IS NULL                                                         --exclude tapback messages
-                    AND chat_recoverable_message_join.message_id IS NULL                                            --exclude deleted messages
-                    AND (m.text like 'http%' OR m.text like 'vpn%')                                                 --filter relevant texts
-                    AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
-                    ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts'''
-    # TODO find out where edited or 2min deleted messages go
-
-    # parse() -> for cleanup         -> !!tapbacks        [date, text] # make sue already deleted messages are not in this list anymore
-    #            for todo message    -> notapbacks        [date, text, screen name, finalfile] make sure this hase no message wich are already associated with a tapback
-    #            for tocheck message -> thumbdowntapbacks [date, text, screen name, finalfile]
-
-"""
-------------------------d['todos'] = / no tapback -> all messages wich dont have an other tapback-message conncted to it via associated message guid excluding deleted messages
-d['sqlquery'] = '''
-SELECT message.text, , message.date
-FROM message m
-LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
-LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
-WHERE Lm.associated_message_guid IS NULL AND message.associated_message_guid IS NULL                  --exclude messages with associated tapback
-AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deletd messages
-AND message.text IS NOT NULL;                                                                         --perhaps edited messages some how have text null !!!!!!!!!!!!! <- check das nochmal !!!!!!!
-'''
-
------------------------d['cleanups'] =  / !! form telefon -> all messages marked with !! FROM TELEFON NOT MINI excluding deleted messages
-d['sqlquery'] = '''
-SELECT message.text, message.date
-FROM message
-LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
-LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
-WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 0                                    --include messages with associated tapback but exclude outgoing tapbacks
-AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deleted messages
-AND Lm.associated_message_type = 2004;                                                                --filter for messages with !!(2004) or thdown(2002)
-'''
-
------------------------d['intheres'] =  / thumdowns -> all messages marked with thdown FROM MINI NOT TELEFON excluding deleted messages
-d['sqlquery'] = '''
-SELECT message.text, message.date
-FROM message
-LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
-LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
-WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 1                                    --include messages with associated tapback but exclude incoming tapbacks
-AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deleted messages
-AND Lm.associated_message_type = 2002;                                                                --filter for messages with !!(2004) or thdown(2002)
-'''
-
-----------------------all together
-d['sqlquery'] = '''
-SELECT message.text, message.is_from_me, Lm.associated_message_type, message.date
-FROM message
-LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --connect tapback with original message
-LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
-WHERE chat_recoverable_message_join.message_id IS NULL                                                --exclude deleted messages
-AND (message.text like 'http%' OR message.text like 'vpn%')                                           --filter relevant texts
-AND message.associated_message_guid IS NULL                                                           --exclude tapback messages
-AND message.text IS NOT NULL                                                                          --some texts are null perhaps edits
-'''
-
-
-d['sqlquery'] = '''
-SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
-LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapback with original message
-LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --filter deleted messages
-WHERE chat_recoverable_message_join.message_id IS NULL                                          --exclude deleted messages
-AND (m.text like 'http%' OR m.text like 'vpn%')                                                 --filter relevant texts
-AND m.associated_message_guid IS NULL                                                           --exclude tapback messages
-AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
-ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts
-'''
-
-"""
-
-
-    listoftupls = sqlite3.connect(d['chatdb']).cursor().execute(d['sqlquery']).fetchall()  # sql connect make cursor execute query wait for query to finish
-    for tupl in listoftupls:
-        if tupl[0].startswith('https://') and str(tupl[1]) not in os.listdir(os.path.join(d['puthere'], 'temps')): d['dlpurls'].append( list(map(str,tupl)) )  # all https into dlp
-        if tupl[0].startswith('http://') and tupl[0].replace('http://', '').split('/',1)[0] not in os.listdir(os.path.join(d['puthere'], 'temps')): d['ariaurls'].append(tupl[0].replace('http://', '').split('/',1))  # all http into aria split on first / after http:// strip so naming convention is http://filename/...
-        if tupl[0].startswith('http://'): d['allariaurls'].append(tupl[0].replace('http://', '').split('/',1))  # all aria urls present in messages to check against for removal in arai cleanup
-        if tupl[0].startswith('to '): d['vpnto'] = "connect " + tupl[0][-2:]  # connect country code into d 'vpnto'
+    d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
+                JOIN chat_handle_join ON m.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id
+                LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapbacks with original message
+                LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --connect deleted with messages
+                WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}")               --filter messages form cretain sender
+                AND m.associated_message_guid IS NULL                                                           --exclude tapback messages
+                AND chat_recoverable_message_join.message_id IS NULL                                            --exclude deleted messages
+                AND (m.text like 'http%' OR m.text like 'to%')                                                 --filter relevant texts
+                AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
+                ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
 def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
@@ -197,43 +126,93 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
     # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
 
-
-# add screen command to sql lists beninging here
-
-
+tupl[0].replace('http://', '').split('/',1)
+# add screen commands to sql lists in the beninging here
+    for item in d['sqllist']:
+        item.append(f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}') # appending dir to put files in
+        item.append(f'{item['date']}') # screen name
+        if item[] item.append(f'') # appending command
 
 # perhaps use for item in d['todos'] list loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # or try: ... except IndexError: pass     to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    # SAFETY any active screens and vpn is off -> kill screen
+    for panics in any[]:
+        kill_screen(panics[date])
+        send_message("screen on vpn off")
+        sys.exit()
+
+    # message starts 'to' and has !! (from me) and vpn currently on -> vpn off
+    for vpncleanup in [message for message in d['sqllist'] if 2004 in message and message[0].startswith('to') and currentloc() != 'de']:
+        kill_all_screens()
+        screen_vpn_off()
+        tapback(message, '!!'); delete(message); break
+
+    # message starts 'http' and has !! (from me) -> specific screen off
+    for dlcleanups in [message for message in d['sqllist'] if 2004 in message and message[0].startswith('http')]:
+        drop_dl_screen()
+        vllt_delete_dl_files()
+        tapback(message, '!!'); delete(message); break
+
+
+
+    # message stats 'to' and has None tapback and vpn currently off -> vpn on
+    for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() == 'de']
+        screen_vpn_on()
+        tapback(message, 'dislike'); break
+
+    # message starts 'http' and has None tapback and vpn currently on -> dl on
+    for dltodo in [message for message in d['sqllist'] if None in message and message[0].startswith('http') and currentloc() != 'de']
+        screen_dl_on()
+        tapback(message, 'dislike'); break
+
+
+
+    # message starts 'to' and has dislike and has no active screen and vpn currently on -> tapback like
+    for vpnwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('to') and message[date] not in active_screens and currentloc() != 'de']
+        tapback(message, 'like'); break
+
+    # message starts 'http' and has dislike and has no active screen and has mp4/mp3-> tapback like
+    for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 in os.listdir(message[dir])]
+        tapback(message, 'like'); break
+
+    # message starts 'http' and has dislike and has no active screen and has n mp4/mp3 -> tapback?
+    for dlwaiting in [message for message in d['sqllist'] if 2002 in message and message[0].startswith('http') and message[date] not in active_screens and mp4/mp3 not in os.listdir(message[dir])]
+        tapback(message, '?'); break
+
+
+
     # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
     # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
-    if [message for message in d['messages'] if '!!' in message]: # prevent list index out of range error
-        cleanup = [message for message in d['messages'] if '!!' in message][0] 
-        tapback(cleanup[1], '!!')  # take first item from list of all messages with !! and tapback !!
-        if cleanup[1] == 'to ...': vpnoff() and dropalldlscreens 
-        else dropscreen(cleanup[2])
-        deletemessage(cleanup[1])
-        return len(messages); sys.exit()
+    # for is better for exeting after one entry
+    for cleanups in [message for message in d['sqllist'] if 2004 in message and 0 in message]: # list comprehension filters !! messages (2004) from me (0)
+        tapback(cleanups[1][1], '!!') # take first item from list of all messages with !! and tapback !!
+        if cleanups[1].startswith('to') and d['currentloc'] != 'de': vpnoff() and dropalldlscreens # if text is vpn text shut down vpn and drop all screens
+        if cleanups[1].startswith('http') and cleanups[date] in active_screens: dropscreen(cleanups[date])  # if not vpn text just drop specific screeen
+        deletemessage(cleanup[1][1]) # delete message with text
+        return len(messages); sys.exit() # sys exit after cleanup
+
 
     # prio 2 act on message -> message no tapback -> tapback thumbdown -> screen dlp( message ) with logger on error starts aria( message ) / screen set vpn / ignore -> exit
     #    make sure vpn gets handled first
     # for message in notapbacks[]: tapback(messagetext, thumbdown) -> start screen dl(message) / screen vpn on / ignore
-    if [message for message in d['messages'] if None in message]: 
-        acton = [message for message in d['messages'] if None in message][0] # prevent list index out of range error
+    for todos in [message for message in d['messages'] if None in message]:
         tapback(acton[1], 'thumbsdown') # take first item from list of all messages with no tapbacks and tapback thumbsdown
-        if acton[1] == 'to ...': screen vpn on 
-        else if vpn ok: dl(acton[1])
+        if acton[1] == 'to ...': screen vpn on; break
+        else if vpn ok: dl(acton[1]); break
+
+    for vpntodo in [message for message in d['sqllist'] if None in message and message[0].startswith('to') and currentloc() != 'de']:
+        scree_startvpn()
+
 
     # alway message with thumb down   -> check active screen and final file is correct (this includes set vpn) -> tapback thumbsup or ? -> exit
     #    make sure vpn gets handled first
     # for message in thumbsdown[]: check screen name not up and finalfile present -> tapback thumbs up
-    if [message for message in d['messages'] if 'thumbsdown' in message]: 
-        tocheck = [message for message in d['messages'] if 'thumbsdown' in message][0]
-        if tocheck[2] not in active screens:
-            if tocheck[3] in os.listdir: 
-                tapback(tocheck[1], 'thumbsup')
-            else:
-                tapback(tocheck[1], '?')
+    for waiting in [message for message in d['messages'] if 2002 in message and 1 in message and message[0] not in active_screens]: #  list comp filters disliked messages (2002) from mini (1)
+        if waiting[1][3] in os.listdir: # if any mp4 in os list dir thats a thumbs up
+            tapback(waiting[1][0]), 'like'); break
+        else:
+            tapback(waiting[1][0], '?'); break
 
 
 thumbsdownlist = [message for message in d['messages'] if 'thumbsdown' in message]
