@@ -48,7 +48,14 @@ def sub(cmdstring, waitforcompletion):  # string here because shell true because
     if waitforcompletion: return p.communicate()[0].decode() # this will wait for subprocess to finisih
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqlquery'] = f'SELECT message.text, message.date FROM message JOIN chat_handle_join ON message.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID WHERE message.associated_message_type = 0 AND (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}") AND message.is_from_me = 0 AND chat_recoverable_message_join.message_id IS NULL ORDER BY message.date desc; '
+    d['sqlquery'] ='''SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
+                    LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapbacks with original message
+                    LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --connect deleted with messages
+                    WHERE m.associated_message_guid IS NULL                                                         --exclude tapback messages
+                    AND chat_recoverable_message_join.message_id IS NULL                                            --exclude deleted messages
+                    AND (m.text like 'http%' OR m.text like 'vpn%')                                                 --filter relevant texts
+                    AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
+                    ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts'''
     # TODO find out where edited or 2min deleted messages go
 
     # parse() -> for cleanup         -> !!tapbacks        [date, text] # make sue already deleted messages are not in this list anymore
@@ -56,7 +63,7 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
     #            for tocheck message -> thumbdowntapbacks [date, text, screen name, finalfile]
 
 """
-------------------------d['todos']  / no tapback -> all messages wich dont have an other tapback-message conncted to it via associated message guid excluding deleted messages
+------------------------d['todos'] = / no tapback -> all messages wich dont have an other tapback-message conncted to it via associated message guid excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, , message.date
 FROM message m
@@ -67,27 +74,52 @@ AND chat_recoverable_message_join.message_id IS NULL                            
 AND message.text IS NOT NULL;                                                                         --perhaps edited messages some how have text null !!!!!!!!!!!!! <- check das nochmal !!!!!!!
 '''
 
------------------------d['cleanups'] / !! form telefon -> all messages marked with !! FROM TELEFON NOT MINI excluding deleted messages
+-----------------------d['cleanups'] =  / !! form telefon -> all messages marked with !! FROM TELEFON NOT MINI excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, message.date
 FROM message
 LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
 LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
 WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 0                                    --include messages with associated tapback but exclude outgoing tapbacks
-AND chat_recoverable_message_join.message_id IS NULL --to exclude deletd messages                     --exclude deleted messages
+AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deleted messages
 AND Lm.associated_message_type = 2004;                                                                --filter for messages with !!(2004) or thdown(2002)
 '''
 
------------------------d['waiting'] / thumdowns -> all messages marked with thdown FROM MINI NOT TELEFON excluding deleted messages
+-----------------------d['intheres'] =  / thumdowns -> all messages marked with thdown FROM MINI NOT TELEFON excluding deleted messages
 d['sqlquery'] = '''
 SELECT message.text, message.date
 FROM message
 LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
 LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --filter messages with associated tapbacks
 WHERE Lm.associated_message_guid IS NOT NULL AND Lm.is_from_me = 1                                    --include messages with associated tapback but exclude incoming tapbacks
-AND chat_recoverable_message_join.message_id IS NULL --to exclude deletd messages                     --exclude deleted messages
+AND chat_recoverable_message_join.message_id IS NULL                                                  --exclude deleted messages
 AND Lm.associated_message_type = 2002;                                                                --filter for messages with !!(2004) or thdown(2002)
 '''
+
+----------------------all together
+d['sqlquery'] = '''
+SELECT message.text, message.is_from_me, Lm.associated_message_type, message.date
+FROM message
+LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || message.guid                           --connect tapback with original message
+LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = message.ROWID   --filter deleted messages
+WHERE chat_recoverable_message_join.message_id IS NULL                                                --exclude deleted messages
+AND (message.text like 'http%' OR message.text like 'vpn%')                                           --filter relevant texts
+AND message.associated_message_guid IS NULL                                                           --exclude tapback messages
+AND message.text IS NOT NULL                                                                          --some texts are null perhaps edits
+'''
+
+
+d['sqlquery'] = '''
+SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
+LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapback with original message
+LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --filter deleted messages
+WHERE chat_recoverable_message_join.message_id IS NULL                                          --exclude deleted messages
+AND (m.text like 'http%' OR m.text like 'vpn%')                                                 --filter relevant texts
+AND m.associated_message_guid IS NULL                                                           --exclude tapback messages
+AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
+ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts
+'''
+
 """
 
 
@@ -166,16 +198,12 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
 
 
-# need to handle list out of range here!! or use multible list at the beninging
-# perhaps use for loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#or a = [1,2,3]
+# add screen command to sql lists beninging here
 
-try:
- print(a[4])
-except IndexError:
- pass
 
- # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# perhaps use for item in d['todos'] list loop with exit funktion to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# or try: ... except IndexError: pass     to circumvent list index out of range !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     # prio 1 cleanup messages -> massage with !! -> tapback !! -> delete -> exit
     # for message in !!tapbacks[]: tapback(messagetext, !!) -> drop screen name / screen vpn off -> delete(messagetext)
