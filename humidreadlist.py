@@ -149,7 +149,7 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
                 end if
             end repeat
             delay 1
-            tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"}
+            tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"} --17 is t and 51 is delete
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
         end tell' """, True)
 
