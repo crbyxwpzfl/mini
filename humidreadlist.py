@@ -111,6 +111,20 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
 """
 
 def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+    # list of sub dirs containg a list of all mp4s and srts inside
+    print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if x[1] ]) 
+
+    # now its just silly this list only contains subdirs with a srt and a mp4 insde
+    print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if any(str(s).endswith('mp4') for s in x[1]) and any(str(s).endswith('srt') for s in x[1]) ] ) 
+
+    # perhaps use map for converting since convert() has to run on each item in list of movs
+
+    # to mark completion perhaps rename screenlog to txt or check for some special file name or so
+    # perhaps use sort(dir, Convertbool) to return is complete or not for like tapback / waitings loop 
+
+    # document easy fuktion call with sort(dir) to sort/convert a dir manually
+    # update sort to auto put in bin (and check 30d deletion!)
+
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
@@ -119,16 +133,9 @@ def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /pa
         for name in sorted([f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]): # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4 in sorted order
             sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
-    # TODO parse puthere folder convert all not alreadyconverted in seperate process
-    # TODO update sort to auto put in bin (30d deletion!)
 
-def dl():  # sysargv2 is url and since both aria and dlp default to current dir and we call screen after change to correct dir cause of logging no need for out dir specification
-# perhaps this replaces dlp option 'paths': {'home': "/Users/mini/Desktop/test/"},
-# mkdir /final-out-dir && cd /into-dir && screen -L -S test -d -m ls  # screen logs to current working dir
-# TODO consider overwrite true for dlp and aria to restart a download 
-# consider external dowloader aria for dlp
-# consider using simulate with .download(URLS) instead of extract info()
-# cosider using uttmpl defaultl is title[id].ext
+
+def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is url and since both aria and dlp default to current dir and we call screen after change to correct dir cause of logging no need for out dir specification
 try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
 except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
     sub(f'aria2c "{sys.argv[2].strip("http://").split("/",1)[1]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
@@ -138,6 +145,8 @@ def screen(name, killboll):  # killbool false kill screen name as in falsify scr
     try: p = sub(f'screen -list', True); return(p[p.index(name)-2])  # returns nr of running screens for screen('Sockets', True) and False for index failiour
     except ValueError: return False
 
+    #TODO rebuild this such that i get a leist of active screens with one sub()
+    sub('screen -list', True).split('n/') # and so on and so on
 
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
@@ -165,24 +174,23 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     parsereadlist() #waht u want vpn location and urls
     currentloc()
 
+
     for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or d['currentloc'] == "de"]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
-        if panics[3].startswith('http'): sub(f'screen -X -S {panics[1]} quit')  # drop all dl screens
-        if not d.get('sentpanic'): sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
+        if panics[3].startswith('http'):  sub(f'screen -X -S {panics[1]} quit')  # drop all dl screens
+        if not d.get('sentpanic'):        sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [message for message in d['sqllist'] if 2004 in message]:
-        if cleanups[0].startswith('http'): sub(f'screen -X -S {cleanups[1]} quit');  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and currentloc() != 'de': sub(f'screen -S {cleanups[1]} -d -m {d['sshspinala']} nordvpn disconnect', True);  # to message and has !! (from me) and vpn currently on - vpn off
+        if cleanups[0].startswith('http'):                         sub(f'screen -X -S {cleanups[1]} quit');  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and currentloc() != 'de':  sub(f'screen -S {cleanups[1]} -d -m {d['sshspinala']} nordvpn disconnect', True);  # to message and has !! (from me) and vpn currently on - vpn off
         tapback(celanups[0], 5); tapback(cleanups[0], False); break
 
     for todos in [message for message in d['sqllist'] if None in message]:  # vpn should be on top cause of sql sort
-        if todos[0].startswith('http') and d['currentloc'] != 'de' and int(screen('Socket')) < 6: d['outdir'] = os.path.join(d['puthere'], f'{todos[0].split('/',3)[2].replace('.',' ')todos[1]}'); sub(f'mkdir {d['outdir']} && cd {d['outdir']} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True)  # message starts 'http' and has None tapback and vpn currently on - dl on
-        if todos[0].startswith('to') and d['currentloc'] == 'de': sub(f'screen -S {todos[1]} -d -m {d['sshspinala']} nordvpn connect {todos[0][:-2]}', True)  # message starts 'to' and has None tapback and vpn currently off - vpn on
-        tapback(todos[0], 3); break # TODO this will tapback even if no screen started caus of to many socktes already runnningE
+        if todos[0].startswith('http') and d['currentloc'] != 'de' and int(screen('Socket')) < 6:  d['outdir'] = os.path.join(d['puthere'], f'{todos[0].split('/',3)[2].replace('.',' ')todos[1]}'); sub(f'mkdir {d['outdir']} && cd {d['outdir']} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
+        if todos[0].startswith('to') and d['currentloc'] == 'de':                                  sub(f'screen -S {todos[1]} -d -m {d['sshspinala']} nordvpn connect {todos[0][:-2]}', True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings [message for message in d['sqllist'] if 2002 in message and not screen(message[1])]  # has dislike and has no active screen
-        if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
-        if ( strwaitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir]) ): tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
-
+        if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ):         tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
+        if ( strwaitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir]) ):  tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
 
 """ OLD LOGIC TO VERIFY NEW LOGIC
     if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
