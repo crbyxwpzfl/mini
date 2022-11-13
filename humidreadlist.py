@@ -122,6 +122,7 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
     # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
 def dl():
+    sys.argv[1] is dl to call this dl funktion
     needs dir to put files in gets it with sys.argv[2]
     needs url to dl gets it with sys.argv[3]
 
