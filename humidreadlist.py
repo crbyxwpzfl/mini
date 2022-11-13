@@ -45,16 +45,21 @@ import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); im
 
 import os
 import subprocess
-import pathlib  # for calling itself in dlp()
+import pathlib  # for calling itself in dl()
 import yt_dlp  # for dlp()
-import requests  # for aria() rpc interface
-import json  # for aria()
-import sqlite3  # for parsereadlist()
 import requests  # for currentloc()
+import sqlite3  # for parsereadlist()
 
-def sub(cmdstring, waitforcompletion):  # string here because shell true because only way of chaning commands
-    p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    if waitforcompletion: return p.communicate()[0].decode()  # this will wait for subprocess to finisih
+
+def sub(cmdstring, silence):  # string here because shell true because only way of chaning commands esp important for tapback()
+    if silence: return subprocess.Popen(cmdstring , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0].decode()  # default universalnewlines/text False is ok because of decode()
+    if not silence: subprocess.Popen(cmdstring , shell=True, stdout=sys.stdout, stderr=sys.stderr).wait()  # unlike aboveus this prints output to current stdout not quiet and waits for completion
+
+"""# TODO check all occurences of sub() and verify they all use True as in return true befor it was wait for completion true
+#def sub(cmdstring, waitforcompletion):  # string here because shell true because only way of chaning commands
+#    p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#    if waitforcompletion: return p.communicate()[0].decode()  # this will wait for subprocess to finisih
+"""
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
     d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.date, m.is_from_me, Lm.associated_message_type FROM message m
@@ -64,23 +69,21 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
                 WHERE (chat.chat_identifier="{secs.mail}" OR chat.chat_identifier="{secs.phone}")               --filter messages form cretain sender
                 AND m.associated_message_guid IS NULL                                                           --exclude tapback messages
                 AND chat_recoverable_message_join.message_id IS NULL                                            --exclude deleted messages
-                AND (m.text like 'http%' OR m.text like 'to%')                                                 --filter relevant texts
+                AND (m.text like 'http%' OR m.text like 'to%')                                                  --filter relevant texts
                 AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
 def currentloc():
     d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
 
+""" OLD ARIA AND DLP FUNKTIONS JUST KEPT TILL ALL IS WORKING
 def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
     # dlp rewrite TODO just get extracted url from dlp and pass url into aria to get completion, active, error updates
         # then mark folder for sort() so audio gets extracted
         # handle error case when dlp cant get url
-
     # this still prints ERROR: unsupported URL to stdout/stderr
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'no_warnings': True, 'quiet': True, 'format_sort': ['ext'],'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, }).extract_info(URLS, download=False)['format_id']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
     except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError): print("error")
-
-
     d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
     d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"%(title)s-{sys.argv[3]}.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
     with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
@@ -105,8 +108,9 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
     # TODO throw out all actives wich are in tapbackdict with value !! AND deleted messages (if they are not in list already)
     # TODO put all errors in tapback['message': ?]
     # TODO put all complete tapback['message': tuhmbsup]
+"""
 
-def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
@@ -118,24 +122,22 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
     # TODO parse puthere folder convert all not alreadyconverted in seperate process
     # TODO update sort to auto put in bin (30d deletion!)
 
-
-    # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
-
-def dl():
-    sys.argv[1] is dl to call this dl funktion
-    needs dir to put files in gets it with sys.argv[2]
-    needs url to dl gets it with sys.argv[3]
-
-    # everything into dlp
-    # if dlp fails
-    #    pass to aria
-    #    sort output
-    # make sure screen gets closed after finish downloading
+def dl():  # sysargv2 is url and since both aria and dlp default to current dir and we call screen after change to correct dir cause of logging no need for out dir specification
+# perhaps this replaces dlp option 'paths': {'home': "/Users/mini/Desktop/test/"},
+# mkdir /final-out-dir && cd /into-dir && screen -L -S test -d -m ls  # screen logs to current working dir
+# TODO consider overwrite true for dlp and aria to restart a download 
+# consider external dowloader aria for dlp
+# consider using simulate with .download(URLS) instead of extract info()
+# cosider using uttmpl defaultl is title[id].ext
+try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
+except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
+    sub(f'aria2c "{sys.argv[2].strip("http://").split("/",1)[1]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
+    sort()
 
 def screen(name, killboll):  # killbool false kill screen name as in falsify screen
-    if not killboll: sub(f'screen -X -S {name} quit', True)  # kill screen
-    if killboll != "returnup": sub(f'screen -S {name} -d -m {killboll}', True)  # up dl screen
-    if killboll == "returnup": return True if sub(f'screen -list | grep "{name}"', True) else False  # return is screen up
+    try: p = sub(f'screen -list', True); return(p[p.index(name)-2])  # returns nr of running screens for screen('Sockets', True) and False for index failiour
+    except ValueError: return False
+
 
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
@@ -163,30 +165,26 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     parsereadlist() #waht u want vpn location and urls
     currentloc()
 
-    # f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}' is dir to put files in
-    # item['date'] is screen name
-
-
     for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or d['currentloc'] == "de"]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
-        if panics[3].startswith('http'): screen(panics[1], False)  # falsify all dl screens
+        if panics[3].startswith('http'): sub(f'screen -X -S {panics[1]} quit')  # drop all dl screens
         if not d.get('sentpanic'): sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [message for message in d['sqllist'] if 2004 in message]:
-        if cleanups[0].startswith('http'): screen(cleanups[1], False);  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and currentloc() != 'de': screen(todos[1], f'{sshpi} nordvpn disconnect');  # to message and has !! (from me) and vpn currently on - vpn off
+        if cleanups[0].startswith('http'): sub(f'screen -X -S {cleanups[1]} quit');  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and currentloc() != 'de': sub(f'screen -S {cleanups[1]} -d -m {d['sshspinala']} nordvpn disconnect', True);  # to message and has !! (from me) and vpn currently on - vpn off
         tapback(celanups[0], 5); tapback(cleanups[0], False); break
 
     for todos in [message for message in d['sqllist'] if None in message]:  # vpn should be on top cause of sql sort
-        if todos[0].startswith('http') and d['currentloc'] != 'de': screen(todos[1], f'{pathlib.Path(__file__).resolve()} dl')  # message starts 'http' and has None tapback and vpn currently on - dl on
-        if todos[0].startswith('to') and d['currentloc'] == 'de': screen(todos[1], f'{sshpi} nordvpn connect {todos[0][:-2]}')  # message starts 'to' and has None tapback and vpn currently off - vpn on
-        tapback(todos[0], 3); break
+        if todos[0].startswith('http') and d['currentloc'] != 'de' and int(screen('Socket')) < 6: d['outdir'] = os.path.join(d['puthere'], f'{todos[0].split('/',3)[2].replace('.',' ')todos[1]}'); sub(f'mkdir {d['outdir']} && cd {d['outdir']} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True)  # message starts 'http' and has None tapback and vpn currently on - dl on
+        if todos[0].startswith('to') and d['currentloc'] == 'de': sub(f'screen -S {todos[1]} -d -m {d['sshspinala']} nordvpn connect {todos[0][:-2]}', True)  # message starts 'to' and has None tapback and vpn currently off - vpn on
+        tapback(todos[0], 3); break # TODO this will tapback even if no screen started caus of to many socktes already runnningE
 
-    for waitings [message for message in d['sqllist'] if 2002 in message and not screen(message[date], 'returnup')]  # has dislike and has no active screen
+    for waitings [message for message in d['sqllist'] if 2002 in message and not screen(message[1])]  # has dislike and has no active screen
         if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
         if ( strwaitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir]) ): tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
 
 
-
+""" OLD LOGIC TO VERIFY NEW LOGIC
     if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
         sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.forceShutdown'} )
         sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
@@ -209,11 +207,12 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
         sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"mkdir -p {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1])} && {pathlib.Path(__file__).resolve()} dlp \\\"{d['dlpurls'][0][0]}\\\" {d['dlpurls'][0][1]} &> {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1], 'log.txt')} ; exit\"' -e 'set miniaturized of window 1 to false' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
 
     print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
+"""
 
 # TODO perhaps change temps to desktop dir
 
 d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
-    'sshpi': f"ssh spinala@192.168.2.1 -i {secs.minisshpriv} ", # attentione to the last space
+    'sshspinala': f"ssh spinala@192.168.2.1 -i {secs.minisshpriv} ", # attentione to the last space
     'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
     'phonenr': secs.phone, # for vpn message and sql query
     'ariaurls': [], 'allariaurls': [['list', 'notempty']], 'dlpurls': [],
