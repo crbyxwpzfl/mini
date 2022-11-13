@@ -57,7 +57,7 @@ def sub(cmdstring, waitforcompletion):  # string here because shell true because
     if waitforcompletion: return p.communicate()[0].decode()  # this will wait for subprocess to finisih
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.is_from_me, Lm.associated_message_type, m.date FROM message m
+    d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.date, m.is_from_me, Lm.associated_message_type FROM message m
                 JOIN chat_handle_join ON m.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id
                 LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapbacks with original message
                 LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --connect deleted with messages
@@ -122,16 +122,21 @@ def sortaria(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder
     # dlp rewrite TODO extract audio from dlp downloads perhaps markfolder with dlp
 
 def dl():
+    needs dir to put files in gets it with sys.argv[2]
+    needs url to dl gets it with sys.argv[3]
+
     # everything into dlp
     # if dlp fails
     #    pass to aria
     #    sort output
     # make sure screen gets closed after finish downloading
 
-def upscreen(name):
-    return True if sub(f'screen -list | grep "{name}"', True) else False
+def screen(name, killboll):  # killbool false kill screen name as in falsify screen
+    if not killboll: sub(f'screen -X -S {name} quit', True)  # kill screen
+    if killboll != "returnup": sub(f'screen -S {name} -d -m {killboll}', True)  # up dl screen
+    if killboll == "returnup": return True if sub(f'screen -list | grep "{name}"', True) else False  # return is screen up
 
-def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004)
+def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
             set frontmost to true
@@ -160,24 +165,24 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
     # f'{item[0].split('/',3)[2].replace('.',' ')}{item['date']}' is dir to put files in
     # item['date'] is screen name
 
-    for panics in any[]: #safety any active screens and vpn is off - kill screens
-        kill_screen(panics[date])
-        send_message("screen on vpn off")
-        sys.exit()
+
+    for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or d['currentloc'] == "de"]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
+        if panics[3].startswith('http'): screen(panics[1], False)  # falsify all dl screens
+        if not d.get('sentpanic'): sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [message for message in d['sqllist'] if 2004 in message]:
-        if cleanups[0].startswith('http'): drop_dl_screen(); vllt_delete_dl_files() #http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and currentloc() != 'de': kill_all_screens(); screen_vpn_off() #to message and has !! (from me) and vpn currently on - vpn off
-        tapback(message, '!!'); delete(message); break
+        if cleanups[0].startswith('http'): screen(cleanups[1], False);  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and currentloc() != 'de': screen(todos[1], f'{sshpi} nordvpn disconnect');  # to message and has !! (from me) and vpn currently on - vpn off
+        tapback(celanups[0], 5); tapback(cleanups[0], False); break
 
-    for todos in [message for message in d['sqllist'] if None in message]: #vpn should be on top cause of sql sort
-        if todos[0].startswith('to') and d['currentloc'] != 'de': screen_dl_on() #message starts 'http' and has None tapback and vpn currently on - dl on
-        if todos[0].startswith('http') and d['currentloc'] == 'de': screen_vpn_on() #message starts 'to' and has None tapback and vpn currently off - vpn on
-        tapback(message, 'dislike'); break
+    for todos in [message for message in d['sqllist'] if None in message]:  # vpn should be on top cause of sql sort
+        if todos[0].startswith('http') and d['currentloc'] != 'de': screen(todos[1], f'{pathlib.Path(__file__).resolve()} dl')  # message starts 'http' and has None tapback and vpn currently on - dl on
+        if todos[0].startswith('to') and d['currentloc'] == 'de': screen(todos[1], f'{sshpi} nordvpn connect {todos[0][:-2]}')  # message starts 'to' and has None tapback and vpn currently off - vpn on
+        tapback(todos[0], 3); break
 
-    for waitings [message for message in d['sqllist'] if 2002 in message and not upscreen(message[date])] #has dislike and has no active screen
-        if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(message, 'like'); break #message has no active screen and complete condition true -> tapback like
-        if ( waitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir] ): tapback(message, '?'); break #message has no active screen and complete condition fasle -> tapback ?
+    for waitings [message for message in d['sqllist'] if 2002 in message and not screen(message[date], 'returnup')]  # has dislike and has no active screen
+        if ( waitings[0].startswith('to') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ): tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
+        if ( strwaitings[0].startswith('to') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir]) ): tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
 
 
 
