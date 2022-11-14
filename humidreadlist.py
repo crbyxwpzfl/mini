@@ -62,7 +62,7 @@ def sub(cmdstring, silence):  # string here because shell true because only way 
 """
 
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
-    d['sqllist'] = sqlite3.connect(d['chatdb']).cursor().execute(f'''SELECT m.text, m.date, m.is_from_me, Lm.associated_message_type FROM message m
+    d['sqllist'] = sqlite3.connect('/Users/mini/Library/Messages/chat.db').cursor().execute(f'''SELECT m.text, m.date, Lm.associated_message_type, m.is_from_me FROM message m
                 JOIN chat_handle_join ON m.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id
                 LEFT JOIN message Lm ON Lm.associated_message_guid like '%' || m.guid                           --connect tapbacks with original message
                 LEFT JOIN chat_recoverable_message_join ON chat_recoverable_message_join.message_id = m.ROWID   --connect deleted with messages
@@ -73,8 +73,12 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
                 AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
-def currentloc():
-    d['currentloc'] = requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower()  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+"""
+def locaway():
+    d['locaway'] = True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != de else False  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+
+'locaway': True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != de else False  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+"""
 
 """ OLD ARIA AND DLP FUNKTIONS JUST KEPT TILL ALL IS WORKING
 def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
@@ -111,6 +115,9 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
 """
 
 def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+
+    
+    
     # list of sub dirs containg a list of all mp4s and srts inside
     print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if x[1] ]) 
 
@@ -141,13 +148,6 @@ except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError):
     sub(f'aria2c "{sys.argv[2].strip("http://").split("/",1)[1]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
     sort()
 
-def screen(name, killboll):  # killbool false kill screen name as in falsify screen
-    try: p = sub(f'screen -list', True); return(p[p.index(name)-2])  # returns nr of running screens for screen('Sockets', True) and False for index failiour
-    except ValueError: return False
-
-    #TODO rebuild this such that i get a leist of active screens with one sub()
-    sub('screen -list', True).split('n/') # and so on and so on
-
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
@@ -170,31 +170,30 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
         end tell' """, True)
 
-def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi querries
-    parsereadlist() #waht u want vpn location and urls
-    currentloc() # check for d['currentloc'] perhaps rewrite so d['vpnbool'] ture or false not current loc
-    #run get active screens here
+def head(): # TODO run full head just on 'CurrentRelativeHumidity' to minimize pi querries
+    parsereadlist()  # waht u want vpn location and urls
+    d['screens'] = sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
+    d['locaway']= True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
 
-# implement vpn wants to != currentloc -> set vpn
-#           vpn wants to == currentloc -> do nothing
-# perhaps this is solved with thumbsup on vpn or even thumbsdown on initial set vpn
-
-    for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or d['currentloc'] == "de"]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
-        if panics[3].startswith('http'):  sub(f'screen -X -S {panics[1]} quit')  # drop all dl screens
+    for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or not d['locaway']]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
+        if panics[3].startswith('http'):  sub(f'screen -X -S {panics[1]} quit', True)  # drop all dl screens
         if not d.get('sentpanic'):        sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
-    for cleanups in [message for message in d['sqllist'] if 2004 in message]:
-        if cleanups[0].startswith('http'):                         sub(f'screen -X -S {cleanups[1]} quit');  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and currentloc() != 'de':  sub(f'screen -S {cleanups[1]} -d -m {d['sshspinala']} nordvpn disconnect', True);  # to message and has !! (from me) and vpn currently on - vpn off
+    for cleanups in [m for m in d['sqllist'] if 2004 in m]:
+        if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', Ture)  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True)  # to message and has !! (from me) and vpn currently on - vpn off
         tapback(celanups[0], 5); tapback(cleanups[0], False); break
 
-    for todos in [message for message in d['sqllist'] if None in message]:  # vpn should be on top cause of sql sort
-        if todos[0].startswith('http') and d['currentloc'] != 'de' and int(screen('Socket')) < 6:  d['outdir'] = os.path.join(d['puthere'], f'{todos[0].split('/',3)[2].replace('.',' ')todos[1]}'); sub(f'mkdir {d['outdir']} && cd {d['outdir']} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
-        if todos[0].startswith('to') and d['currentloc'] == 'de':                                  sub(f'screen -S {todos[1]} -d -m {d['sshspinala']} nordvpn connect {todos[0][:-2]}', True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
+    for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
+        if todos[0].startswith('http') and d['locaway'] and d['screens'].count('(Detached)') < 6:  sub(f'mkdir {d['outdir'](todos[0], todos[1])} && cd {d['outdir'](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
+        if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
-    for waitings [message for message in d['sqllist'] if 2002 in message and not screen(message[1])]  # has dislike and has no active screen
-        if ( waitings[0].startswith('http') and currentloc() != 'de' ) or ( mp4/mp3 in os.listdir(message[dir]) ):         tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
-        if ( strwaitings[0].startswith('htto') and currentloc() == 'de' ) or ( mp4/mp3 not in os.listdir(message[dir]) ):  tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
+    for waitings [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]  # has dislike and has no active screen
+        if ( waitings[0].startswith('http') and d['locaway'] ) or ( mp4/mp3 in os.listdir(message[dir]) ):             tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
+        if ( strwaitings[0].startswith('htto') and not d['locaway'] ) or ( mp4/mp3 not in os.listdir(message[dir]) ):  tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
+
+    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
+
 
 """ OLD LOGIC TO VERIFY NEW LOGIC
     if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
@@ -223,12 +222,9 @@ def head(): # run full head just on 'CurrentRelativeHumidity' to minimize pi que
 
 # TODO perhaps change temps to desktop dir
 
-d = {'get': head, 'dlp': dlp, # defs for running directly in cli via arguments
-    'sshspinala': f"ssh spinala@192.168.2.1 -i {secs.minisshpriv} ", # attentione to the last space
-    'puthere': '/Users/mini/Downloads/', # put 'puthere'/transfer/reposetories/spinala for site update and 'puthere'/temps/dwls here
-    'phonenr': secs.phone, # for vpn message and sql query
-    'ariaurls': [], 'allariaurls': [['list', 'notempty']], 'dlpurls': [],
-    'chatdb': '/Users/mini/Library/Messages/chat.db'
-}
+d = {'get': head, 'dl': dl, # defs for running directly in cli via arguments
+    'sshspinala': lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
+    'outdir': lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")}{date}'),  # for launching dl screen put /Users/mini/Downloads/temp/message-date/...
+    }
 
-d.get(sys.argv[1].strip("''").lower(), sortaria)()  # call head() with 'Get' from homebridge or ariasort() on download completion of aria  only works daemon false remember to not wait for completion on aria start
+d.get(sys.argv[1].strip("''").lower(), helps)()  # call head() with 'Get' from homebridge or helpes()
