@@ -114,18 +114,27 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
     # TODO put all complete tapback['message': tuhmbsup]
 """
 
-def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
 
     # this is good for verifying somithing is there
     if any(str(s).endswith('mp4') for s in os.listdir(direct)): print("found one")
 
-    def convert(arg):
+    def convert(f):
         print(arg)
+        sub(f"ffmpeg -n -i \"{f[1]}\" { "-i"+srts if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ""}.mp4\"", True)  # TODO get numbers right here no better solution jet not add counter to multible files
         return arg
 
-    this = [  sorted([p+n for n in f if n.endswith("mp4") ])  for p, s, f in os.walk(direct) ]  # list like [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ] but with a lot of empty lists if subdir has no mkv
-    [ list( map(convert, x) ) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
+    #srts = [  sorted([p+n for n in f if n.endswith("srt") ])  for p, s, f in os.walk(direct) ] # [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ]
+    #print(next(s for s in srts if s))
 
+    this = [  sorted([p+n for n in f if n.endswith("mkv") or n.endswith("srt") ])  for p, s, f in os.walk(direct) ]  # list like [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ] but with a lot of empty lists if subdir has no mkv
+    [ list(  map(convert, enumerate(x))) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
+    # TODO look into this enumerator vllt mgl to unpack earlier
+    # TODO srts can be collected in list to but need to be accountet for when cointing nr of files and need to be extracted from list
+        # as this [ list( map(convert, enumerate(x), [s for s in x if s.endswith("srt") and x] ) ) for x in this]
+        # with def convert(f, srts) does not work some how 
+
+    
 
 
     for subdirs in temp:
@@ -163,11 +172,11 @@ def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /pa
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
 
 
-def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is url and since both aria and dlp default to current dir and we call screen after change to correct dir cause of logging no need for out dir specification
-try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
-except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
-    sub(f'aria2c "{sys.argv[2].strip("http://").split("/",1)[1]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
-    sort()
+def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
+    try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
+    except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
+        sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
+        sort(sys.argv[2].split("/",3)[2].replace('-', ' '))  # naming convention is http://final-file/url
 
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
@@ -245,7 +254,7 @@ def head(): # TODO run full head just on 'CurrentRelativeHumidity' to minimize p
 
 d = {'get': head, 'dl': dl, # defs for running directly in cli via arguments
     'sshspinala': lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
-    'outdir': lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")}{date}'),  # for launching dl screen put /Users/mini/Downloads/temp/message-date/...
+    'outdir': lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
     }
 
 d.get(sys.argv[1].strip("''").lower(), helps)()  # call head() with 'Get' from homebridge or helpes()
