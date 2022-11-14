@@ -116,8 +116,27 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
 
 def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
 
+    # this is good for verifying somithing is there
+    if any(str(s).endswith('mp4') for s in os.listdir(direct)): print("found one")
+
+    def convert(arg):
+        print(arg)
+        return arg
+
+    this = [  sorted([p+n for n in f if n.endswith("mp4") ])  for p, s, f in os.walk(direct) ]  # list like [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ] but with a lot of empty lists if subdir has no mkv
+    [ list( map(convert, x) ) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
+
+
+
+    for subdirs in temp:
+        ffmpeg on all movs and avis in subdir with all srts into mp4
+
+    for path, subdirs, files in os.walk():
+        for file in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
+            d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
     
-    
+
+
     # list of sub dirs containg a list of all mp4s and srts inside
     print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if x[1] ]) 
 
@@ -133,9 +152,11 @@ def sort(): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /pa
     # update sort to auto put in bin (and check 30d deletion!)
 
     d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
+    
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
+    
     for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
         for name in sorted([f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]): # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4 in sorted order
             sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
