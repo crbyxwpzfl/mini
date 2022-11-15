@@ -5,40 +5,6 @@
 #let cluster fuck begin
 
 
-# currently best idea
-#
-# vllt screen set vpn too and vllt screen tapbacks too
-# differentiate aria and dlp screens launche new dlps but not arias
-#
-# shut off all dlp and aria screens when vpn is off
-#
-# find a good way to name screens use message date only as addon to uniquefy the name
-#
-# needs solid way to find active screens
-# needs to alway end screen on fail or finished dl
-# needs solid way to search dir for succesfull dl
-#
-# each call handles one message with !!
-#
-# if message with !! has screen delete/drop screen
-# take message tapback !! and delete message
-#
-# check for vpn and how many screens are active i ok
-#   spawn screen with ytdl( message without tapback ).logger(on error start aria) add thumbsdown
-#
-# if thumbdown messages not in active screens and message hase no dir/files check for mp4 files!
-#   tapback ?
-# else
-#   tapback thumbs up
-
-
-
-    # parse() -> for cleanup         -> !!tapbacks        [date, text, prio, screen name, finalfile, tapback] make sure already deleted messages are not in this list anymore
-    #            for todo message    -> notapbacks        [date, text, prio, screen name, finalfile, tapback] make sure this hase no message wich are already associated with a tapback
-    #            for tocheck message -> thumbdowntapbacks [date, text, prio, screen name, finalfile, tapback]
-    # or comebine all in one list containing tapback status messages[(date, text, screen name, finalfile, tapback), (...), ...] # sort so that vpn message is on top
-
-
 
 
 import sys; sys.path.append('/Users/mini/Downloads/transfer/reps-privates/'); import secs  # fetch secrets
@@ -55,12 +21,6 @@ def sub(cmdstring, silence):  # string here because shell true because only way 
     if silence: return subprocess.Popen(cmdstring , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0].decode()  # default universalnewlines/text False is ok because of decode()
     if not silence: subprocess.Popen(cmdstring , shell=True, stdout=sys.stdout, stderr=sys.stderr).wait()  # unlike aboveus this prints output to current stdout not quiet and waits for completion
 
-"""# TODO check all occurences of sub() and verify they all use True as in return true befor it was wait for completion true
-#def sub(cmdstring, waitforcompletion):  # string here because shell true because only way of chaning commands
-#    p = subprocess.Popen(cmdstring , text=False, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#    if waitforcompletion: return p.communicate()[0].decode()  # this will wait for subprocess to finisih
-"""
-
 def parsereadlist():  # when foldername not in downloaddir add url to aria or dlp dict
     d['sqllist'] = sqlite3.connect('/Users/mini/Library/Messages/chat.db').cursor().execute(f'''SELECT m.text, m.date, Lm.associated_message_type, m.is_from_me FROM message m
                 JOIN chat_handle_join ON m.handle_id = chat_handle_join.handle_id JOIN chat ON chat.ROWID = chat_handle_join.chat_id
@@ -73,121 +33,15 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
                 AND m.text IS NOT NULL                                                                          --some texts are null perhaps edits
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
-"""
-def locaway():
-    d['locaway'] = True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != de else False  # everything but de will be treated as vpn on this is very bad here no https cause of error message
-
-'locaway': True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != de else False  # everything but de will be treated as vpn on this is very bad here no https cause of error message
-"""
-
-""" OLD ARIA AND DLP FUNKTIONS JUST KEPT TILL ALL IS WORKING
-def dlp():  # perhaps use archive at d['puthere']/repos/ff/dwl-archive
-    # dlp rewrite TODO just get extracted url from dlp and pass url into aria to get completion, active, error updates
-        # then mark folder for sort() so audio gets extracted
-        # handle error case when dlp cant get url
-    # this still prints ERROR: unsupported URL to stdout/stderr
-    try: import yt_dlp; print(yt_dlp.YoutubeDL({'no_warnings': True, 'quiet': True, 'format_sort': ['ext'],'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, }).extract_info(URLS, download=False)['format_id']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
-    except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError): print("error")
-    d['dlpopts'] = {'verbose': True, 'simulate': False, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'restrict-filenames': False, 'ignoreerrors': True, 'verbos': True}
-    d['dlpopts']['outtmpl'] = os.path.join(d['puthere'], 'temps', sys.argv[3], f"%(title)s-{sys.argv[3]}.%(ext)s")  # the seccond sys arg in each dlp call is the foldername
-    with yt_dlp.YoutubeDL(d['dlpopts']) as ydl: ydl.download(sys.argv[2])  # the first sys arg in each dlp call is the url
-    # [ ] TODO find a way to detect active dl of dlp -> put actives in tapbacklist[(message , thumbs down), ...]
-    # [ ] TODO find a way to cancle active dlp wich are in tapback[] and have value !! AND deleted messages (if they are not in list already)
-    # [ ] TODO find a way to detect error of dlp -> update errors in tapback['message': ?, ...]
-    # [ ] TODO find a way to detect complete dl -> put in tapback['message': thumbsup]
-        # all detections maby possible via spawning dlp as server like aria responding to questions ????
-
-def sendaria(data):  # sends json to aria or starts aria if aria not reachable
-    try: d['r'] = requests.post('http://localhost:6800/jsonrpc', json=data, verify=False, timeout=2)
-    except requests.exceptions.ConnectionError: # error connecting so aria is off so start aria so no added url so url stays in queue so addes url next time
-        d['ariaopts'] = f"--enable-rpc --rpc-listen-all --on-download-complete={pathlib.Path(__file__).resolve()} --save-session={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --input-file={os.path.join(d['puthere'], 'temps', 'ariasfile.txt')} --daemon=false --auto-file-renaming=false --allow-overwrite=false --seed-time=0" # daemon false otherwise no message on completion reason unknown but not to bad so one sees whats happening
-        sub(f"screen -S aria -d -m aria2c {d['ariaopts']}", False)  # open aria like this no wait cause next call in 60sec wait delay so aria is propperly up before next request  status connected check is not essential cause #TODO why we have completion call!! no completioncall any more
-
-def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.purgeDownloadResult'}) #  purge aria so aria save file is celan
-    sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'system.multicall', 'params':[[ {'methodName':'aria2.getGlobalStat'}, {'methodName':'aria2.tellStopped', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellWaiting', 'params':[0,20,['status', 'gid', 'dir']]}, {'methodName':'aria2.tellActive', 'params':[['status', 'gid', 'dir']]} ]] })  
-    if (len(d['ariaurls']) + int(json.loads(d['r'].content)['result'][0][0].get('numActive')) + int(json.loads(d['r'].content)['result'][0][0].get('numWaiting'))) == 0: sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.shutdown'} ); sys.exit()  # no ariaurls no active no waiting shutdown aria and sys exit otherwise for loop benethe will throw error list index out of range since no actives
-    for actives in json.loads(d['r'].content)['result'][3][0]:
-        if not any(actives.get('dir').split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] in sublist for sublist in d['allariaurls']): sendaria({ 'jsonrpc':'2.0', 'id':'mini', 'method':'aria2.remove', 'params':[actives.get('gid')] })
-    # TODO put all actives or waiting in tapback[ 'message': thumbs down]
-    # TODO throw out all actives wich are in tapbackdict with value !! AND deleted messages (if they are not in list already)
-    # TODO put all errors in tapback['message': ?]
-    # TODO put all complete tapback['message': tuhmbsup]
-"""
-
-"""
-def sshspinala(whereto, date):
-    return f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
-
-def outdir(message, date):
-    return os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
-
-def ffmpeg(f): 
-    print(f" ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" ") # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
-"""
-
-def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
-    this = [  sorted([f'{p}/{n}' for n in f if n.endswith("mkv") or n.endswith("srt")])  for p, s, f in os.walk(direct) ]  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
-    srts = [f for sl in this for f in sl if f.endswith('srt') and 'en' in f.lower()]  # [dir1/file2.srt, dir2/file2.srt]
-    [ list(  map(d'ffmpeg', enumerate(x))) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
-
-"""
-    d['ffmpeg'] = lambda f: print(f"ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" ") # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
-
-    def ffmpeg(f):  # f[1] is /path/to/file f[0] is nr of file
-        print(f"ffmpeg -n -i \"{f[1]}\" { "-i"+srts[-1] if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ""}.mp4\" ")  # TODO get numbers right here no better solution jet not add counter to multible files
-
-    # TODO srts can be collected in list to but need to be accountet for when cointing nr of files and need to be extracted from list
-        # as this [ list( map(convert, enumerate(x), [s for s in x if s.endswith("srt") and x] ) ) for x in this]
-        # with def convert(f, srts) does not work some how 
-
-    #srts = [  sorted([p+n for n in f if n.endswith("srt") ])  for p, s, f in os.walk(direct) ] # [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ]
-    #print(next(s for s in srts if s))
-
-    this = [  sorted([p+n for n in f if n.endswith("mkv") or n.endswith("srt") ])  for p, s, f in os.walk(direct) ]  # list like [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ] but with a lot of empty lists if subdir has no mkv
-    [ list(  map(convert, enumerate(x))) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
-    # TODO look into this enumerator vllt mgl to unpack earlier
-    # TODO srts can be collected in list to but need to be accountet for when cointing nr of files and need to be extracted from list
-        # as this [ list( map(convert, enumerate(x), [s for s in x if s.endswith("srt") and x] ) ) for x in this]
-        # with def convert(f, srts) does not work some how 
-
-    for subdirs in temp:
-        ffmpeg on all movs and avis in subdir with all srts into mp4
-
-    for path, subdirs, files in os.walk():
-        for file in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
-            d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
-    
-    # list of sub dirs containg a list of all mp4s and srts inside
-    print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if x[1] ]) 
-
-    # now its just silly this list only contains subdirs with a srt and a mp4 insde
-    print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if any(str(s).endswith('mp4') for s in x[1]) and any(str(s).endswith('srt') for s in x[1]) ] ) 
-
-    # perhaps use map for converting since convert() has to run on each item in list of movs
-
-    # to mark completion perhaps rename screenlog to txt or check for some special file name or so
-    # perhaps use sort(dir, Convertbool) to return is complete or not for like tapback / waitings loop 
-
-    # document easy fuktion call with sort(dir) to sort/convert a dir manually
-    # update sort to auto put in bin (and check 30d deletion!)
-
-    d['finalfile'] = sys.argv[3].split('/')[len(os.path.join(d['puthere'], 'temps').split('/'))] if sys.argv[3] else sys.exit()  # sort files or exit when no files passed
-    
-    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
-        for name in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
-            d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
-    
-    for path, subdirs, files in os.walk(os.path.join(d['puthere'], 'temps', d['finalfile'])):
-        for name in sorted([f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]): # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4 in sorted order
-            sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
-            d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
-"""
+def sort():  # NOTE algorythm for auto naming is f hard to do  # sorts all in current working dir
+    d['srts'] = d['searchfiles']( d['files'](os.getcwd()) , 'srt')  # this collects all srts of dirs for ffmpeg
+    [ list(  map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd())]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
     except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(pathlib.Path(__file__).resolve().parents[0], "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
-        sort(sys.argv[2].split("/",3)[2].replace('-', ' '))  # naming convention is http://final-file/url
+        sort()
 
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
@@ -211,62 +65,51 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
         end tell' """, True)
 
-def head(): # TODO run full head just on 'CurrentRelativeHumidity' to minimize pi querries
-    parsereadlist()  # waht u want vpn location and urls
-    d['screens'] = sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
-    d['locaway']= True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
+    parsereadlist(); d['screens'](); d['locaway']()
 
     for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or not d['locaway']]  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
         if panics[3].startswith('http'):  sub(f'screen -X -S {panics[1]} quit', True)  # drop all dl screens
         if not d.get('sentpanic'):        sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [m for m in d['sqllist'] if 2004 in m]:
-        if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', Ture)  # vllt_delete_dl_files()  # http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True)  # to message and has !! (from me) and vpn currently on - vpn off
-        tapback(celanups[0], 5); tapback(cleanups[0], False); break
+        if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', Ture); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # to message and has !! (from me) and vpn currently on - vpn off
 
     for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
         if todos[0].startswith('http') and d['locaway'] and d['screens'].count('(Detached)') < 6:  sub(f'mkdir {d['outdir'](todos[0], todos[1])} && cd {d['outdir'](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
         if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]  # has dislike and has no active screen
-        if ( waitings[0].startswith('http') and d['locaway'] ) or ( mp4/mp3 in os.listdir(message[dir]) ):             tapback(waitings[0], 2); break #message has no active screen and complete condition true -> tapback like
-        if ( strwaitings[0].startswith('htto') and not d['locaway'] ) or ( mp4/mp3 not in os.listdir(message[dir]) ):  tapback(waitings[0], 6); break #message has no active screen and complete condition fasle -> tapback ?
+        if ( waitings[0].startswith('http') and d['locaway'] ) or ( mp4/mp3 in os.listdir(message[dir]) ):             tapback(waitings[0], 2); break  # message has no active screen and complete condition true -> tapback like
 
-    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
+        tapback(waitings[0], 2) if waitings[0].startswith('http') and d['searchfiles'](d['files'](d['outdir'](waitings[0], waitings(1))), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in outdir is mp4 -> tapback like else tapback ?
+        tapback(waitings[0], 2) if waitings[0].startswith('to') and d['locaway'] else tapback(waitings[0], 6); break  # message 'to....' has no screen and locaway is True so vpn ok -> tapback like else tapback ?
+
+    print(d.get(sys.argv[3].strip("''"), len([m for m in d['sqllist'] if None in m]) ))  # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
+
+def helps():
+    print("""
+
+        /humidreadlist.py get value ofdict      runs head and prints d['ofdict'] value for debugging
+
+        /humidreadlist.py sort                  sorts current dir with naming convention ..../current dir date/current dir.mp4
+
+        /humidreadlist.py dl http://dir.name    ups dl without any safegurads
+
+        /humidreadlist.py get                   runs head and returns count of todos
+
+    """)
 
 
-""" OLD LOGIC TO VERIFY NEW LOGIC
-    if d['currentloc'] == "de" and sub("pgrep -lf aria.", True): # savety prolly should not happen but yeah aria on but vpn off kill all
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.forceShutdown'} )
-        sub(f"osascript -e 'tell application \"Messages\" to send \"aria on vpn off\" to participant \"{d['phonenr']}\"'", True)
-
-    if d['currentloc'] != d.get('vpnto', "connect de")[-2:]: 
-        sub(d['sshpi']  + "nordvpn " + d.get('vpnto', "disconnect"), True);  # only set vpn when parsereadlist() vpn state not current vpnstate() this sometimes waits long for sub completion but dont feel good witch just a dispatch here
-        # TODO perhaps just dispatch setvpn call to save runtime
-        # TODO when dispatched vpn is running add to tapback['vpn to': thumbs down]
-        # TODO when dispatched vpn not running check for vpn ok -> add to tapback['vpn to', thumbs up]
-        # TODO vpn off would mean to check tapback[] for message with vpn to and value !!
-        # TODO detect vpn error and add to tapback['vpn to': ?]
-
-    if sub("pgrep -lf aria.", True):  # when aria is up
-        ariacleanup()  # removes ariaurls and stops aria when no active or waiting
-
-    if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['ariaurls']: # dont do aria() when parsereadlist()-vpn-state not vpnstate()
-        sendaria( {'jsonrpc': '2.0', 'id': 'mini', 'method': 'aria2.addUri','params':[ [d['ariaurls'][0][1]], { 'dir': os.path.join(d['puthere'], 'temps', d['ariaurls'][0][0]) } ] } )  # send aria the first url[1] dir[0] pair from ariaurls list  perhaps use more advanced opts add trackers and optimize concurrent downloads and save savefile every sec or so
-
-    if d['currentloc'] == d.get('vpnto', "connect de")[-2:] and d['currentloc'] != "de" and d['dlpurls'] and not sub("pgrep -lf .dlp", True): # not dlp currently running then do dlp()
-        sub(f"osascript -e 'tell app \"Terminal\"' -e 'do script \"mkdir -p {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1])} && {pathlib.Path(__file__).resolve()} dlp \\\"{d['dlpurls'][0][0]}\\\" {d['dlpurls'][0][1]} &> {os.path.join(d['puthere'], 'temps', d['dlpurls'][0][1], 'log.txt')} ; exit\"' -e 'set miniaturized of window 1 to false' -e 'end tell'", False) # dont wait until completion call itself and bring dlp() up for one url in new window
-
-    print(d.get(sys.argv[3].strip("''"), len(d['ariaurls']) + len(d['dlpurls']) )) # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
-"""
-
-# TODO perhaps change temps to desktop dir
-
-d = {'get': head, 'dl': dl, # defs for running directly in cli via arguments
-    'sshspinala': lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
-    'outdir':     lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
-    'ffmpeg':     lambda f:             print(f"""ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" """) # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
+d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
+    'sshspinala':   lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
+    'outdir':       lambda message, date: os.path.join('/Users/mini/Downloads/temps/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # TODO perhaps change temps to desktop dir # slpit() creates list like ['http:', '', 'final.file.whatever', 'url'] so mkdir to dl to makes ..../temp/final file whatever date/  # so naming convention is http://final.file.whatever/url
+    'ffmpeg':       lambda f:             print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d['srts'][-1]}"' if d.get('srts') else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{' '.join(f.split('/')[5].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)   # f[1] is ..../temps/final file whatever date/ so f.split[5].split[:-1] makes ..../temps/final file whatever date/final file whatever.mp4 plus append nr of file starting with 2
+    'locaway':      lambda:               True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+    'screens':      lambda:               sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
+    'files':        lambda filesdir:      [  sorted([f'{p}/{n}' for n in f if n.endswith("mkv") or n.endswith("avi") or n.endswith("srt")])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
+    'searchfiles':  lambda files, end:    [f for sl in files for f in sl if f.endswith(end) and 'en' in f.lower()]  # [dir1/file2.srt, dir2/file2.srt]
     }
 
 d.get(sys.argv[1].strip("''").lower(), helps)()  # call head() with 'Get' from homebridge or helpes()
