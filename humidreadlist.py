@@ -114,15 +114,31 @@ def ariacleanup():  # perhaps to clean memory  else: sendaria({'jsonrpc': '2.0',
     # TODO put all complete tapback['message': tuhmbsup]
 """
 
+"""
+def sshspinala(whereto, date):
+    return f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
+
+def outdir(message, date):
+    return os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
+
+def ffmpeg(f): 
+    print(f" ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" ") # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
+"""
+
 def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce holder /path/to/file.mkv you manually pass to ariasort    perhaps include nested folders into filenaming  runns on completioncall of aria takes filedir from completioncall arguments
+    this = [  sorted([f'{p}/{n}' for n in f if n.endswith("mkv") or n.endswith("srt")])  for p, s, f in os.walk(direct) ]  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
+    srts = [f for sl in this for f in sl if f.endswith('srt') and 'en' in f.lower()]  # [dir1/file2.srt, dir2/file2.srt]
+    [ list(  map(d'ffmpeg', enumerate(x))) for x in this]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
 
-    # this is good for verifying somithing is there
-    if any(str(s).endswith('mp4') for s in os.listdir(direct)): print("found one")
+"""
+    d['ffmpeg'] = lambda f: print(f"ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" ") # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
 
-    def convert(f):
-        print(arg)
-        sub(f"ffmpeg -n -i \"{f[1]}\" { "-i"+srts if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ""}.mp4\"", True)  # TODO get numbers right here no better solution jet not add counter to multible files
-        return arg
+    def ffmpeg(f):  # f[1] is /path/to/file f[0] is nr of file
+        print(f"ffmpeg -n -i \"{f[1]}\" { "-i"+srts[-1] if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ""}.mp4\" ")  # TODO get numbers right here no better solution jet not add counter to multible files
+
+    # TODO srts can be collected in list to but need to be accountet for when cointing nr of files and need to be extracted from list
+        # as this [ list( map(convert, enumerate(x), [s for s in x if s.endswith("srt") and x] ) ) for x in this]
+        # with def convert(f, srts) does not work some how 
 
     #srts = [  sorted([p+n for n in f if n.endswith("srt") ])  for p, s, f in os.walk(direct) ] # [ ['dir1/file1.mkv', 'dir1/file2.mkv'], ['dir2/file1.mkv', 'dir2/file2.mkv']  ]
     #print(next(s for s in srts if s))
@@ -134,9 +150,6 @@ def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce h
         # as this [ list( map(convert, enumerate(x), [s for s in x if s.endswith("srt") and x] ) ) for x in this]
         # with def convert(f, srts) does not work some how 
 
-    
-
-
     for subdirs in temp:
         ffmpeg on all movs and avis in subdir with all srts into mp4
 
@@ -144,8 +157,6 @@ def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce h
         for file in [f for f in files if f.endswith(".srt") and f.lower().startswith("eng")]:  # this selects the most nested subt.srt when not set ffmpeg sub() just uses -map 0 to copy all subs of og file when present
             d['includesubs'] = f' -i \"{str(os.path.join(path, name))}\"'
     
-
-
     # list of sub dirs containg a list of all mp4s and srts inside
     print([x for x in  [ [p, [n for n in f if n.endswith("mp4") or n.endswith("srt") ] ] for p, s, f in os.walk(direct) ]  if x[1] ]) 
 
@@ -170,7 +181,7 @@ def sort(finalfile): #TODO rewrite to sortall()  #with /humidreadlist.py palce h
         for name in sorted([f for f in files if f.endswith(".mp4") or f.endswith(".mkv") or f.endswith(".avi")]): # this selects all avis mkvs mp4s and renames or (down) remuxes them to mp4 in sorted order
             sub(f"ffmpeg -n -i \"{str(os.path.join(path, name))}\" {d.get('includesubs', '-map 0')} -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{str(os.path.join(path, str(d.get('iter','')) + ' ' + d['finalfile'].replace('-', ' ') ))}.mp4\"", True)
             d['iter'] = d.get('iter',0) + 1  # for more files in same folder iter gets set and ffmpeg sub() puts iteration infront of file sarting with 1
-
+"""
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
@@ -254,7 +265,8 @@ def head(): # TODO run full head just on 'CurrentRelativeHumidity' to minimize p
 
 d = {'get': head, 'dl': dl, # defs for running directly in cli via arguments
     'sshspinala': lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
-    'outdir': lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
+    'outdir':     lambda message, date: os.path.join('/Users/mini/Downloads/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # slpit() creates list like ['http:', '', 'domain.net', 'url'] so mkdir to dl to makes /Users/mini/Downloads/temp/domain net date/
+    'ffmpeg':     lambda f:             print(f"""ffmpeg -n -i \"{f[1]}\" { f'"-i {srts[-1]}"' if srts else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{finalfile} {f[0] + 1 if f[0] else ''}.mp4\" """) # f[1] is /path/to/file f[0] is nr of file makes /final/file.mp4 for /input/file1.mkv and /final/file1.mp4 for /input/file2.mkv
     }
 
 d.get(sys.argv[1].strip("''").lower(), helps)()  # call head() with 'Get' from homebridge or helpes()
