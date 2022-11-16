@@ -34,8 +34,10 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
 def sort():  # NOTE algorythm for auto naming is f hard to do  # sorts all in current working dir
-    d['srts'] = d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')  # this collects all srts of dir for ffmpeg
-    [ list(  map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
+    d['ffmpeg'] = lambda f: print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d['srts'][-1]}"' if d.get('srts') and 'en' in d.get('srts').lower() else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{'/'.join(f[1].split('/')[:-1])}/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)  #TODO change print here to sub( , False) verbose  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
+    d['srts'] = [d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')]  # this collects all srts of dir for ffmpeg
+    [ list(map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # hopefully get rid of Null lists
+
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
@@ -103,10 +105,9 @@ def helps():
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
     'sshspinala':   lambda whereto, date:       f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
     'outdir':       lambda message, date:       os.path.join('/Users/mini/Downloads/temps/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # TODO perhaps change temps to desktop dir # slpit() creates list like ['http:', '', 'final.file.whatever', 'url'] so mkdir to dl to makes ..../temp/final file whatever date/  # so naming convention is http://final.file.whatever/url
-    'ffmpeg':       lambda f, finalfile:        print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d['srts'][-1]}"' if d.get('srts') and 'en' in d.get('srts').lower() else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{'/'.join(f[1].split('/')[:-1])}/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)  #TODO change print here to sub( , False) verbose  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
     'locaway':      lambda:                     True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
     'screens':      lambda:                     sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
-    'files':        lambda filesdir, one, two:  [  sorted([f'{p}/{n}' for n in f if n.endswith(onetype) or n.endswith(othertype)])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
+    'files':        lambda filesdir, one, two:  [  sorted([f'{p}/{n}' for n in f if n.endswith(one) or n.endswith(two)])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
     'searchfiles':  lambda files, end:          [f for sl in files for f in sl if f.endswith(end)]  # [dir1/file2.srt, dir2/file2.srt]
     }
 
