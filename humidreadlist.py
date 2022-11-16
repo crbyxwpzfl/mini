@@ -34,8 +34,8 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # sql connect make cursor execute query wait for query to finish
 
 def sort():  # NOTE algorythm for auto naming is f hard to do  # sorts all in current working dir
-    d['srts'] = d['searchfiles']( d['files'](os.getcwd()) , 'srt')  # this collects all srts of dirs for ffmpeg
-    [ list(  map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd())]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
+    d['srts'] = d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')  # this collects all srts of dir for ffmpeg
+    [ list(  map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # TODO list(...) hopefully is not nedded later just for debugging # hopefully get rid of Null lists
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
@@ -81,19 +81,17 @@ def head():  # TODO adjust serach message.text length for tpaback message TODO p
         if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]  # has dislike and has no active screen
-        if ( waitings[0].startswith('http') and d['locaway'] ) or ( mp4/mp3 in os.listdir(message[dir]) ):             tapback(waitings[0], 2); break  # message has no active screen and complete condition true -> tapback like
-
-        tapback(waitings[0], 2) if waitings[0].startswith('http') and d['searchfiles'](d['files'](d['outdir'](waitings[0], waitings(1))), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in outdir is mp4 -> tapback like else tapback ?
+        tapback(waitings[0], 2) if waitings[0].startswith('http') and d['searchfiles'](d['files'](  d['outdir'](waitings[0], waitings(1)), 'mp4', 'mp4'  ), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in outdir is mp4 -> tapback like else tapback ?
         tapback(waitings[0], 2) if waitings[0].startswith('to') and d['locaway'] else tapback(waitings[0], 6); break  # message 'to....' has no screen and locaway is True so vpn ok -> tapback like else tapback ?
 
     print(d.get(sys.argv[3].strip("''"), len([m for m in d['sqllist'] if None in m]) ))  # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
 def helps():
-    print("""
+    print(f"""
 
-        /humidreadlist.py get value ofdict      runs head and prints d['ofdict'] value for debugging
+        /humidreadlist.py get value 'ofdict'    runs head and prints d['ofdict'] value for debugging
 
-        /humidreadlist.py sort                  sorts current dir with naming convention ..../current dir date/current dir.mp4
+        /humidreadlist.py sort                  sorts '{os.getcwd()}/subd/file.notmp4s' to '{os.getcwd()}/subd/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])}.mp4s'
 
         /humidreadlist.py dl http://dir.name    ups dl without any safegurads
 
@@ -103,13 +101,14 @@ def helps():
 
 
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
-    'sshspinala':   lambda whereto, date: f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
-    'outdir':       lambda message, date: os.path.join('/Users/mini/Downloads/temps/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # TODO perhaps change temps to desktop dir # slpit() creates list like ['http:', '', 'final.file.whatever', 'url'] so mkdir to dl to makes ..../temp/final file whatever date/  # so naming convention is http://final.file.whatever/url
-    'ffmpeg':       lambda f:             print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d['srts'][-1]}"' if d.get('srts') else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{' '.join(f.split('/')[5].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)   # f[1] is ..../temps/final file whatever date/ so f.split[5].split[:-1] makes ..../temps/final file whatever date/final file whatever.mp4 plus append nr of file starting with 2
-    'locaway':      lambda:               True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
-    'screens':      lambda:               sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
-    'files':        lambda filesdir:      [  sorted([f'{p}/{n}' for n in f if n.endswith("mkv") or n.endswith("avi") or n.endswith("srt")])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
-    'searchfiles':  lambda files, end:    [f for sl in files for f in sl if f.endswith(end) and 'en' in f.lower()]  # [dir1/file2.srt, dir2/file2.srt]
+    'sshspinala':   lambda whereto, date:       f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
+    'outdir':       lambda message, date:       os.path.join('/Users/mini/Downloads/temps/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # TODO perhaps change temps to desktop dir # slpit() creates list like ['http:', '', 'final.file.whatever', 'url'] so mkdir to dl to makes ..../temp/final file whatever date/  # so naming convention is http://final.file.whatever/url
+    'ffmpeg':       lambda f, finalfile:        print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d['srts'][-1]}"' if d.get('srts') and 'en' in d.get('srts').lower() else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{'/'.join(f[1].split('/')[:-1])}/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)  #TODO change print here to sub( , False) verbose  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
+    'locaway':      lambda:                     True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+    'screens':      lambda:                     sub('screen -list', True)  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
+    'files':        lambda filesdir, one, two:  [  sorted([f'{p}/{n}' for n in f if n.endswith(onetype) or n.endswith(othertype)])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
+    'searchfiles':  lambda files, end:          [f for sl in files for f in sl if f.endswith(end)]  # [dir1/file2.srt, dir2/file2.srt]
     }
+
 
 d.get(sys.argv[1].strip("''").lower(), helps)()  # call head() with 'Get' from homebridge or helpes()
