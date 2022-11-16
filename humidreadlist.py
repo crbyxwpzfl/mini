@@ -79,7 +79,7 @@ def head():  # TODO adjust serach message.text length for tpaback message TODO p
         if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # to message and has !! (from me) and vpn currently on - vpn off
 
     for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
-        if todos[0].startswith('http') and d['locaway'] and d['screens'].count('(Detached)') < 6:  sub(f'mkdir {d["outdir"](todos[0], todos[1])} && cd {d["outdir"](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
+        if todos[0].startswith('http') and d['locaway'] and d['screens']().count('(Detached)') < 6:  sub(f'mkdir {d["outdir"](todos[0], todos[1])} && cd {d["outdir"](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
         if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings in [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]:  # has dislike and has no active screen
