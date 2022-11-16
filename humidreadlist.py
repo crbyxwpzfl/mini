@@ -70,21 +70,21 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
 
-    for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or not d['locaway']]:  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
+    for panics in [m for m in d['sqllist'] if [l for l in d['sqllist'] if 2004 in l and any(str(s).startswith('to') for s in l)] or not d['pingout']]:  # savety list with all messages when there is a !! 'to' message (from me) so vpn wants off or actually is off
         if panics[3].startswith('http'):  sub(f'screen -X -S {panics[1]} quit', True)  # drop all dl screens
         if not d.get('sentpanic'):        sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [m for m in d['sqllist'] if 2004 in m]:
         if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # http message and has !! (from me) - specific screen off
-        if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # to message and has !! (from me) and vpn currently on - vpn off
+        if cleanups[0].startswith('to') and d['pingout']:  sub(d['sshspinala'](todos[1], 'disconnect'), True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # to message and has !! (from me) and vpn currently on - vpn off
 
     for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
-        if todos[0].startswith('http') and d['locaway'] and d['screens']().count('(Detached)') < 6:  sub(f'mkdir {d["outdir"](todos[0], todos[1])} && cd {d["outdir"](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
-        if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
+        if todos[0].startswith('http') and d['pingout'] and d['screens']().count('(Detached)') < 6:  sub(f'mkdir {d["outdir"](todos[0], todos[1])} && cd {d["outdir"](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
+        if todos[0].startswith('to') and not d['pingout']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings in [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]:  # has dislike and has no active screen
         tapback(waitings[0], 2) if waitings[0].startswith('http') and d['searchfiles'](d['files'](  d['outdir'](waitings[0], waitings(1)), 'mp4', 'mp4'  ), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in outdir is mp4 -> tapback like else tapback ?
-        tapback(waitings[0], 2) if waitings[0].startswith('to') and d['locaway'] else tapback(waitings[0], 6); break  # message 'to....' has no screen and locaway is True so vpn ok -> tapback like else tapback ?
+        tapback(waitings[0], 2) if waitings[0].startswith('to') and d['pingout'] else tapback(waitings[0], 6); break  # message 'to....' has no screen and locaway is True so vpn ok -> tapback like else tapback ?
 
     print(d.get(sys.argv[3].strip("''"), len([m for m in d['sqllist'] if None in m]) ))  # print sth from dict for debugging or print count of urls as 'CurrentRelativeHumidity' to homebridge
 
@@ -105,7 +105,7 @@ def helps():
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
     'sshspinala':   lambda whereto, date:       f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
     'outdir':       lambda message, date:       os.path.join('/Users/mini/Downloads/temps/', f'{message.split("/",3)[2].replace("."," ")} {date}'),  # TODO perhaps change temps to desktop dir # slpit() creates list like ['http:', '', 'final.file.whatever', 'url'] so mkdir to dl to makes ..../temp/final file whatever date/  # so naming convention is http://final.file.whatever/url
-    'locaway':      lambda:                     True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
+    'locaway':      lambda:                     d['pingout'] = True if requests.get(f'http://ipinfo.io/json', timeout=2, verify=False).json().get('country', "DE").lower() != 'de' else False,  # everything but de will be treated as vpn on this is very bad here no https cause of error message
     'screens':      lambda:                     sub('screen -list', True),  # sub returns cmd output as string and then in listcomp for waitings date is unique in string
     'files':        lambda filesdir, one, two:  [  sorted([f'{p}/{n}' for n in f if n.endswith(one) or n.endswith(two)])  for p, s, f in os.walk(filesdir)],  # [ ['dir1/file1.mkv', 'dir1/file2.srt'], ['dir2/file1.mkv', 'dir2/file2.srt']  ] but with a lot of empty lists if subdir has no matches
     'searchfiles':  lambda files, end:          [f for sl in files for f in sl if f.endswith(end)]  # [dir1/file2.srt, dir2/file2.srt]
