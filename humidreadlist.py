@@ -82,7 +82,7 @@ def head():  # TODO adjust serach message.text length for tpaback message TODO p
         if todos[0].startswith('http') and d['locaway'] and d['screens'].count('(Detached)') < 6:  sub(f'mkdir {d["outdir"](todos[0], todos[1])} && cd {d["outdir"](todos[0], todos[1])} && screen -L -S {todos[1]} -d -m dl {todos[0]}', True); tapback(todos[0], 3); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
         if todos[0].startswith('to') and not d['locaway']:                                         sub(d['sshspinala'](todos[1], f'connect {todos[0][:-2]}'), True); tapback(todos[0], 3); break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
-    for waitings [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]:  # has dislike and has no active screen
+    for waitings in [m for m in d['sqllist'] if 2002 in m and m[1] not in d['screens']]:  # has dislike and has no active screen
         tapback(waitings[0], 2) if waitings[0].startswith('http') and d['searchfiles'](d['files'](  d['outdir'](waitings[0], waitings(1)), 'mp4', 'mp4'  ), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in outdir is mp4 -> tapback like else tapback ?
         tapback(waitings[0], 2) if waitings[0].startswith('to') and d['locaway'] else tapback(waitings[0], 6); break  # message 'to....' has no screen and locaway is True so vpn ok -> tapback like else tapback ?
 
