@@ -75,7 +75,7 @@ def head():  # TODO adjust serach message.text length for tpaback message TODO p
         if not d.get('sentpanic'):        sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{d['phonenr']}\"'", True); d['sentpanic'] = True  # sned panic only once
 
     for cleanups in [m for m in d['sqllist'] if 2004 in m]:
-        if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', Ture); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # http message and has !! (from me) - specific screen off
+        if cleanups[0].startswith('http'):                 sub(f'screen -X -S {cleanups[1]} quit', True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # http message and has !! (from me) - specific screen off
         if cleanups[0].startswith('to') and d['locaway']:  sub(d['sshspinala'](todos[1], 'disconnect'), True); tapback(celanups[0], 5); tapback(cleanups[0], False); break  # to message and has !! (from me) and vpn currently on - vpn off
 
     for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
@@ -93,13 +93,13 @@ def helps():
 
         /humidreadlist.py get value 'ofdict'    runs head and prints d['ofdict'] value for debugging
 
-        /humidreadlist.py sort                  sorts '{os.getcwd()}/subd/file.notmp4s' to '{os.getcwd()}/subd/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])}.mp4s'
-
         /humidreadlist.py dl http://dir.name    ups dl without any safegurads
 
         /humidreadlist.py get                   runs head and returns count of todos
 
-    """)
+        /humidreadlist.py sort                  sorts '{os.getcwd()}/subd/file.notmp4s' to '{os.getcwd()}/subd/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])}.mp4s'
+
+    """)  # NOTE perhaps actually list sort files and final files here
 
 
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
