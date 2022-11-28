@@ -70,7 +70,7 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             delay 1
             tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"} --17 is t and 51 is delete
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
-        end tell' """, True).split(',')[1] # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!!
+        end tell' """, True).split(',')[1] # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!! look at outdir funktion !!!!
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
