@@ -47,7 +47,7 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
 
 # TODO get titel of video for naming dl dir and make this as reliable and as fast as possible # NOTE perhaps use timestamp instead of formatted message to find correct message
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
-    sub(f""" osascript -e '
+    d['title'] = sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
             set frontmost to true
             tell application \"System Events\" to keystroke \"f\" using command down
@@ -70,7 +70,7 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             delay 1
             tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"} --17 is t and 51 is delete
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
-        end tell' """, True)
+        end tell' """, True).split(',')[1] # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!!
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
