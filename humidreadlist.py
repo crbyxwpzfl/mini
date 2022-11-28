@@ -52,13 +52,19 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             tell application \"System Events\" to keystroke \"f\" using command down
             tell application \"System Events\" to keystroke \"{message}\"
             tell application \"System Events\" to keystroke return
+            delay 2
+            set searchlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list)
+            repeat with n from 1 to count of searchlist
+                if (role of item n of searchlist contains "StaticText") and (description of item n of searchlist contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then
+                    log(get description of item n of searchlist)
+                    perform action \"AXPress\" of item n of searchlist
+                    exit repeat
+                end if
+            end repeat
             delay 1
-            perform action \"AXPress\" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-            delay 1
-            set smalerlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list)
-            repeat with n from 1 to count of smalerlist 
-                if (value of item n of smalerlist contains \"{message}\") then --to get this loop right use xcodes accssesebilety inspector and the gist findmessage
-                    perform action \"AXPress\" of item n of smalerlist
+            repeat with n from 1 to 40
+                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then
+                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
                     exit repeat
                 end if
             end repeat
