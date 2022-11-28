@@ -36,8 +36,7 @@ def parsereadlist():  # when foldername not in downloaddir add url to aria or dl
 def sort():  # NOTE algorythm for auto naming is f hard to do  # sorts all in current working dir
     d['ffmpeg'] = lambda f: print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d["srts"][-1]}"' if d.get('srts') and 'en' in d.get('srts').lower() else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{'/'.join(f[1].split('/')[:-1])}/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """)  #TODO change print here to sub( , False) verbose  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
     d['srts'] = [d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')]  # this collects all srts of dir for ffmpeg
-    [ list(map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # hopefully get rid of Null lists
-
+    [ list(map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # hopefully gets rid of Null lists
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title']) # cant use this to just extract url since aria does not support hls 'format_id' to verify selection 
@@ -53,17 +52,17 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             tell application \"System Events\" to keystroke \"f\" using command down
             tell application \"System Events\" to keystroke \"{message}\"
             tell application \"System Events\" to keystroke return
-            delay 2 --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
+            delay 2    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
             if static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 exists then
                 perform action "AXPress" of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-            else --either press link preview or text result to scroll searchresult to visible area
+            else    --either press link preview or text result to scroll searchresult to visible area
                 perform action "AXPress" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             end if
             delay 1
-            repeat with n from 1 to 40 --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
+            repeat with n from 1 to 40    --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
                 if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then --again searches for sub text of message in description of message group
-                    log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1) --logs description to get video title for naming dir to stdout
-                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 --shows menue to select a message
+                    log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1)    --logs description to get video title for naming dir to stdout
+                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
                     exit repeat
                 end if
             end repeat
