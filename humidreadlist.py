@@ -45,7 +45,7 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(os.getcwd(), "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
         sort()
 
-# TODO get titel of video foor naming dl files and make this as reliable and as fast as possible and anotate this really good
+# TODO get titel of video for naming dl dir and make this as reliable and as fast as possible
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
@@ -53,19 +53,19 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             tell application \"System Events\" to keystroke \"f\" using command down
             tell application \"System Events\" to keystroke \"{message}\"
             tell application \"System Events\" to keystroke return
-            delay 2
-            set searchlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list)
+            delay 2 --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
+            set searchlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list) --collects all goups of first search result
             repeat with n from 1 to count of searchlist
-                if (role of item n of searchlist contains "StaticText") and (description of item n of searchlist contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then
-                    log(get description of item n of searchlist) --evtl read title of video here and use this for naming
-                    perform action \"AXPress\" of item n of searchlist
+                if (role of item n of searchlist contains "StaticText") and (description of item n of searchlist contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then --selects first statictext with message for links message is shortend to eg site.net
+                        perform action \"AXPress\" of item n of searchlist --scrolls first search reslut to visible area
                     exit repeat
                 end if
             end repeat
             delay 1
-            repeat with n from 1 to 40
-                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then
-                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+            repeat with n from 1 to 40 --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
+                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then --again searches for sub text of message in description of message group
+                    log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1) --logs description to get video title for naming dir to stdout
+                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 --shows menue to select a message
                     exit repeat
                 end if
             end repeat
