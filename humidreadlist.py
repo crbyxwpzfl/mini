@@ -45,6 +45,7 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(os.getcwd(), "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
         sort()
 
+# TODO get titel of video foor naming dl files and make this as reliable and as fast as possible and anotate this really good
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
@@ -56,7 +57,7 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
             set searchlist to (entire contents of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 as list)
             repeat with n from 1 to count of searchlist
                 if (role of item n of searchlist contains "StaticText") and (description of item n of searchlist contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then
-                    log(get description of item n of searchlist)
+                    log(get description of item n of searchlist) --evtl read title of video here and use this for naming
                     perform action \"AXPress\" of item n of searchlist
                     exit repeat
                 end if
