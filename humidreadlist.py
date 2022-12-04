@@ -67,6 +67,8 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
 
         # TODO would be nice to use this title as outdir name but witings needs to search outdir without running tapback befor
         #   so find a way to search dirs wich end on date for mp4s inside /temps/tapbacktitle date/final.mp4 (attention to nested folders and files)
+        #   [f.path for f in os.scandir("/Users/mini/Desktop") if f.endswith("copy")]
+    
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
