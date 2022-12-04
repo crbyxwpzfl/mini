@@ -48,28 +48,29 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
 def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     d['title'] = sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
-            set frontmost to true
-            tell application \"System Events\" to keystroke \"f\" using command down & \"{message}\" & return
-            delay 2    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
+            set frontmost to true    --set text field value is more reliable than keystrokes
+            set value of text field 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 to \"{message}\"
+            delay 1    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
             if static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 exists then
-                perform action "AXPress" of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-                set mess to static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                set mess to description of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                perform action \"AXPress\" of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             else    --either press link preview or text result to scroll searchresult to visible area
-                perform action "AXPress" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-                set mess to static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                set mess to \"{message.replace('http://','').replace('https://','').split('/')[0]}\"
+                perform action \"AXPress\" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             end if
-            delay 1
+            --delay 0.5
             repeat with n from 1 to 40    --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
+                --log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1)    --logs description to get video title for naming dir to stdout
                 if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains mess) then    --again searches for search result text in description of messages group
                     log(mess)    --logs description to get video title for naming dir to stdout
-                    perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-                    exit repeat
+                    perform action \"AXShowMenu\" {"" if message.startswith("http") else "of group 1"} of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                    exit repeat    --links require one less nested group for axshowmenue perhaps this can be done more elegent pppphhh
                 end if
             end repeat
-            delay 1
+            delay 0.5
             tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"} --17 is t and 51 is delete
             tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
-        end tell' """, True).split(',')[1] # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!! look at outdir funktion !!!!
+        end tell' """, True)
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
