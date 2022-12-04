@@ -48,24 +48,25 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
 
 def tapback(message, emote):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     d['title'] = sub(f""" osascript -e '
-        tell application \"System Events\" to tell process \"Messages\"
+        tell application "System Events" to tell process "Messages"
             set value of text field 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 to \"{message}\"
             
-            delay 1.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
+            delay 0.5    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
             perform action "AXPress" of static text {"1 of button 1" if message.startswith('https://') else "2 of group 1 of group 3"} of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             
-            delay 0.5    --this is seperate lines just for the " required by set to
-            set cleanmessage to \"{message.replace('http://','').replace('https://','').split('/')[0]}\"
-            {"set previewtitle to description of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith("https://") else "--nothing"}
-            perform action \"AXShowMenu\" of {"" if message.startswith("http") else "group 1 of"} ({"second" if message.startswith("https://") else "first"} group of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 whose description contains {"previewtitle" if message.startswith("https://") else "cleanmessage"})
-            
-            delay 0.5    --perhaps backslash befor "" is not needed
-            perform action \"AXPress\" of menu item \"{"Tapback…" if emote else "Delete…"}\" of menu 1 of group 1 of window 1
-            delay 1.0
-            perform action \"AXPress\" of button "{emote if emote else "Delete"}" {"of group 1 of group 3 of group 1 of group 2 of group 1 of group 1" if emote else "of sheet 1"} of window 1
-        end tell' """, True) # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!! look at outdir funktion !!!!
-                             # TODO this is slower than previous but works with messages in backgrond make it faster!! 
-                             # TODO revise \ befor " perhhaps its not needed and things can be shortend
+            delay 0.5    --find second or first group whose contains either message text or title of preview
+            set previewormessage to {"description of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith('https://') else '"'+message.replace('http://','').replace('https://','').split('/')[0]+'"' }
+            perform action "AXShowMenu" of {"" if message.startswith("http") else "group 1 of"} (UI element 1 of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 whose description contains previewormessage)
+
+            perform action "AXPress" of menu item "{"Tapback…" if emote else "Delete…"}" of menu 1 of group 1 of window 1
+            delay 0.5    --this is slower than keystroke command t + 1 but works wihle messages is in background
+            perform action "AXPress" of button {emote if emote else '"'+"Delete"+'"'} {"of group 1 of group 3 of group 1 of group 2 of group 1 of group 1" if emote else "of sheet 1"} of window 1
+        
+            log(previewormessage)    --print this for use as folder name
+        end tell' """, True)
+
+        # TODO would be nice to use this title as outdir name but witings needs to search outdir without running tapback befor
+        #   so find a way to search dirs wich end on date for mp4s inside /temps/tapbacktitle date/final.mp4 (attention to nested folders and files)
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
