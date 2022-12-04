@@ -49,19 +49,19 @@ def tapback(message, tapordel):  # this is inline just for simplyfinging edits f
     d['title'] = sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
             set frontmost to true
-            tell application \"System Events\" to keystroke \"f\" using command down
-            tell application \"System Events\" to keystroke \"{message}\"
-            tell application \"System Events\" to keystroke return
+            tell application \"System Events\" to keystroke \"f\" using command down & \"{message}\" & return
             delay 2    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
             if static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 exists then
                 perform action "AXPress" of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                set mess to static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             else    --either press link preview or text result to scroll searchresult to visible area
                 perform action "AXPress" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+                set mess to static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             end if
             delay 1
             repeat with n from 1 to 40    --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
-                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains \"{message.lstrip('http').lstrip('s').strip('://').strip('www.').split('/')[0]}\") then --again searches for sub text of message in description of message group
-                    log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1)    --logs description to get video title for naming dir to stdout
+                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains mess) then    --again searches for search result text in description of messages group
+                    log(mess)    --logs description to get video title for naming dir to stdout
                     perform action \"AXShowMenu\" of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
                     exit repeat
                 end if
