@@ -44,33 +44,28 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(os.getcwd(), "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
         sort()
 
-# TODO get titel of video for naming dl dir and make this as reliable and as fast as possible # NOTE perhaps use timestamp instead of formatted message to find correct message
-def tapback(message, tapordel):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
+# TODO get titel of video for naming dl dir and make this as reliable and as fast as possible
+
+def tapback(message, emote):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)
     d['title'] = sub(f""" osascript -e '
         tell application \"System Events\" to tell process \"Messages\"
-            set frontmost to true    --set text field value is more reliable than keystrokes
             set value of text field 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 to \"{message}\"
-            delay 1    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat
-            if static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 exists then
-                set mess to description of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-                perform action \"AXPress\" of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-            else    --either press link preview or text result to scroll searchresult to visible area
-                set mess to \"{message.replace('http://','').replace('https://','').split('/')[0]}\"
-                perform action \"AXPress\" of static text 2 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-            end if
-            --delay 0.5
-            repeat with n from 1 to 40    --here 40 is abetrary just has to be high enugh so all messages in visible area get traversed usually les than 20
-                --log(get description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1)    --logs description to get video title for naming dir to stdout
-                if (description of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 contains mess) then    --again searches for search result text in description of messages group
-                    log(mess)    --logs description to get video title for naming dir to stdout
-                    perform action \"AXShowMenu\" {"" if message.startswith("http") else "of group 1"} of group n of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-                    exit repeat    --links require one less nested group for axshowmenue perhaps this can be done more elegent pppphhh
-                end if
-            end repeat
-            delay 0.5
-            tell application \"System Events\" to {"key code 17 using command down" if tapordel else "key code 51"} --17 is t and 51 is delete
-            tell application \"System Events\" to {f"keystroke {tapordel}" if tapordel else "keystroke return"}
-        end tell' """, True)
+            
+            delay 1.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
+            perform action "AXPress" of static text {"1 of button 1" if message.startswith('https://') else "2 of group 1 of group 3"} of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
+            
+            delay 0.5    --this is seperate lines just for the " required by set to
+            set cleanmessage to \"{message.replace('http://','').replace('https://','').split('/')[0]}\"
+            {"set previewtitle to description of static text 1 of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith("https://") else "--nothing"}
+            perform action \"AXShowMenu\" of {"" if message.startswith("http") else "group 1 of"} ({"second" if message.startswith("https://") else "first"} group of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 whose description contains {"previewtitle" if message.startswith("https://") else "cleanmessage"})
+            
+            delay 0.5    --perhaps backslash befor "" is not needed
+            perform action \"AXPress\" of menu item \"{"Tapback…" if emote else "Delete…"}\" of menu 1 of group 1 of window 1
+            delay 1.0
+            perform action \"AXPress\" of button "{emote if emote else "Delete"}" {"of group 1 of group 3 of group 1 of group 2 of group 1 of group 1" if emote else "of sheet 1"} of window 1
+        end tell' """, True) # TODO this is problematic for other links without title cause of // in filenames cleanup title !!!! look at outdir funktion !!!!
+                             # TODO this is slower than previous but works with messages in backgrond make it faster!! 
+                             # TODO revise \ befor " perhhaps its not needed and things can be shortend
 
 def head():  # TODO adjust serach message.text length for tpaback message TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
     parsereadlist(); d['screens'](); d['locaway']()
