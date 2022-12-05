@@ -62,7 +62,7 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
         
             delay 1.0    --this delay here so next tapback does not carsh into animation of previous tapback
             log(previewormessage)    --print this for use as folder name
-        end tell' """, True)
+        end tell' """, True).strip('\n')  # since output trails a new line and \n is converted to ? when mkdir
     if "execution error" in d['title']: sub("""osascript -e 'quit app "Messages"' -e 'delay 2' -e 'tell application "Messages" to activate'""", True); print(d['title']); sys.exit()  # tapback error makes messages restart and exits so nothing happes
 
 def head():  # TODO perhaps to much tapbacks and need to sys.exit early # runs all for loops once so worst case cleanups.tapback(!!) + cleanups.tapback(delete) + todos.tapback(dislike) + waitings.tapback(like)
@@ -72,6 +72,7 @@ def head():  # TODO perhaps to much tapbacks and need to sys.exit early # runs a
         if panics[0].startswith('http'):  sub(f'screen -X -S {panics[1]} quit', True); d['sendpanic'] = True;  # drop all dl screens
     if d.get('sentpanic'): sub(f"osascript -e 'tell application \"Messages\" to send \"dls but vpn off\" to participant \"{secs.phone}\"'", True); sys.exit()  # sned panic after all screens are dropped and exit
 
+     # TODO if to vpn fails and wants to be deleted wit !! this fails since pingout is still false
     for cleanups in [m for m in d['sqllist'] if 2004 in m]:
         if cleanups[0].startswith('http'):                tapback(cleanups[0], 5); tapback(cleanups[0], False); sub(f'screen -X -S {cleanups[1]} quit', True);      break  # http message and has !! (from me) - specific screen off
         if cleanups[0].startswith('to') and d['pingout']: tapback(cleanups[0], 5); tapback(cleanups[0], False); sub(d['sshspinala'](cleanups[1], 'disconnect'), True); break  # to message and has !! (from me) and vpn currently on - vpn off
