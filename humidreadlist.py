@@ -52,7 +52,7 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
         tell application "System Events" to tell process "Messages"
             set value of text field 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 to \"{message[:100]}\"
             
-            delay 10.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
+            delay 1.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
             perform action "AXPress" of static text {"1 of button 1" if message.startswith('https://') else "2 of group 1 of group 3"} of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
             
             delay 1.0    --find second or first group whose contains either message text or title of preview
