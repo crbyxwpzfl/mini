@@ -125,8 +125,8 @@ def helps():
         /humidreadlist.py get                   runs head and returns count of todos
 
         /humidreadlist.py sort                  sorts '{os.getcwd()}/subd/file.notmp4s' to '{os.getcwd()}/subd/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])}.mp4s'
-
-    """)  # NOTE perhaps actually list sort files and predicted final files here
+ 
+    """)  # TODO actually list sort files and predicted final files here
 
 
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
