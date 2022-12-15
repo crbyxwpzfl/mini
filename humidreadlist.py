@@ -34,17 +34,17 @@ def parsereadlist():  # NOTE later in head() all messages with a revocked tapbac
                 ORDER BY m.text DESC;                                                                           --sorts vpn befor http texts''').fetchall()  # NOTE order desc is important so to message is handled first  # sql connect make cursor execute query wait for query to finish
 
 def sort():  # NOTE algorythm for auto naming is f hard to do  # sorts all in current working dir
-    # TODO rewrite ffmpeg to make /final file.mp4 from /out/dir/final file, some random txt date/
+    # TODO rewrite ffmpeg to make /final file.mp4 from /out/dir/final file or title of Tapback date/    #TODO                                                                                                                                                                                                                  F[0] is enumearate nr
     d['ffmpeg'] = lambda f: print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d["srts"][-1]}"' if d.get('srts') and 'en' in d.get('srts').lower() else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{'/'.join(f[1].split('/')[:-1])}/{' '.join(os.getcwd().split('/')[-1].split(' ')[:-1])} {f[0] + 1 if f[0] else ''}.mp4\" """, False)  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
-    d['srts'] = [d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')]  # this collects all srts of dir for ffmpeg
+    d['srts'] = [d['searchfiles']( d['files'](os.getcwd(), 'srt', 'srt') , 'srt')]  # this collects all srts of dir for ffmpeg # todo put 'en' Spector here instead of ffmpeg
     [ list(map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # hopefully gets rid of Null lists
 
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'verbose': True, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title'])  # cant use this to just extract url since aria does not support hls use 'format_id' to verify selection
     except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(os.getcwd(), "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
-        print(f'aria2c "{sys.argv[2][sys.argv[2].index("#")+1:]}" --save-session="{os.path.join(os.getcwd(), "ariasfile.txt")}" --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
-        print("envocing sort"); sort()
+        print(f'aria2c "{sys.argv[2][sys.argv[2].index("#")+1:] }" --save-session="{os.path.join(os.getcwd(), "ariasfile.txt")}" --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
+        print("envocing sort"); sort()   #todo if # else normal message
 
         # TODO perhaps lookinto how to catch extractor error
 
@@ -61,8 +61,10 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
         #       solution use correct seaarch description and trim it to be a substirng of message description and thus findable see above implementation
         #   different urlrest in search description and message description eg thumbs.gify (message) and gify (search)
         #       solution make sure to not send thumbs. ... link
+        #          Or succsefully do thru(', 1') or some other text snipet excluding the url part
         #   http://url/final+file+name# fails since search doenst find http://url/final+file+name#
         #       solution catch edge case with http (insted of https) and extract "final file name" for searchbox to then finds correct message
+        #           Or algm use .split('#')[0].split('/',3)[3].replace('+', ' ').lstrip('?q=') here get split right and pick correct 
         #   possibly some chars in title are not allowed as file names
 
         # TODO other issues
@@ -73,14 +75,14 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
 
 def tapback(message, emote):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)  # NOTE searches for first 100 chars of message
     d['title'] = sub(f""" osascript -e '
-        tell application "System Events" to tell process "Messages" --search for first 100 chars of message or name with convention http://adress/some+name#restofurl
+        tell application "System Events" to tell process "Messages" --search for first 100 chars of message or name with convention http://adress/some+name#restofurl     -- algm use .split('#')[0].split('/',3)[3].replace('+', ' ').lstrip('?q=') here get split right and pick correct 
             set value of text field 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 to \"{message[:100] if message.startswith('https') else message[19:message.index('#')].replace('+', ' ').strip()}\"
             
             delay 1.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (enire.. as list)) end repeat or use automator watch me do and copy steps to script editor
             perform action "AXPress" of static text {"1 of button 1" if message.startswith('http') else "2 of group 1 of group 3"} of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
 
             delay 1.0    --group whose contains either message text or title of preview  --UI element means wild card for ui element  --carefull here with description of search preview and message preview use same blocks
-            set s to {"description of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith('http') else '"'+message+'"' }
+            set s to {"description of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith('http') else '"'+message+'"' } perhaps possible able to use "message" instead of '"'+
             perform action "AXShowMenu" of UI element 1 of (UI element 1 of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 whose description contains text ((offset of ", " in s) + 2) thru ((offset of ", 1 image" in s) - 0) of s)
 
             perform action "AXPress" of menu item "{"Tapback…" if emote else "Delete…"}" of menu 1 of group 1 of window 1
@@ -88,7 +90,7 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
             perform action "AXPress" of button {emote if emote else '"'+"Delete"+'"'} {"of group 1 of group 3 of group 1 of group 2 of group 1 of group 1" if emote else "of sheet 1"} of window 1
         
             delay 1.0    --this delay here so next tapback does not carsh into animation of previous tapback
-            log(text ((offset of ", " in s) + 2) thru ((offset of ", 1 image" in s) - 0) of s)  --here and above just use middle part of description for whose to find message and for title to name folder and perhaps for ffmpeg
+            log(text ((offset of ", " in s) + 2) thru ((offset of ", 1 image" in s) - 0) of s)  --here and above just use middle part of description for whose to find message and for title to name folder and TODO MAKE SURE TO DONT USE KOMMA HERE FOR FFMPEG  /out/dir/final file or title of Tapback date/
         end tell' """, True).strip('\n')  # since log output trails a \n and newline is converted to ? when mkdir
     if "execution error" in d['title']: sub("""osascript -e 'quit app "Messages"' -e 'delay 2' -e 'tell application "Messages" to activate'""", True); print(d['title']); sys.exit()  # tapback error makes messages restart and exits so nothing happes
 
