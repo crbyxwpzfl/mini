@@ -44,7 +44,7 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
     except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError): 
         sub(f'aria2c "{sys.argv[2].split("/",3)[3]}" --save-session={os.path.join(os.getcwd(), "ariasfile.txt")} --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
         print(f'aria2c "{sys.argv[2][sys.argv[2].index("#")+1:] }" --save-session="{os.path.join(os.getcwd(), "ariasfile.txt")}" --seed-time=0', True)  # use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
-        print("envocing sort"); sort()   #todo if # else normal message
+        print("envocing sort"); sort()   #todo if # else normal message  Fragment identifiers are not sent to the server. The hash fragment is used by the browser to link to elements within  the same page.
 
         # TODO perhaps lookinto how to catch extractor error
 
