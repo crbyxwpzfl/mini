@@ -90,7 +90,7 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
             perform action "AXPress" of button {emote if emote else '"'+"Delete"+'"'} {"of group 1 of group 3 of group 1 of group 2 of group 1 of group 1" if emote else "of sheet 1"} of window 1
         
             delay 1.0    --this delay here so next tapback does not carsh into animation of previous tapback
-            log(text ((offset of ", " in s) + 2) thru ((offset of ", 1 image" in s) - 0) of s)  --here and above just use middle part of description for whose to find message and for title to name folder and TODO MAKE SURE TO DONT USE KOMMA HERE FOR FFMPEG  /out/dir/final file or title of Tapback date/
+            log(text ((offset of ", " in s) + 2) thru ((offset of ", 1 image" in s) - 0) of s)  --  test x thru x with no matching text   here and above just use middle part of description for whose to find message and for title to name folder and TODO MAKE SURE TO DONT USE KOMMA HERE FOR FFMPEG  /out/dir/final file or title of Tapback date/
         end tell' """, True).strip('\n')  # since log output trails a \n and newline is converted to ? when mkdir
     if "execution error" in d['title']: sub("""osascript -e 'quit app "Messages"' -e 'delay 2' -e 'tell application "Messages" to activate'""", True); print(d['title']); sys.exit()  # tapback error makes messages restart and exits so nothing happes
 
