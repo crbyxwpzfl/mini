@@ -117,7 +117,7 @@ print(f"""
     /humidreadlist.py get                   runs head and returns count of todos
 
     /humidreadlist.py sort                  sorts {os.getcwd()} and makes
-"""); d['preview'] = True; sort(False)  # set preview flag to preview created files
+"""); d['preview'] = True; sort(False); print()  # set preview flag to preview created files
 
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
     'sshspinala':   lambda date, whereto:       f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
