@@ -38,24 +38,11 @@ def sort(f = False):  # NOTE algorythm for auto naming is f hard to do  # sorts 
     if f: d['srts'] = d['searchfiles']( d['files']( pathlib.Path(f[1]).parent , 'srt', 'srt') , 'english', 'srt'); d['srtormap'] = f"""-i "{d['srts'][-1]}" """ if d['srts'] else "-map 0"  # this collects all srts of parent dir of f  # the blew either previews file or makes it with ffmpeg also escaping " ' is no fun
     if f: sub(f' { "echo " if d.get("preview") else f"""ffmpeg -n -i "{f[1]}" {d["srtormap"]}-metadata title= -vcodec copy -acodec copy -scodec "mov_text" -ac 8 """ }"{ pathlib.Path(f[1]).parent }/{ pathlib.Path(os.getcwd()).name.rsplit(" ", 1)[0] }{ f" {f[0]+1}" if f[0] else "" }.mp4" ', False)
 
-
-    #if f: sub( f'{ "echo " if d.get("preview") else f""" ffmpeg -n -i "{f[1]}" { f"-i {d["srts"][-1]}" if d["srts"] else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec "mov_text" -ac 8 """ }' f""" "{ pathlib.Path(f[1]).parent }/{ pathlib.Path(os.getcwd()).name.rsplit(' ', 1)[0] }{ f' {f[0]+1}' if f[0] else '' }.mp4" """, False)  # previews finalfiles or creates them with ffmpeg
-
-    #if f and d.get('screens'):     sub(f""" ffmpeg -n -i "{f[1]}" { f'-i "{d["srts"][-1]}"' if d["srts"] else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec "mov_text" -ac 8 "{ pathlib.Path(f[1]).parent }/{ pathlib.Path(os.getcwd()).name.rsplit(' ', 1)[0] }{ f' {f[0]+1}' if f[0] else '' }.mp4" """, False)  # { pathlib.Path(f[1]).parent }/{ pathlib.Path(f[1]).name.split(' ')[:-1] } { f[0]+1 if f[0] else '' }.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
-    #if f and not d.get('screens'): print( f"""         "{ pathlib.Path(f[1]).parent }/{ pathlib.Path(os.getcwd()).name.rsplit(' ', 1)[0] }{ f' {f[0]+1}' if f[0] else '' }.mp4" """)
-
-#    d['ffmpeg'] = lambda f: print(f"""ffmpeg -n -i \"{f[1]}\" { f'-i "{d["srts"](f[1])[-1]}"' if d['srts'](f[1]) else "-map 0" } -metadata title= -vcodec copy -acodec copy -scodec \"mov_text\" -ac 8 \"{ '/'.join(f[1].split('/')[:-1]) }/{ ' '.join(os.getcwd().split('/')[-1].split(' ')[:-1]) } { f[0] + 1 if f[0] else '' }.mp4\" """, False)  # {'/'.join(f[1].split('/')[:-1])}/{' '.join(currdir.split('/')[-2].split(' ')[:-1])}.mp4 makes '..../final file wtv date/posiblysubdir/file.notmp4' to '..../final file wtv date/posiblysubdir/final file wtv.mp4' plus append nr of file starting with 2
-#    d['srts'] = lambda pathtof: d['searchfiles']( d['files']( '/'.join(pathotof.split('/')[:-1]) , 'srt', 'srt') , 'english', 'srt')  # this collects all srts of dir for ffmpeg # todo put 'en' Spector here instead of ffmpeg
-#    d['englishsrt'] = d['srts'](f[1])[-1]
-#    d['toconv'] = [ list(map(d['ffmpeg'], enumerate(x))) for x in d['files'](os.getcwd(), 'mkv', 'avi')]  # hopefully gets rid of Null lists
-
 def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 is todos[0]/message text and since both aria and dlp default to dl in current dir and we call screen after change to correct dir cause of logging for screen no need for out dir specification
     try: import yt_dlp; print(yt_dlp.YoutubeDL({'verbose': True, 'format_sort': ['ext'], 'keepvideo': True, 'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'm4a'}], 'ignoreerrors': True, 'restrictfilenames': True}).extract_info(sys.argv[2], download=True)['title'])  # cant use this to just extract url since aria does not support hls use 'format_id' to verify selection
     except (yt_dlp.utils.UnsupportedError, yt_dlp.utils.DownloadError, TypeError):  # perhaps use just except: here
         sub(f'aria2c "{ sys.argv[2][sys.argv[2].index("#")+1:] if '#' in sys.argv[2] else sys.argv[2] }" --save-session="{os.path.join(os.getcwd(), "ariasfile.txt")}" --console-log-level=info --seed-time=0', True)  # loglevel either is debug info notice warn or error  # perhas use safefile with --input-file /path/to/ariasfile.txt to resume any stoped downloads
         print("envocing sort"); sort(False)   # hash fragment identifiers are not sent just used localy by browser
-
-
 
         # TODO perhaps lookinto how to catch extractor error
 
@@ -70,17 +57,13 @@ def dl():  # NOTE consider --allow-overwrite=true/'overwrite': True, # sysargv2 
         #       solution use correct seaarch description and trim it to be a substirng of message description and thus findable see above implementation
         #   different urlrest in search description and message description eg thumbs.gify (message) and gify (search)
         #       solution make sure to not send thumbs. ... link
-        #          Or succsefully do thru(', 1') or some other text snipet excluding the url part
-        #   http://url/final+file+name# fails since search doenst find http://url/final+file+name#
-        #       solution catch edge case with http (insted of https) and extract "final file name" for searchbox to then finds correct message
-        #           Or algm use .split('#')[0].split('/',3)[3].replace('+', ' ').lstrip('?q=') here get split right and pick correct 
+        #         TODO Or succsefully do thru(', 1') or some other text snipet excluding the url part
         #   possibly some chars in title are not allowed as file names
 
         # TODO other issues
         #   getting stuck on one url causes messages to restart every minute
         #   losing to ... messages means no way to shut of vpn
         #   anotate tapback() better and very clearly to debug futur issues
-
 
 def tapback(message, emote):  # this is inline just for simplyfinging edits for futur ui changes (like/2/2001 dislike/3/2002 !!/5/2004 ?/6/2005)  # NOTE searches for first 100 chars of message
     d['title'] = sub(f""" osascript -e '
@@ -90,7 +73,7 @@ def tapback(message, emote):  # this is inline just for simplyfinging edits for 
             delay 1.0    --to find the correct group hirachy just repeat with n from 1 to count of (entire contents of window 1 as list) log(get description/value/role of item n of (entire.. as list)) end repeat or use automator watch me do and copy steps to script editor
             perform action "AXPress" of static text {"1 of button 1" if message.startswith('http') else "2 of group 1 of group 3"} of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
 
-            delay 1.0    --group whose contains either message or title of search preview  --UI element means wild card for ui element  --only able to use whose with certain group depth therefore make sure that description of this group contains description of search preview since use same blocks eg form sender, title, url, 1 image, 1 video
+            delay 1.0    --group whose contains either message or title of search preview  --UI element means wild card for ui element  --only able to use whose with certain group depth therefore make sure that description of this group contains description of search preview since use same blocks eg. form sender, title, url, 1 image, 1 video
             set s to {"description of button 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1" if message.startswith('http') else f'"{message}"' }
             perform action "AXShowMenu" of UI element 1 of (UI element 1 of group 1 of group 1 of group 1 of group 1 of group 3 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1 whose description contains text ((offset of ", " in s) + 2) thru ((offset of ", 1 " in s) - 1) of s)
 
@@ -116,8 +99,7 @@ def head():  # TODO perhaps to much tapbacks and need to sys.exit early # runs a
 
     for todos in [m for m in d['sqllist'] if None in m]:  #TODO before if None in m istead of if not m[3] # vpn should be on top cause of sql sort
         if todos[0].startswith('http') and d['pingout'] and d['screens'].count('(Detached)') < 6: tapback(todos[0], 3); sub(f'mkdir "{d["outdir"](todos[1])}" && cd "{d["outdir"](todos[1])}" && screen -L -S {todos[1]} -d -m "{pathlib.Path(__file__)}" dl "{todos[0]}"', True); break  # message starts 'http' and has None tapback and vpn currently on and screen sockets less than 6 - dl on
-        if todos[0].startswith('to')                    and not d['pingout']:                     tapback(todos[0], 3); sub(d['sshspinala'](todos[1], f'connect {todos[0][-2:]}'), True);                                                                                          break  # message starts 'to' and has None tapback and vpn currently off - vpn on
-                                                                                                                        # do not retry here just wait for next run 
+        if todos[0].startswith('to')                    and not d['pingout']:                     tapback(todos[0], 3);                                                                                                                                                            break  # message starts 'to' and has None tapback and vpn currently off - vpn on
 
     for waitings in [m for m in d['sqllist'] if 2002 in m and str(m[1]) not in d['screens']]:  # has dislike and has no active screen
         if waitings[0].startswith('http'): tapback(waitings[0], 2) if d['searchfiles'](d['files'](  [f.path for f in os.scandir(d['outdir'](False)) if f.path.endswith(str(waitings[1]))][0], 'mp4', 'mp4'  ), 'mp4') else tapback(waitings[0], 6); break  # message 'http....' has no screen and in /outdir/subdir with end of m.date/ has mp4s -> tapback like else tapback ?
@@ -135,8 +117,7 @@ print(f"""
     /humidreadlist.py get                   runs head and returns count of todos
 
     /humidreadlist.py sort                  sorts {os.getcwd()} and makes
-"""); d['preview'] = True; sort(False)  # TODO actually list sort files and predicted final files here
-
+"""); d['preview'] = True; sort(False)  # set preview flag to preview created files
 
 d = {'get': head, 'dl': dl, 'sort': sort, # defs for running directly in cli via arguments
     'sshspinala':   lambda date, whereto:       f'screen -S {date} -d -m ssh spinala@192.168.2.1 -i {secs.minisshpriv} nordvpn {whereto}',
